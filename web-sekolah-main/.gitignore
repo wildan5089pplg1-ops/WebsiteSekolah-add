@@ -1,0 +1,21 @@
+# Dependencies
+node_modules/
+vendor/
+
+# Next.js
+.next/
+out/
+
+# Environment
+.env
+.env.local
+
+# PHP
+composer.phar
+
+# Certificate
+cacert.pem
+win_cacert.pem
+
+# Video besar
+*.mp4
