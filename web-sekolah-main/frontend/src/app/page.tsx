@@ -61,93 +61,109 @@ export default async function HomePage() {
           </div>
         </div>
       </section>
-      {/* Visi Kepemimpinan Section (Dark City Background) */}
-      <section className="relative w-full overflow-hidden py-16 lg:py-24 mt-10">
+      {/* Visi Kepemimpinan Section */}
+      <section className="relative w-full lg:h-[700px] flex items-center overflow-visible mt-10">
         
-        {/* Background Image with Overlays */}
-        <div className="absolute inset-0 z-0">
-          <img src="https://images.unsplash.com/photo-1480714378408-67cf0d13bc1b?q=80&w=2000&auto=format&fit=crop" alt="Cityscape" className="w-full h-full object-cover" />
-          {/* Deep brown/orange tint + gradient */}
-          <div className="absolute inset-0 bg-[#3a1c02]/80 mix-blend-multiply"></div>
-          <div className="absolute inset-0 bg-gradient-to-r from-orange-900/90 via-orange-900/70 to-transparent"></div>
-          <div className="absolute inset-0 bg-black/40"></div>
+        {/* Background Image & Gradient (Clipped to section) */}
+        <div className="absolute inset-0 z-0 overflow-hidden">
+          <img src="https://images.unsplash.com/photo-1480714378408-67cf0d13bc1b?q=80&w=2000&auto=format&fit=crop" alt="School Building" className="w-full h-full object-cover object-center" />
+          <div className="absolute inset-0 bg-gradient-to-r from-[#ed6a00] via-[#f87f22]/90 to-transparent lg:from-[#ed6a00] lg:via-[#f87f22]/80 lg:to-transparent"></div>
         </div>
 
-        <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex flex-col lg:flex-row items-center gap-12 lg:gap-8">
+        {/* Top Right Badges */}
+        <div className="absolute top-8 right-8 lg:top-12 lg:right-12 z-20 hidden sm:flex items-center gap-4">
+           {/* Menggunakan placeholder gambar logo yang sudah ada, sesuaikan path jika ada file spesifik */}
+           <div className="w-16 h-16 rounded-full bg-white/20 backdrop-blur-md p-1 shadow-xl border border-white/30 flex items-center justify-center">
+             <img src="/images/logo-smk.png" className="w-12 h-12 object-contain" alt="Logo SMK" />
+           </div>
+           <div className="w-16 h-16 rounded-full bg-white/20 backdrop-blur-md p-1 shadow-xl border border-white/30 flex items-center justify-center">
+             <img src="/images/logo.png" className="w-12 h-12 object-contain" alt="Logo Yayasan" />
+           </div>
+        </div>
+
+        <div className="relative z-10 w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 lg:py-0 flex flex-col lg:flex-row items-center h-full">
+          
+          {/* Left Content */}
+          <div className="w-full lg:w-1/2 flex flex-col items-start pt-10 lg:pt-0 pb-16 lg:pb-0 z-20">
+            <div className="flex items-center gap-3 mb-5">
+              <div className="w-[2px] h-4 bg-white"></div>
+              <span className="text-white font-bold text-xs tracking-widest uppercase">
+                DIGITAL LEADERSHIP ACADEMY
+              </span>
+            </div>
+
+            <h2 className="text-4xl sm:text-5xl lg:text-[4rem] font-bold text-white leading-[1.1] mb-8 drop-shadow-md">
+              Visi Kepemimpinan <br className="hidden lg:block" />
+              di Era Inovasi.
+            </h2>
+
+            <p className="text-[#ffe0b2] text-sm sm:text-base leading-relaxed mb-6 font-medium italic drop-shadow-sm max-w-lg">
+              "Pendidikan bukan tentang mengikuti arus, tapi tentang <br className="hidden sm:block"/> menciptakan teknologi yang mengubah arah masa depan."
+            </p>
             
-            {/* Left Content */}
-            <div className="w-full lg:w-1/2 z-20">
-              <div className="flex items-center gap-3 mb-6">
-                <div className="w-1 h-6 bg-white rounded-full"></div>
-                <span className="text-white font-bold text-xs tracking-[0.15em] uppercase">
-                  DIGITAL LEADERSHIP ACADEMY
-                </span>
-                <div className="w-1 h-6 bg-white rounded-full"></div>
-              </div>
+            <p className="text-white text-sm sm:text-base leading-relaxed mb-10 max-w-md drop-shadow-sm">
+              Kami mengintegrasikan <strong>Industry-Standard Tech Stack</strong> ke dalam kurikulum inti, memastikan setiap lulusan memiliki peta jalan karir global yang jelas.
+            </p>
 
-              <h2 className="text-4xl sm:text-5xl lg:text-[3.5rem] font-bold text-white leading-[1.1] mb-6 drop-shadow-lg">
-                Visi Kepemimpinan <br/>
-                di Era Inovasi.
-              </h2>
-
-              <p className="text-orange-200 text-sm sm:text-base leading-relaxed mb-4 max-w-lg font-serif italic border-l-2 border-orange-500 pl-4">
-                "Pendidikan bukan tentang mengikuti arus, tapi tentang menciptakan teknologi yang mengubah arah masa depan."
-              </p>
-              
-              <p className="text-slate-200 text-sm sm:text-base leading-relaxed mb-10 max-w-lg">
-                Kami mengintegrasikan <strong className="text-white font-semibold">Industry-Standard Tech Stack</strong> ke dalam kurikulum inti, memastikan setiap lulusan memiliki peta jalan karir global yang jelas.
-              </p>
-
-              <div className="flex flex-wrap gap-4">
-                <button className="px-8 py-3.5 bg-white text-orange-900 font-bold text-sm hover:scale-105 transition-transform shadow-lg rounded-md">
-                  EKSPLORASI VISI
-                </button>
-                <button className="px-8 py-3.5 border border-white/40 text-white font-bold text-sm hover:bg-white/10 transition-colors shadow-sm rounded-md">
-                  PROFIL LULUSAN
-                </button>
-              </div>
+            <div className="flex flex-wrap gap-4">
+              <button className="px-6 py-3.5 bg-white text-[#f87f22] font-bold text-xs sm:text-sm rounded-md shadow-[0_8px_20px_rgba(0,0,0,0.15)] hover:bg-slate-50 transition-all hover:-translate-y-0.5">
+                EKSPLORASI VISI
+              </button>
+              <button className="px-6 py-3.5 border-2 border-white/60 text-white font-bold text-xs sm:text-sm rounded-md hover:bg-white/10 transition-colors">
+                PROFIL LULUSAN
+              </button>
             </div>
-
-            {/* Right Side - Photo */}
-            <div className="w-full lg:w-1/2 relative flex justify-center lg:justify-end z-10">
-              <div className="relative w-full max-w-md mx-auto lg:max-w-sm xl:max-w-md flex flex-col items-center">
-                
-                {/* Principal Photo Container */}
-                <div className="relative z-10 w-full rounded-2xl overflow-hidden shadow-2xl bg-blue-900/40 backdrop-blur-sm border border-blue-400/30">
-                  <div className="absolute inset-0 bg-blue-600 mix-blend-overlay opacity-50"></div>
-                  <img 
-                    src="/images/kepsek.png" 
-                    alt="Hendry Kurniawan, S.Kom., M.I.Kom. - Kepala Sekolah" 
-                    className="w-full h-auto object-bottom drop-shadow-xl relative z-10"
-                  />
-                </div>
-
-                {/* Name Tag floating below */}
-                <div className="absolute -bottom-6 bg-white rounded-full px-6 py-4 shadow-xl border border-slate-100 flex items-center justify-between w-[110%] max-w-[400px] z-20">
-                  <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center text-slate-500">
-                      <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clipRule="evenodd" /></svg>
-                    </div>
-                    <div className="flex flex-col">
-                      <h4 className="text-sm font-bold text-slate-900">Hendry Kurniawan, S.Kom., M.I.Kom.</h4>
-                      <p className="text-[10px] text-slate-500 font-semibold uppercase tracking-wider">Kepala Sekolah SMK Prestasi Prima</p>
-                    </div>
-                  </div>
-                  <button className="bg-orange-500 text-white text-xs font-bold px-4 py-2 rounded-full whitespace-nowrap hover:bg-orange-600 transition-colors">
-                    HUBUNGI KAMI
-                  </button>
-                </div>
-
-              </div>
-            </div>
-
           </div>
+
+          {/* Right Side - Photo */}
+          <div className="w-full lg:w-1/2 relative lg:absolute lg:right-0 lg:bottom-0 h-full flex justify-center lg:justify-end items-end pointer-events-none z-10">
+             <div className="relative w-full max-w-lg lg:max-w-none lg:w-auto mx-auto lg:mx-0 flex justify-center lg:justify-end items-end pb-0">
+                <img 
+                  src="/images/kepsek.png" 
+                  alt="Hendry Kurniawan, S.Kom., M.I.Kom. - Kepala Sekolah" 
+                  className="w-full lg:w-auto h-auto max-h-[550px] lg:max-h-[750px] xl:max-h-[800px] object-contain object-bottom drop-shadow-[0_20px_40px_rgba(0,0,0,0.4)] pointer-events-auto"
+                />
+             </div>
+          </div>
+
+        </div>
+
+        {/* Bottom Floating Capsule */}
+        <div className="absolute bottom-0 left-0 right-0 z-30 flex justify-center px-4 transform translate-y-1/2">
+           <div className="w-full max-w-5xl bg-white rounded-[2.5rem] shadow-2xl p-3 sm:p-4 flex flex-col md:flex-row items-center justify-between gap-4 border border-slate-100">
+              
+              {/* Profile Info */}
+              <div className="flex items-center gap-4 pl-2 sm:pl-4 flex-1">
+                 <div className="w-10 h-10 rounded-full border border-slate-200 flex items-center justify-center text-slate-700 shrink-0">
+                    <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                    </svg>
+                 </div>
+                 <div className="flex flex-col text-left">
+                    <h4 className="text-sm sm:text-[15px] font-bold text-slate-800 leading-tight">Hendry Kurniawan, S.Kom., M.I.Kom.</h4>
+                    <p className="text-[10px] text-slate-500 font-bold uppercase tracking-wider mt-0.5">Kepala Sekolah SMK Prestasi Prima</p>
+                 </div>
+              </div>
+
+              {/* Logos Area */}
+              <div className="hidden md:flex items-center justify-center gap-4 flex-1 px-4">
+                 {/* Asumsikan ada gambar logo kemitraan/support, atau bisa diganti sesuai gambar asli */}
+                 <img src="/images/support-logos.png" alt="Logos" className="h-10 object-contain opacity-90 mix-blend-multiply" />
+              </div>
+
+              {/* Action Button */}
+              <div className="shrink-0 pr-1">
+                 <button className="bg-[#f87f22] text-white text-xs sm:text-sm font-bold px-8 py-3.5 rounded-full hover:bg-orange-600 transition-colors shadow-lg shadow-orange-500/30 w-full md:w-auto">
+                    HUBUNGI KAMI
+                 </button>
+              </div>
+
+           </div>
         </div>
       </section>
 
       {/* Stats Ribbon */}
-      <div className="relative w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-16 z-30 mb-20">
+      <div className="relative w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-24 z-30 mb-20">
         <div className="rounded-[3rem] bg-slate-50 border border-slate-100 p-8 shadow-sm">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-8 divide-y sm:divide-y-0 sm:divide-x divide-slate-200/60">
             {[
