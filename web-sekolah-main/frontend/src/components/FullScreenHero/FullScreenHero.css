@@ -1,0 +1,218 @@
+/* =========================================================
+   FULLSCREEN HERO & SECTION NAVIGATION BUTTONS
+   ========================================================= */
+
+.fullscreen-hero-container {
+  position: relative;
+  width: 100%;
+}
+
+.fullscreen-hero-section {
+  position: relative;
+  width: 100%;
+  height: 100vh;
+  min-height: 720px;
+  display: flex;
+  align-items: center;
+  overflow: hidden;
+  box-sizing: border-box;
+}
+
+/* =========================================================
+   SECTION NAVIGATION BUTTON (SPECIFIED DESIGN)
+   - Bottom: 48-64px (set to 56px)
+   - White text
+   - Transparent or subtle dark/white background
+   - Thin white border
+   - Modern typography, slightly rounded (not excessive pill)
+   - Hover: background subtly changes, arrow moves right,
+     border more visible, text shifts 2-4px
+   - Smooth 250-350ms transition
+   ========================================================= */
+
+.section-nav-btn {
+  position: absolute;
+  bottom: 56px;
+  left: 56px;
+  z-index: 30;
+
+  display: inline-flex;
+  align-items: center;
+  gap: 14px;
+
+  padding: 13px 26px;
+
+  color: #ffffff;
+  background: rgba(255, 255, 255, 0.07);
+  border: 1px solid rgba(255, 255, 255, 0.35);
+  border-radius: 8px; /* Slightly rounded, NOT excessive pill */
+
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  text-decoration: none;
+
+  cursor: pointer;
+  outline: none;
+
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+
+  transition:
+    background-color 300ms cubic-bezier(0.22, 1, 0.36, 1),
+    border-color 300ms cubic-bezier(0.22, 1, 0.36, 1),
+    box-shadow 300ms cubic-bezier(0.22, 1, 0.36, 1),
+    transform 300ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.section-nav-btn:hover {
+  background: rgba(255, 255, 255, 0.16);
+  border-color: rgba(255, 255, 255, 0.95);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
+  transform: translateX(3px); /* Text shifts approx 2-4px */
+}
+
+.section-nav-btn .nav-btn-arrow {
+  display: inline-block;
+  font-size: 16px;
+  line-height: 1;
+  transition: transform 300ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.section-nav-btn:hover .nav-btn-arrow {
+  transform: translateX(6px); /* Arrow moves slightly to the right */
+}
+
+/* =========================================================
+   SECTION COUNTER ([01 / 06] - [06 / 06])
+   Aligned consistently near bottom right: bottom: 56px
+   ========================================================= */
+
+.section-counter {
+  position: absolute;
+  bottom: 56px;
+  right: 56px;
+  z-index: 30;
+
+  display: flex;
+  align-items: center;
+  gap: 6px;
+
+  font-size: 13px;
+  font-weight: 800;
+  letter-spacing: 0.24em;
+  color: rgba(255, 255, 255, 0.7);
+  font-variant-numeric: tabular-nums;
+
+  pointer-events: none;
+  user-select: none;
+}
+
+.section-counter span.current {
+  color: #f97316;
+}
+
+/* =========================================================
+   FLOATING SECTION PROGRESS INDICATOR
+   Distinct from the destination buttons at the bottom
+   ========================================================= */
+
+.section-progress-nav {
+  position: fixed;
+  right: 32px;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 40;
+
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.section-progress-dot {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 10px;
+
+  background: transparent;
+  border: 0;
+  padding: 4px;
+  cursor: pointer;
+
+  color: rgba(255, 255, 255, 0.4);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+
+  transition: all 250ms ease;
+}
+
+.section-progress-dot:hover,
+.section-progress-dot.active {
+  color: #ffffff;
+}
+
+.section-progress-line {
+  width: 16px;
+  height: 2px;
+  background: rgba(255, 255, 255, 0.3);
+  border-radius: 2px;
+  transition: all 250ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.section-progress-dot:hover .section-progress-line,
+.section-progress-dot.active .section-progress-line {
+  width: 32px;
+  background: #f97316;
+}
+
+/* =========================================================
+   RESPONSIVENESS
+   ========================================================= */
+
+@media (max-width: 1024px) {
+  .section-progress-nav {
+    display: none;
+  }
+}
+
+@media (max-width: 768px) {
+  .fullscreen-hero-section {
+    min-height: 640px;
+  }
+
+  .section-nav-btn {
+    bottom: 40px;
+    left: 24px;
+    padding: 11px 20px;
+    font-size: 11px;
+    gap: 10px;
+  }
+
+  .section-counter {
+    bottom: 40px;
+    right: 24px;
+    font-size: 11px;
+  }
+}
+
+@media (max-width: 430px) {
+  .section-nav-btn {
+    bottom: 34px;
+    left: 18px;
+    padding: 10px 16px;
+    font-size: 10.5px;
+    letter-spacing: 0.12em;
+  }
+
+  .section-counter {
+    bottom: 34px;
+    right: 18px;
+    font-size: 10px;
+  }
+}
