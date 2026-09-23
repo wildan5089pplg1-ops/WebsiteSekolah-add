@@ -89,6 +89,12 @@ export const navigation: NavSection[] = [
         desc:
           "Career & Study Assessment.",
       },
+      {
+        name: "Ekstrakurikuler",
+        href: "/program/ekskul",
+        desc:
+          "Wadah eksplorasi minat & bakat.",
+      },
     ],
   },
 
@@ -104,12 +110,6 @@ export const navigation: NavSection[] = [
         href: "/dokumentasi/prestasi",
         desc:
           "Pencapaian dan prestasi siswa.",
-      },
-      {
-        name: "Ekstrakurikuler",
-        href: "/dokumentasi/ekskul",
-        desc:
-          "Komunitas dan aktivitas siswa.",
       },
       {
         name: "Karya Siswa",

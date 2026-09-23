@@ -5,11 +5,11 @@ import React, { useState } from 'react';
 const achievements = [
   {
     id: 1,
-    title: 'Juara 1 Lomba Web Design',
-    event: 'Olimpiade IT Nasional 2025',
-    student: 'Ahmad & Tim',
-    image: 'https://images.unsplash.com/photo-1517245386807-bb43f82c33c4?q=80&w=800&auto=format&fit=crop',
-    color: 'from-blue-600 to-cyan-500'
+    title: 'Juara 1 Lomba Voli',
+    event: 'Voli Putra Satvikara',
+    student: 'Tim Voli Putra',
+    image: '/images/prestasi-voli.jpg',
+    color: 'from-orange-500 to-amber-500'
   },
   {
     id: 2,
@@ -29,11 +29,11 @@ const achievements = [
   },
   {
     id: 4,
-    title: 'Best System Administrator',
-    event: 'LKS SMK Tingkat Nasional',
-    student: 'Dimas Anggara',
-    image: 'https://images.unsplash.com/photo-1550751827-4bd374c3f58b?q=80&w=800&auto=format&fit=crop',
-    color: 'from-emerald-500 to-teal-500'
+    title: 'Juara 1 Lomba Web Design',
+    event: 'Olimpiade IT Nasional 2025',
+    student: 'Ahmad & Tim',
+    image: 'https://images.unsplash.com/photo-1517245386807-bb43f82c33c4?q=80&w=800&auto=format&fit=crop',
+    color: 'from-blue-600 to-cyan-500'
   },
   {
     id: 5,
