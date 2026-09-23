@@ -234,7 +234,6 @@ export default async function HomePage() {
       {/* Blog & Artikel Section */}
       <BlogSection />
 
-
       {/* Bottom CTA Banner */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-10">
         <div className="relative rounded-3xl overflow-hidden p-8 sm:p-12 bg-gradient-to-r from-orange-600 via-rose-600 to-slate-800 dark:from-orange-900 dark:via-rose-900 dark:to-slate-900 border border-orange-500/50 dark:border-orange-700/50 shadow-2xl text-center sm:text-left flex flex-col sm:flex-row items-center justify-between gap-6">
