@@ -6,6 +6,7 @@ use App\Http\Controllers\Api\NewsController;
 use App\Http\Controllers\Api\FacilityController;
 use App\Http\Controllers\Api\ContactController;
 use App\Http\Controllers\Api\PpdbController;
+use App\Http\Controllers\Api\BukuController;
 
 Route::prefix('v1')->group(function () {
 
@@ -48,5 +49,8 @@ Route::prefix('v1')->group(function () {
 
     Route::get('/ppdb', [PpdbController::class, 'index']);
     Route::post('/ppdb', [PpdbController::class, 'store']);
+
+    Route::get('/buku', [BukuController::class, 'index']);
+    Route::get('/buku/{id}', [BukuController::class, 'show']);
 
 });
