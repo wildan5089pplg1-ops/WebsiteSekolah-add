@@ -281,10 +281,9 @@ a {
 }
 
 .message-panel {
-    width: 0;
-    min-width: 0;
-    padding: 0;
-    overflow: hidden;
+    width: 450px;
+    min-width: 450px;
+    padding: 45px 48px;
     background: var(--orange);
     color: #fff;
     display: flex;
@@ -292,7 +291,7 @@ a {
     justify-content: center;
     opacity: 0;
     transform: translateX(30px);
-    transition: width .7s cubic-bezier(.2, .8, .2, 1), min-width .7s cubic-bezier(.2, .8, .2, 1), padding .7s cubic-bezier(.2, .8, .2, 1), opacity .45s ease .12s, transform .65s cubic-bezier(.2, .8, .2, 1) .05s;
+    transition: opacity .45s ease .12s, transform .65s cubic-bezier(.2, .8, .2, 1) .05s;
 }
 
 .greeting-card--right .message-panel {
@@ -302,9 +301,6 @@ a {
 
 .greeting-card:hover .message-panel,
 .greeting-card:focus-visible .message-panel {
-    width: 450px;
-    min-width: 450px;
-    padding: 45px 48px;
     opacity: 1;
     transform: translateX(0);
 }
