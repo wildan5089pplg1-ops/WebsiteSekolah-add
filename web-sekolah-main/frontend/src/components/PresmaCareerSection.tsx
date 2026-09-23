@@ -1,7 +1,6 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import Link from 'next/link';
 
 type TabType = 'dashboard' | 'carasa' | 'kelas';
 
@@ -100,24 +99,341 @@ const COURSES_DATA: Course[] = [
   },
 ];
 
+// =====================================================================
+// DATA KUESIONER TES 1: MINAT & BAKAT (Exact 12 Questions from User)
+// =====================================================================
+type MajorKey = 'pplg' | 'tjkt' | 'bcf' | 'dkv';
+
+interface MinatQuestion {
+  question: string;
+  options: [string, MajorKey][];
+}
+
+const MINAT_QUESTIONS: MinatQuestion[] = [
+  {
+    question: 'Aktivitas mana yang paling menarik bagimu?',
+    options: [
+      ['Membuat website, aplikasi, atau game', 'pplg'],
+      ['Merakit komputer, memasang jaringan, atau memperbaiki perangkat', 'tjkt'],
+      ['Membuat video, film pendek, atau mengatur produksi siaran', 'bcf'],
+      ['Membuat poster, ilustrasi, logo, atau desain visual', 'dkv'],
+    ],
+  },
+  {
+    question: 'Saat mendapat tugas baru, kamu lebih suka…',
+    options: [
+      ['Mencari cara kerja lalu memecahkan masalah dengan kode', 'pplg'],
+      ['Memasang, mengatur, atau memperbaiki perangkat dan jaringan', 'tjkt'],
+      ['Merencanakan pengambilan gambar, merekam video, atau mengedit hasil produksi', 'bcf'],
+      ['Menyusun konsep visual, memilih warna, dan membuat desain yang komunikatif', 'dkv'],
+    ],
+  },
+  {
+    question: 'Kamu paling menikmati aktivitas yang…',
+    options: [
+      ['Banyak logika, coding, dan teknologi software', 'pplg'],
+      ['Banyak praktik perangkat, jaringan, dan troubleshooting', 'tjkt'],
+      ['Berkaitan dengan kamera, video, audio, penyiaran, dan produksi film', 'bcf'],
+      ['Berkaitan dengan desain, ilustrasi, tipografi, layout, dan komunikasi visual', 'dkv'],
+    ],
+  },
+  {
+    question: 'Kalau membuat proyek kelompok, peran yang kamu pilih?',
+    options: [
+      ['Programmer / pembuat sistem', 'pplg'],
+      ['Teknisi / bagian jaringan dan perangkat', 'tjkt'],
+      ['Kameramen / editor video / penata produksi', 'bcf'],
+      ['Desainer / ilustrator / visual artist', 'dkv'],
+    ],
+  },
+  {
+    question: 'Apa yang paling ingin kamu pelajari?',
+    options: [
+      ['Programming dan pembuatan aplikasi', 'pplg'],
+      ['Networking, server, dan sistem komputer', 'tjkt'],
+      ['Videografi, editing video, penyiaran, dan produksi film', 'bcf'],
+      ['Desain grafis, ilustrasi, branding, dan komunikasi visual', 'dkv'],
+    ],
+  },
+  {
+    question: 'Kamu lebih suka bekerja dengan…',
+    options: [
+      ['Kode, algoritma, dan data', 'pplg'],
+      ['Komputer, server, kabel, dan perangkat jaringan', 'tjkt'],
+      ['Kamera, microphone, lighting, footage, dan software editing', 'bcf'],
+      ['Warna, gambar, layout, tipografi, dan elemen visual', 'dkv'],
+    ],
+  },
+  {
+    question: 'Masalah yang paling seru untuk kamu selesaikan?',
+    options: [
+      ['Aplikasi atau website tidak berjalan', 'pplg'],
+      ['Internet atau jaringan komputer bermasalah', 'tjkt'],
+      ['Video kurang menarik, audio bermasalah, atau hasil produksi belum sesuai konsep', 'bcf'],
+      ['Desain terlihat kurang menarik atau pesan visualnya belum tersampaikan', 'dkv'],
+    ],
+  },
+  {
+    question: 'Di masa depan, kamu tertarik menjadi…',
+    options: [
+      ['Web Developer / Software Developer / Game Developer', 'pplg'],
+      ['Network Technician / IT Support / Network Administrator', 'tjkt'],
+      ['Videographer / Video Editor / Camera Operator / Film Producer', 'bcf'],
+      ['Graphic Designer / Illustrator / Art Director / Visual Designer', 'dkv'],
+    ],
+  },
+  {
+    question: 'Kamu lebih suka hasil kerja yang…',
+    options: [
+      ['Bisa digunakan dan berjalan sesuai sistem', 'pplg'],
+      ['Terhubung dan bekerja dengan stabil', 'tjkt'],
+      ['Mampu menyampaikan cerita atau informasi melalui video dan audio', 'bcf'],
+      ['Bagus dilihat sekaligus mampu menyampaikan pesan secara visual', 'dkv'],
+    ],
+  },
+  {
+    question: 'Saat belajar sesuatu, kamu cenderung…',
+    options: [
+      ['Mencoba membuat sendiri dengan coding', 'pplg'],
+      ['Mencoba perangkat dan konfigurasi jaringan secara langsung', 'tjkt'],
+      ['Mencoba mengambil gambar, merekam suara, dan mengedit video', 'bcf'],
+      ['Mencoba berbagai gaya desain, komposisi, warna, dan tipografi', 'dkv'],
+    ],
+  },
+  {
+    question: 'Kamu lebih tertarik pada…',
+    options: [
+      ['Software dan teknologi digital', 'pplg'],
+      ['Jaringan dan infrastruktur teknologi', 'tjkt'],
+      ['Dunia broadcasting, perfilman, videografi, dan produksi audiovisual', 'bcf'],
+      ['Desain komunikasi visual, ilustrasi, fotografi, dan seni visual', 'dkv'],
+    ],
+  },
+  {
+    question: 'Pilih proyek yang paling ingin kamu kerjakan.',
+    options: [
+      ['Membuat aplikasi sekolah', 'pplg'],
+      ['Membangun dan mengelola jaringan lab sekolah', 'tjkt'],
+      ['Membuat film pendek atau video dokumenter sekolah', 'bcf'],
+      ['Membuat identitas visual, poster, dan media promosi sekolah', 'dkv'],
+    ],
+  },
+];
+
+const MAJOR_LABELS: Record<MajorKey, string> = {
+  pplg: 'PPLG — Pengembangan Perangkat Lunak dan Gim',
+  tjkt: 'TJKT — Teknik Jaringan Komputer dan Telekomunikasi',
+  bcf: 'BCF — Broadcasting dan Film',
+  dkv: 'DKV — Desain Komunikasi Visual',
+};
+
+const MAJOR_DETAILS: Record<MajorKey, { code: string; name: string; desc: string; careers: string[] }> = {
+  pplg: {
+    code: 'PPLG',
+    name: 'Pengembangan Perangkat Lunak dan Gim',
+    desc: 'Programming, website, aplikasi, dan pengembangan gim.',
+    careers: ['Web Developer', 'Software Developer', 'Game Developer', 'Backend Engineer'],
+  },
+  tjkt: {
+    code: 'TJKT',
+    name: 'Teknik Jaringan Komputer dan Telekomunikasi',
+    desc: 'Jaringan komputer, perangkat, troubleshooting, dan infrastruktur teknologi.',
+    careers: ['Network Technician', 'IT Support', 'Network Administrator', 'Cloud Specialist'],
+  },
+  bcf: {
+    code: 'BCF',
+    name: 'Broadcasting dan Film',
+    desc: 'Broadcasting dan Film, pemasaran konten audiovisual, penyiaran siaran live, dan produksi video.',
+    careers: ['Videographer', 'Video Editor', 'Camera Operator', 'Film & Live Producer'],
+  },
+  dkv: {
+    code: 'DKV',
+    name: 'Desain Komunikasi Visual',
+    desc: 'Desain, ilustrasi, branding, layouting, tipografi, dan komunikasi visual.',
+    careers: ['Graphic Designer', 'UI Designer', 'Illustrator', 'Visual Art Director'],
+  },
+};
+
+interface MinatResultData {
+  scores: Record<MajorKey, number>;
+  topMajor: MajorKey;
+  topPercentage: number;
+  sortedScores: [MajorKey, number][];
+}
+
+// =====================================================================
+// DATA KUESIONER TES 2: REKOMENDASI KARIR & INDUSTRI (Distinct 8 Questions)
+// =====================================================================
+type CareerKey = 'swe' | 'infra' | 'creative' | 'media';
+
+interface CareerQuestion {
+  question: string;
+  options: [string, CareerKey][];
+}
+
+const CAREER_QUESTIONS: CareerQuestion[] = [
+  {
+    question: 'Gaya kerja profesional seperti apa yang paling kamu sukai saat magang di industri?',
+    options: [
+      ['Membangun arsitektur perangkat lunak yang bersih, cepat, dan scalable', 'swe'],
+      ['Menjaga sistem jaringan dan server tetap aman dari downtime maupun serangan siber', 'infra'],
+      ['Merancang antarmuka aplikasi intuitif dan estetika visual yang disukai pengguna', 'creative'],
+      ['Memimpin alur produksi siaran, mengelola tata kamera, audio, dan live streaming', 'media'],
+    ],
+  },
+  {
+    question: 'Ketika perusahaan mitra menghadapi kendala teknis kritis, kamu paling ingin berkontribusi dalam…',
+    options: [
+      ['Debugging kode sistem, optimasi query database, dan perbaikan API', 'swe'],
+      ['Analisis lalu lintas jaringan, audit firewall, dan failover server', 'infra'],
+      ['Redesain alur antarmuka yang membingungkan user untuk menaikkan konversi', 'creative'],
+      ['Mengatur siaran darurat, penataan audio jernih, dan stabilitas output video', 'media'],
+    ],
+  },
+  {
+    question: 'Sertifikasi keahlian industri mana yang menjadi target utamamu sebelum lulus?',
+    options: [
+      ['AWS Certified Developer / Oracle Certified Java / BNSP Pemrogram Senior', 'swe'],
+      ['MikroTik MTCNA/MTCRE / Cisco CCNA / CompTIA Security+', 'infra'],
+      ['Adobe Certified Professional / Google UX Design Professional', 'creative'],
+      ['DaVinci Resolve Colorist / BNSP Tata Kelola Produksi Penyiaran', 'media'],
+    ],
+  },
+  {
+    question: 'Lingkungan perusahaan seperti apa yang paling kamu impikan setelah lulus SMK?',
+    options: [
+      ['Perusahaan Tech Unicorn, Software House, atau SaaS Enterprise', 'swe'],
+      ['Data Center Tier-3, Internet Service Provider (ISP), atau Divisi Cyber Defense', 'infra'],
+      ['Design Consultancy, Creative Agency, atau Studio Game Internasional', 'creative'],
+      ['Lembaga Penyiaran TV Nasional, Production House Film, atau Media Digital Kreatif', 'media'],
+    ],
+  },
+  {
+    question: 'Dalam project tim industri, peran kepemimpinan (lead) mana yang paling cocok denganmu?',
+    options: [
+      ['Tech Lead: Mengawasi kualitas kode dan integrasi teknologi tim engineer', 'swe'],
+      ['Infrastructure Lead: Menjamin 99.9% uptime server dan kesiapan disaster recovery', 'infra'],
+      ['Design Lead: Mengarahkan pedoman visual (Design System) dan brand experience', 'creative'],
+      ['Production Lead: Mengatur jadwal shooting, tim operator alat, dan siaran live', 'media'],
+    ],
+  },
+  {
+    question: 'Bagaimana kamu memandang pemanfaatan Artificial Intelligence (AI) di bidang pekerjaanmu?',
+    options: [
+      ['Memanfaatkan AI coding assistant untuk mempercepat pengembangan fitur software', 'swe'],
+      ['Menggunakan AI network anomaly detection untuk mendeteksi ancaman intrusi siber', 'infra'],
+      ['Mengintegrasikan generative AI visual sebagai bahan eksplorasi ide desain kreatif', 'creative'],
+      ['Menggunakan AI untuk automated captioning, color grading, dan audio enhancement', 'media'],
+    ],
+  },
+  {
+    question: 'Proyek portfolio apa yang paling ingin kamu tunjukkan kepada perekrut HR saat seleksi kerja?',
+    options: [
+      ['Web aplikasi interaktif terintegrasi database dengan dokumentasi API lengkap', 'swe'],
+      ['Topologi jaringan multi-router MikroTik dengan konfigurasi VPN dan firewall aktif', 'infra'],
+      ['Prototype interaktif aplikasi mobile lengkap dengan case study riset UX nyata', 'creative'],
+      ['Video promosi komersial atau rekaman live event multi-kamera berkualitas broadcast', 'media'],
+    ],
+  },
+  {
+    question: 'Kriteria hasil kerja yang paling kamu banggakan setelah menuntaskan tugas magang industri?',
+    options: [
+      ['Sistem dapat menampung ribuan concurrent user tanpa delay atau lag', 'swe'],
+      ['Seluruh infrastruktur kantor cabang terhubung aman tanpa celah kebocoran', 'infra'],
+      ['Desain diapresiasi klien dan meningkatkan kepuasan pengguna secara nyata', 'creative'],
+      ['Siaran berjalan mulus tepat waktu dengan kualitas visual audio standar TV nasional', 'media'],
+    ],
+  },
+];
+
+const CAREER_LABELS: Record<CareerKey, string> = {
+  swe: 'Software Engineering & Cloud Computing',
+  infra: 'Cybersecurity & Network Infrastructure',
+  creative: 'Digital Design, UI/UX & Art Direction',
+  media: 'Broadcast Media & Live Production Management',
+};
+
+const CAREER_DETAILS: Record<CareerKey, { title: string; subtitle: string; desc: string; roles: string[]; skills: string[] }> = {
+  swe: {
+    title: 'Software Engineering & Cloud Computing',
+    subtitle: 'Arsitektur Aplikasi & Rekayasa Perangkat Lunak',
+    desc: 'Kamu memiliki kecakapan analitis tinggi untuk membangun sistem aplikasi modern, otomasi backend, dan arsitektur cloud terdistribusi.',
+    roles: ['Fullstack Web Developer', 'Mobile App Engineer', 'DevOps Specialist', 'API & Backend Engineer'],
+    skills: ['Next.js / React', 'Node.js & Python', 'PostgreSQL / Supabase', 'Docker & Cloud Deployment'],
+  },
+  infra: {
+    title: 'Cybersecurity & Network Infrastructure',
+    subtitle: 'Keamanan Siber & Keandalan Infrastruktur Jaringan',
+    desc: 'Keahlianmu berpusat pada stabilitas sistem jaringan tingkat korporat, pencegahan peretasan siber, dan manajemen server data center.',
+    roles: ['Network Security Engineer', 'Cyber Incident Analyst', 'System Administrator', 'Cloud Infrastructure Engineer'],
+    skills: ['MikroTik RouterOS v7', 'Firewall & VPN Security', 'Linux Server Hardening', 'Packet Analysis & Wireshark'],
+  },
+  creative: {
+    title: 'Digital Design, UI/UX & Art Direction',
+    subtitle: 'Desain Produk Digital & Komunikasi Visual Interaktif',
+    desc: 'Kekuatan utamamu adalah merancang pengalaman antarmuka digital yang estetis, riset perilaku pengguna, dan perancangan Design System.',
+    roles: ['UI/UX Product Designer', 'Creative Art Director', 'Motion Graphics Designer', 'Design System Lead'],
+    skills: ['Figma Prototyping', 'Design Thinking & UX Research', 'Adobe Illustrator / Photoshop', 'Design Tokens & Typography'],
+  },
+  media: {
+    title: 'Broadcast Media & Live Production Management',
+    subtitle: 'Manajemen Penyiaran, Videografi & Produksi Audiovisual',
+    desc: 'Kamu memiliki bakat koordinasi produksi konten penyiaran, live streaming skala besar, pengoperasian kamera studio, dan audio engineering.',
+    roles: ['Live Broadcast Director', 'Broadcast Technical Operator', 'Senior Video Editor', 'Audiovisual Producer'],
+    skills: ['vMix / OBS Multi-Camera', 'DaVinci Resolve / Premiere Pro', 'Studio Lighting & Acoustics', 'Live Stream Protocol & Encoding'],
+  },
+};
+
+interface CareerResultData {
+  scores: Record<CareerKey, number>;
+  topTrack: CareerKey;
+  readinessScore: number;
+  sortedScores: [CareerKey, number][];
+}
+
+// =====================================================================
+// MAIN COMPONENT
+// =====================================================================
 export default function PresmaCareerSection({ initialTab = 'dashboard' }: { initialTab?: TabType }) {
   const [activeTab, setActiveTab] = useState<TabType>(initialTab);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string>('Semua');
 
+  // Completed Test Results (Stored in localStorage)
+  const [minatResult, setMinatResult] = useState<MinatResultData | null>(null);
+  const [careerResult, setCareerResult] = useState<CareerResultData | null>(null);
+
   // Modals state
-  const [isTestModalOpen, setIsTestModalOpen] = useState(false);
-  const [isResultModalOpen, setIsResultModalOpen] = useState(false);
+  const [isMinatQuizOpen, setIsMinatQuizOpen] = useState(false);
+  const [isMinatResultOpen, setIsMinatResultOpen] = useState(false);
+  const [isCareerQuizOpen, setIsCareerQuizOpen] = useState(false);
+  const [isCareerResultOpen, setIsCareerResultOpen] = useState(false);
   const [selectedCourse, setSelectedCourse] = useState<Course | null>(null);
 
-  // Questionnaire quiz state inside Test Modal
-  const [quizStep, setQuizStep] = useState(1);
-  const [quizAnswers, setQuizAnswers] = useState<Record<number, string>>({});
-  const [isQuizSubmitted, setIsQuizSubmitted] = useState(false);
+  // Minat Quiz state
+  const [minatIdx, setMinatIdx] = useState(0);
+  const [minatAnswers, setMinatAnswers] = useState<number[]>([]);
 
-  // Read URL query parameters on initial mount if available
+  // Career Quiz state
+  const [careerIdx, setCareerIdx] = useState(0);
+  const [careerAnswers, setCareerAnswers] = useState<number[]>([]);
+
+  // Load saved results on mount
   useEffect(() => {
     if (typeof window !== 'undefined') {
+      try {
+        const savedMinat = localStorage.getItem('presma_carasa_minat_result');
+        if (savedMinat) {
+          setMinatResult(JSON.parse(savedMinat));
+        }
+        const savedCareer = localStorage.getItem('presma_carasa_career_result');
+        if (savedCareer) {
+          setCareerResult(JSON.parse(savedCareer));
+        }
+      } catch (err) {
+        console.error('Error loading saved CARASA results:', err);
+      }
+
       const params = new URLSearchParams(window.location.search);
       const tabParam = params.get('tab');
       if (tabParam === 'carasa' || tabParam === 'kelas' || tabParam === 'dashboard') {
@@ -135,7 +451,147 @@ export default function PresmaCareerSection({ initialTab = 'dashboard' }: { init
     }
   };
 
-  // Filter courses
+  // =====================================================================
+  // ACTIONS: TES MINAT & BAKAT
+  // =====================================================================
+  const startMinatTest = () => {
+    setMinatIdx(0);
+    setMinatAnswers([]);
+    setIsMinatQuizOpen(true);
+  };
+
+  const handleSelectMinatOption = (optionIndex: number) => {
+    const updated = [...minatAnswers];
+    updated[minatIdx] = optionIndex;
+    setMinatAnswers(updated);
+  };
+
+  const handleNextMinat = () => {
+    if (minatAnswers[minatIdx] === undefined) {
+      alert('Pilih salah satu jawaban dulu ya.');
+      return;
+    }
+    if (minatIdx < MINAT_QUESTIONS.length - 1) {
+      setMinatIdx(minatIdx + 1);
+    } else {
+      finishMinatTest();
+    }
+  };
+
+  const finishMinatTest = () => {
+    const scores: Record<MajorKey, number> = { pplg: 0, tjkt: 0, bcf: 0, dkv: 0 };
+    minatAnswers.forEach((ansIndex, qIndex) => {
+      if (ansIndex !== undefined && MINAT_QUESTIONS[qIndex]) {
+        const majorKey = MINAT_QUESTIONS[qIndex].options[ansIndex][1];
+        scores[majorKey] += 1;
+      }
+    });
+
+    const sorted = (Object.entries(scores) as [MajorKey, number][]).sort((a, b) => b[1] - a[1]);
+    const topMajor = sorted[0][0];
+    const topPercentage = Math.round((sorted[0][1] / MINAT_QUESTIONS.length) * 100);
+
+    const resultData: MinatResultData = {
+      scores,
+      topMajor,
+      topPercentage,
+      sortedScores: sorted,
+    };
+
+    setMinatResult(resultData);
+    if (typeof window !== 'undefined') {
+      try {
+        localStorage.setItem('presma_carasa_minat_result', JSON.stringify(resultData));
+      } catch (e) {
+        console.error(e);
+      }
+    }
+    setIsMinatQuizOpen(false);
+    setIsMinatResultOpen(true);
+  };
+
+  const resetMinatTest = () => {
+    setMinatAnswers([]);
+    setMinatIdx(0);
+    setMinatResult(null);
+    if (typeof window !== 'undefined') {
+      localStorage.removeItem('presma_carasa_minat_result');
+    }
+    setIsMinatResultOpen(false);
+    setIsMinatQuizOpen(true);
+  };
+
+  // =====================================================================
+  // ACTIONS: TES REKOMENDASI KARIR & INDUSTRI
+  // =====================================================================
+  const startCareerTest = () => {
+    setCareerIdx(0);
+    setCareerAnswers([]);
+    setIsCareerQuizOpen(true);
+  };
+
+  const handleSelectCareerOption = (optionIndex: number) => {
+    const updated = [...careerAnswers];
+    updated[careerIdx] = optionIndex;
+    setCareerAnswers(updated);
+  };
+
+  const handleNextCareer = () => {
+    if (careerAnswers[careerIdx] === undefined) {
+      alert('Pilih salah satu jawaban terlebih dahulu.');
+      return;
+    }
+    if (careerIdx < CAREER_QUESTIONS.length - 1) {
+      setCareerIdx(careerIdx + 1);
+    } else {
+      finishCareerTest();
+    }
+  };
+
+  const finishCareerTest = () => {
+    const scores: Record<CareerKey, number> = { swe: 0, infra: 0, creative: 0, media: 0 };
+    careerAnswers.forEach((ansIndex, qIndex) => {
+      if (ansIndex !== undefined && CAREER_QUESTIONS[qIndex]) {
+        const trackKey = CAREER_QUESTIONS[qIndex].options[ansIndex][1];
+        scores[trackKey] += 1;
+      }
+    });
+
+    const sorted = (Object.entries(scores) as [CareerKey, number][]).sort((a, b) => b[1] - a[1]);
+    const topTrack = sorted[0][0];
+    const readinessScore = Math.round((sorted[0][1] / CAREER_QUESTIONS.length) * 100);
+
+    const resultData: CareerResultData = {
+      scores,
+      topTrack,
+      readinessScore,
+      sortedScores: sorted,
+    };
+
+    setCareerResult(resultData);
+    if (typeof window !== 'undefined') {
+      try {
+        localStorage.setItem('presma_carasa_career_result', JSON.stringify(resultData));
+      } catch (e) {
+        console.error(e);
+      }
+    }
+    setIsCareerQuizOpen(false);
+    setIsCareerResultOpen(true);
+  };
+
+  const resetCareerTest = () => {
+    setCareerAnswers([]);
+    setCareerIdx(0);
+    setCareerResult(null);
+    if (typeof window !== 'undefined') {
+      localStorage.removeItem('presma_carasa_career_result');
+    }
+    setIsCareerResultOpen(false);
+    setIsCareerQuizOpen(true);
+  };
+
+  // Filter courses for tab 3
   const filteredCourses = COURSES_DATA.filter((course) => {
     const matchesSearch =
       course.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -146,7 +602,7 @@ export default function PresmaCareerSection({ initialTab = 'dashboard' }: { init
   });
 
   return (
-    <section className="relative w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 mb-20">
+    <section className="relative w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 mb-20 font-sans">
       
       {/* Outer Card Container */}
       <div className="bg-white dark:bg-slate-900 rounded-3xl shadow-xl border border-slate-200/90 dark:border-slate-800 overflow-hidden flex flex-col md:flex-row min-h-[720px]">
@@ -159,7 +615,6 @@ export default function PresmaCareerSection({ initialTab = 'dashboard' }: { init
             {/* Header Brand */}
             <div className="flex items-start gap-3 mb-8">
               <div className="w-11 h-11 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-xl flex items-center justify-center text-slate-800 dark:text-slate-100 shadow-sm shrink-0">
-                {/* Clipboard / Career Checklist Icon */}
                 <svg xmlns="http://www.w3.org/2000/svg" className="w-6 h-6 text-orange-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
                 </svg>
@@ -322,11 +777,32 @@ export default function PresmaCareerSection({ initialTab = 'dashboard' }: { init
 
                 <div className="bg-slate-50 dark:bg-slate-800/60 p-5 rounded-2xl border border-slate-200 dark:border-slate-700/60">
                   <div className="flex items-center justify-between">
-                    <span className="text-xs font-semibold text-slate-500 dark:text-slate-400">Asesmen CARASA</span>
-                    <span className="w-8 h-8 rounded-lg bg-blue-500/10 text-blue-500 flex items-center justify-center font-bold text-sm">✓</span>
+                    <span className="text-xs font-semibold text-slate-500 dark:text-slate-400">Tes Minat Bakat</span>
+                    <span className={`w-8 h-8 rounded-lg flex items-center justify-center font-bold text-sm ${minatResult ? 'bg-green-500/10 text-green-600' : 'bg-orange-500/10 text-orange-500'}`}>
+                      {minatResult ? '✓' : '—'}
+                    </span>
                   </div>
-                  <div className="text-2xl font-black text-slate-900 dark:text-white mt-2">Tersedia</div>
-                  <span className="text-[11px] text-slate-500 dark:text-slate-400 font-medium mt-1 block">Minat Bakat &amp; Karir</span>
+                  <div className="text-xl font-black text-slate-900 dark:text-white mt-2 truncate">
+                    {minatResult ? MAJOR_DETAILS[minatResult.topMajor].code : 'Belum Tes'}
+                  </div>
+                  <span className="text-[11px] text-slate-500 dark:text-slate-400 font-medium mt-1 block">
+                    {minatResult ? `Kecocokan: ${minatResult.topPercentage}%` : 'Siap Dikerjakan'}
+                  </span>
+                </div>
+
+                <div className="bg-slate-50 dark:bg-slate-800/60 p-5 rounded-2xl border border-slate-200 dark:border-slate-700/60">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-semibold text-slate-500 dark:text-slate-400">Kesiapan Karir</span>
+                    <span className={`w-8 h-8 rounded-lg flex items-center justify-center font-bold text-sm ${careerResult ? 'bg-blue-500/10 text-blue-600' : 'bg-purple-500/10 text-purple-500'}`}>
+                      {careerResult ? '✓' : '—'}
+                    </span>
+                  </div>
+                  <div className="text-xl font-black text-slate-900 dark:text-white mt-2 truncate">
+                    {careerResult ? `${careerResult.readinessScore}%` : 'Belum Tes'}
+                  </div>
+                  <span className="text-[11px] text-orange-500 font-medium mt-1 block">
+                    {careerResult ? CAREER_DETAILS[careerResult.topTrack].title.split(' ')[0] : 'Siap Diuji'}
+                  </span>
                 </div>
 
                 <div className="bg-slate-50 dark:bg-slate-800/60 p-5 rounded-2xl border border-slate-200 dark:border-slate-700/60">
@@ -335,16 +811,7 @@ export default function PresmaCareerSection({ initialTab = 'dashboard' }: { init
                     <span className="w-8 h-8 rounded-lg bg-purple-500/10 text-purple-500 flex items-center justify-center font-bold text-sm">50+</span>
                   </div>
                   <div className="text-2xl font-black text-slate-900 dark:text-white mt-2">Perusahaan</div>
-                  <span className="text-[11px] text-orange-500 font-medium mt-1 block">Kerja Sama Aktif</span>
-                </div>
-
-                <div className="bg-slate-50 dark:bg-slate-800/60 p-5 rounded-2xl border border-slate-200 dark:border-slate-700/60">
-                  <div className="flex items-center justify-between">
-                    <span className="text-xs font-semibold text-slate-500 dark:text-slate-400">Indeks Kesiapan Kerja</span>
-                    <span className="w-8 h-8 rounded-lg bg-emerald-500/10 text-emerald-500 flex items-center justify-center font-bold text-sm">92%</span>
-                  </div>
-                  <div className="text-2xl font-black text-slate-900 dark:text-white mt-2">Grade A+</div>
-                  <span className="text-[11px] text-emerald-600 dark:text-emerald-400 font-medium mt-1 block">Kompetensi Siap Pakai</span>
+                  <span className="text-[11px] text-emerald-600 dark:text-emerald-400 font-medium mt-1 block">Kerja Sama Aktif BKK</span>
                 </div>
               </div>
 
@@ -361,25 +828,39 @@ export default function PresmaCareerSection({ initialTab = 'dashboard' }: { init
                       <span className="text-xs text-slate-500 dark:text-slate-400 font-medium">Asesmen Minat &amp; Bakat</span>
                     </div>
                     <h3 className="text-lg font-bold text-slate-900 dark:text-white">
-                      Belum Mengetahui Jalur Karir yang Tepat?
+                      {minatResult ? `Profil Minatmu: ${MAJOR_LABELS[minatResult.topMajor]}` : 'Belum Mengetahui Jalur Karir yang Tepat?'}
                     </h3>
                     <p className="text-xs text-slate-600 dark:text-slate-300 mt-2 leading-relaxed">
-                      Ikuti tes psikometrik CARASA untuk memetakan potensi diri, kecocokan jurusan, serta proyeksi karir masa depan setelah lulus dari SMK Prestasi Prima.
+                      {minatResult
+                        ? `Berdasarkan tes 12 pertanyaan, kamu paling condong ke jurusan ${MAJOR_DETAILS[minatResult.topMajor].name}. Buka hasil lengkap untuk melihat saran karir.`
+                        : 'Ikuti tes CARASA 12 pertanyaan untuk memetakan potensi diri, kecocokan jurusan, serta proyeksi karir masa depan di SMK Prestasi Prima.'}
                     </p>
                   </div>
                   <div className="flex items-center gap-3 mt-6">
-                    <button
-                      onClick={() => setIsTestModalOpen(true)}
-                      className="px-4 py-2 bg-orange-500 hover:bg-orange-600 text-white text-xs font-bold rounded-xl transition-colors shadow-sm"
-                    >
-                      Mulai Tes Sekarang
-                    </button>
-                    <button
-                      onClick={() => setIsResultModalOpen(true)}
-                      className="px-4 py-2 bg-white dark:bg-slate-700 border border-slate-300 dark:border-slate-600 hover:bg-slate-50 text-slate-800 dark:text-slate-200 text-xs font-bold rounded-xl transition-colors"
-                    >
-                      Lihat Sampel Hasil
-                    </button>
+                    {minatResult ? (
+                      <>
+                        <button
+                          onClick={() => setIsMinatResultOpen(true)}
+                          className="px-4 py-2 bg-orange-500 hover:bg-orange-600 text-white text-xs font-bold rounded-xl transition-colors shadow-sm"
+                        >
+                          Lihat Hasil Minat
+                        </button>
+                        <button
+                          onClick={resetMinatTest}
+                          className="px-4 py-2 bg-white dark:bg-slate-700 border border-slate-300 dark:border-slate-600 hover:bg-slate-50 text-slate-800 dark:text-slate-200 text-xs font-bold rounded-xl transition-colors flex items-center gap-1.5"
+                        >
+                          <span>🔄</span>
+                          <span>Ulangi Tes</span>
+                        </button>
+                      </>
+                    ) : (
+                      <button
+                        onClick={startMinatTest}
+                        className="px-5 py-2.5 bg-orange-500 hover:bg-orange-600 text-white text-xs font-bold rounded-xl transition-colors shadow-sm"
+                      >
+                        Mulai Tes Minat &amp; Bakat
+                      </button>
+                    )}
                   </div>
                 </div>
 
@@ -401,9 +882,7 @@ export default function PresmaCareerSection({ initialTab = 'dashboard' }: { init
                       {COURSES_DATA.slice(0, 3).map((item) => (
                         <div
                           key={item.id}
-                          onClick={() => {
-                            setSelectedCourse(item);
-                          }}
+                          onClick={() => setSelectedCourse(item)}
                           className="flex items-center justify-between p-3 bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-700/70 hover:border-orange-400 cursor-pointer transition-colors"
                         >
                           <div className="flex items-center gap-3">
@@ -446,12 +925,12 @@ export default function PresmaCareerSection({ initialTab = 'dashboard' }: { init
           )}
 
           {/* ========================================================= */}
-          {/* TAB 2: CARASA (Matching Screen 2 in Reference Screenshot) */}
+          {/* TAB 2: CARASA (Updated per User Instructions) */}
           {/* ========================================================= */}
           {activeTab === 'carasa' && (
             <div className="relative p-6 sm:p-10 flex flex-col gap-10 animate-fadeIn">
               
-              {/* Background Watermark (Circular Hand / School Logo from Reference) */}
+              {/* Background Watermark */}
               <div className="absolute inset-0 z-0 flex items-center justify-center opacity-[0.05] pointer-events-none select-none">
                 <img src="/images/logo-smk.png" alt="Watermark CARASA" className="w-[520px] h-auto object-contain" />
               </div>
@@ -466,98 +945,124 @@ export default function PresmaCareerSection({ initialTab = 'dashboard' }: { init
                 </p>
               </div>
 
-              {/* 4 Cards Grid (2x2 matching screenshot 2) */}
+              {/* 2 Focused Assessment Cards (Bottom static "Lihat Hasil" cards REMOVED as requested) */}
               <div className="relative z-10 grid grid-cols-1 md:grid-cols-2 gap-6 max-w-4xl mx-auto w-full">
                 
-                {/* Card 1: Tes Minat dan Bakat */}
-                <div className="bg-[#e9ecef]/80 dark:bg-slate-800/90 rounded-2xl p-6 sm:p-7 border border-slate-300/80 dark:border-slate-700 flex flex-col justify-between shadow-sm min-h-[160px]">
+                {/* Card 1: Tes Minat dan Bakat (CARASA 12 Questions) */}
+                <div className="bg-[#e9ecef]/80 dark:bg-slate-800/90 rounded-2xl p-6 sm:p-7 border border-slate-300/80 dark:border-slate-700 flex flex-col justify-between shadow-sm min-h-[190px]">
                   <div>
-                    <h3 className="text-base font-bold text-slate-900 dark:text-white leading-snug">
-                      Tes Minat dan Bakat
-                    </h3>
+                    <div className="flex items-center justify-between gap-2 mb-1">
+                      <h3 className="text-base font-bold text-slate-900 dark:text-white leading-snug">
+                        Tes Minat dan Bakat
+                      </h3>
+                      {minatResult && (
+                        <span className="px-2.5 py-0.5 rounded-full text-[10px] font-black bg-emerald-100 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-300 flex items-center gap-1">
+                          <span>✓</span>
+                          <span>Selesai</span>
+                        </span>
+                      )}
+                    </div>
                     <p className="text-xs text-slate-600 dark:text-slate-400 mt-1 leading-relaxed">
-                      Evaluasi potensi dominan, preferensi kejuruan, dan pemetaan kecerdasan personal.
+                      Evaluasi preferensi jurusan (PPLG, TJKT, BCF, DKV) melalui kuesioner 12 pertanyaan pemetaan potensi diri.
                     </p>
+                    {minatResult && (
+                      <div className="mt-3 p-2.5 bg-white/70 dark:bg-slate-900/60 rounded-xl border border-slate-200/80 dark:border-slate-700 text-xs">
+                        <span className="text-slate-500 dark:text-slate-400">Profil paling menonjol: </span>
+                        <strong className="text-orange-600 dark:text-orange-400">
+                          {MAJOR_DETAILS[minatResult.topMajor].code} ({minatResult.topPercentage}%)
+                        </strong>
+                      </div>
+                    )}
                   </div>
-                  <div className="mt-5">
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setQuizStep(1);
-                        setIsQuizSubmitted(false);
-                        setIsTestModalOpen(true);
-                      }}
-                      className="px-6 py-2 bg-orange-500 hover:bg-orange-600 text-white font-bold text-xs rounded-xl shadow-md shadow-orange-500/20 transition-all hover:scale-[1.02]"
-                    >
-                      Mulai Tes
-                    </button>
+
+                  {/* Actions: Show "Mulai Tes" OR "Lihat Hasil" + "Ulangi Tes" side-by-side */}
+                  <div className="mt-5 flex items-center gap-3">
+                    {!minatResult ? (
+                      <button
+                        type="button"
+                        onClick={startMinatTest}
+                        className="px-6 py-2.5 bg-orange-500 hover:bg-orange-600 text-white font-bold text-xs rounded-xl shadow-md shadow-orange-500/20 transition-all hover:scale-[1.02]"
+                      >
+                        Mulai Tes
+                      </button>
+                    ) : (
+                      <>
+                        <button
+                          type="button"
+                          onClick={() => setIsMinatResultOpen(true)}
+                          className="px-5 py-2.5 bg-orange-500 hover:bg-orange-600 text-white font-bold text-xs rounded-xl shadow-md shadow-orange-500/20 transition-all hover:scale-[1.02]"
+                        >
+                          Lihat Hasil
+                        </button>
+                        <button
+                          type="button"
+                          onClick={resetMinatTest}
+                          className="px-4 py-2.5 bg-white dark:bg-slate-700 border border-slate-300 dark:border-slate-600 hover:bg-slate-50 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-200 font-bold text-xs rounded-xl transition-all flex items-center gap-1.5"
+                        >
+                          <span>🔄</span>
+                          <span>Ulangi Tes</span>
+                        </button>
+                      </>
+                    )}
                   </div>
                 </div>
 
-                {/* Card 2: Tes Kesiapan Karir & Industri */}
-                <div className="bg-[#e9ecef]/80 dark:bg-slate-800/90 rounded-2xl p-6 sm:p-7 border border-slate-300/80 dark:border-slate-700 flex flex-col justify-between shadow-sm min-h-[160px]">
+                {/* Card 2: Tes Rekomendasi Karir & Kesiapan Industri (Distinct 8 Questions) */}
+                <div className="bg-[#e9ecef]/80 dark:bg-slate-800/90 rounded-2xl p-6 sm:p-7 border border-slate-300/80 dark:border-slate-700 flex flex-col justify-between shadow-sm min-h-[190px]">
                   <div>
-                    <h3 className="text-base font-bold text-slate-900 dark:text-white leading-snug">
-                      Tes Kesiapan Karir &amp; Industri
-                    </h3>
+                    <div className="flex items-center justify-between gap-2 mb-1">
+                      <h3 className="text-base font-bold text-slate-900 dark:text-white leading-snug">
+                        Tes Rekomendasi Karir &amp; Industri
+                      </h3>
+                      {careerResult && (
+                        <span className="px-2.5 py-0.5 rounded-full text-[10px] font-black bg-blue-100 text-blue-700 dark:bg-blue-950/60 dark:text-blue-300 flex items-center gap-1">
+                          <span>✓</span>
+                          <span>Selesai</span>
+                        </span>
+                      )}
+                    </div>
                     <p className="text-xs text-slate-600 dark:text-slate-400 mt-1 leading-relaxed">
-                      Uji kompetensi soft skills, mentalitas kerja, dan standar etika industri.
+                      Uji kesiapan etika kerja, target sertifikasi profesional, dan arah spesialisasi karir di dunia industri nyata.
                     </p>
+                    {careerResult && (
+                      <div className="mt-3 p-2.5 bg-white/70 dark:bg-slate-900/60 rounded-xl border border-slate-200/80 dark:border-slate-700 text-xs">
+                        <span className="text-slate-500 dark:text-slate-400">Jalur Karir: </span>
+                        <strong className="text-blue-600 dark:text-blue-400">
+                          {CAREER_DETAILS[careerResult.topTrack].title.split('&')[0]} ({careerResult.readinessScore}%)
+                        </strong>
+                      </div>
+                    )}
                   </div>
-                  <div className="mt-5">
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setQuizStep(1);
-                        setIsQuizSubmitted(false);
-                        setIsTestModalOpen(true);
-                      }}
-                      className="px-6 py-2 bg-orange-500 hover:bg-orange-600 text-white font-bold text-xs rounded-xl shadow-md shadow-orange-500/20 transition-all hover:scale-[1.02]"
-                    >
-                      Mulai Tes
-                    </button>
-                  </div>
-                </div>
 
-                {/* Card 3: Hasil Tes Minat Bakat */}
-                <div className="bg-[#e9ecef]/80 dark:bg-slate-800/90 rounded-2xl p-6 sm:p-7 border border-slate-300/80 dark:border-slate-700 flex flex-col justify-between shadow-sm min-h-[160px]">
-                  <div>
-                    <h3 className="text-base font-bold text-slate-900 dark:text-white leading-snug">
-                      Hasil Tes Minat Bakat
-                    </h3>
-                    <p className="text-xs text-slate-600 dark:text-slate-400 mt-1 leading-relaxed">
-                      Lihat laporan lengkap skor kecenderungan dan analisis potensi bakatmu.
-                    </p>
-                  </div>
-                  <div className="mt-5">
-                    <button
-                      type="button"
-                      onClick={() => setIsResultModalOpen(true)}
-                      className="px-6 py-2 bg-orange-500 hover:bg-orange-600 text-white font-bold text-xs rounded-xl shadow-md shadow-orange-500/20 transition-all hover:scale-[1.02]"
-                    >
-                      Lihat Hasil
-                    </button>
-                  </div>
-                </div>
-
-                {/* Card 4: Rekomendasi Karir & Konseling */}
-                <div className="bg-[#e9ecef]/80 dark:bg-slate-800/90 rounded-2xl p-6 sm:p-7 border border-slate-300/80 dark:border-slate-700 flex flex-col justify-between shadow-sm min-h-[160px]">
-                  <div>
-                    <h3 className="text-base font-bold text-slate-900 dark:text-white leading-snug">
-                      Rekomendasi Karir &amp; Konseling
-                    </h3>
-                    <p className="text-xs text-slate-600 dark:text-slate-400 mt-1 leading-relaxed">
-                      Jalur profesi ideal, peta karir masa depan, serta bimbingan guru BK/BKK.
-                    </p>
-                  </div>
-                  <div className="mt-5">
-                    <button
-                      type="button"
-                      onClick={() => setIsResultModalOpen(true)}
-                      className="px-6 py-2 bg-orange-500 hover:bg-orange-600 text-white font-bold text-xs rounded-xl shadow-md shadow-orange-500/20 transition-all hover:scale-[1.02]"
-                    >
-                      Lihat Hasil
-                    </button>
+                  {/* Actions: Show "Mulai Tes" OR "Lihat Hasil" + "Ulangi Tes" side-by-side */}
+                  <div className="mt-5 flex items-center gap-3">
+                    {!careerResult ? (
+                      <button
+                        type="button"
+                        onClick={startCareerTest}
+                        className="px-6 py-2.5 bg-orange-500 hover:bg-orange-600 text-white font-bold text-xs rounded-xl shadow-md shadow-orange-500/20 transition-all hover:scale-[1.02]"
+                      >
+                        Mulai Tes
+                      </button>
+                    ) : (
+                      <>
+                        <button
+                          type="button"
+                          onClick={() => setIsCareerResultOpen(true)}
+                          className="px-5 py-2.5 bg-orange-500 hover:bg-orange-600 text-white font-bold text-xs rounded-xl shadow-md shadow-orange-500/20 transition-all hover:scale-[1.02]"
+                        >
+                          Lihat Hasil
+                        </button>
+                        <button
+                          type="button"
+                          onClick={resetCareerTest}
+                          className="px-4 py-2.5 bg-white dark:bg-slate-700 border border-slate-300 dark:border-slate-600 hover:bg-slate-50 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-200 font-bold text-xs rounded-xl transition-all flex items-center gap-1.5"
+                        >
+                          <span>🔄</span>
+                          <span>Ulangi Tes</span>
+                        </button>
+                      </>
+                    )}
                   </div>
                 </div>
 
@@ -704,7 +1209,7 @@ export default function PresmaCareerSection({ initialTab = 'dashboard' }: { init
                     >
                       {/* Left: Thumbnail & Main info */}
                       <div className="flex items-start gap-4 flex-1">
-                        {/* Course Badge / Thumbnail (Matching screenshot card box) */}
+                        {/* Course Badge / Thumbnail */}
                         <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-xl bg-[#e9ecef] dark:bg-slate-700 border border-slate-300/80 dark:border-slate-600 flex flex-col items-center justify-center p-2 shrink-0 group-hover:scale-105 transition-transform">
                           <span className="text-[10px] font-black text-orange-600 dark:text-orange-400 tracking-wider">
                             {course.category}
@@ -750,9 +1255,7 @@ export default function PresmaCareerSection({ initialTab = 'dashboard' }: { init
                         </button>
                         <button
                           type="button"
-                          onClick={() => {
-                            setSelectedCourse(course);
-                          }}
+                          onClick={() => setSelectedCourse(course)}
                           className="px-5 py-2 bg-orange-500 hover:bg-orange-600 text-white text-xs font-bold rounded-xl shadow-md shadow-orange-500/20 transition-all hover:scale-[1.02]"
                         >
                           Ikuti Kelas
@@ -770,290 +1273,99 @@ export default function PresmaCareerSection({ initialTab = 'dashboard' }: { init
       </div>
 
       {/* ========================================================= */}
-      {/* MODAL 1: TEST CARASA (Interactive Questionnaire) */}
+      {/* MODAL 1: KUESIONER TES MINAT & BAKAT (12 Questions) */}
       {/* ========================================================= */}
-      {isTestModalOpen && (
+      {isMinatQuizOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fadeIn">
-          <div className="bg-white dark:bg-slate-900 rounded-2xl max-w-lg w-full p-6 sm:p-8 shadow-2xl border border-slate-200 dark:border-slate-800 relative max-h-[90vh] overflow-y-auto">
+          <div className="bg-white dark:bg-slate-900 rounded-3xl max-w-xl w-full p-6 sm:p-8 shadow-2xl border border-slate-200 dark:border-slate-800 relative max-h-[90vh] overflow-y-auto">
             
+            {/* Close Button */}
             <button
-              onClick={() => setIsTestModalOpen(false)}
-              className="absolute top-4 right-4 w-8 h-8 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-500 hover:text-slate-800 flex items-center justify-center text-sm font-bold"
+              onClick={() => setIsMinatQuizOpen(false)}
+              className="absolute top-5 right-5 w-8 h-8 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-500 hover:text-slate-800 dark:hover:text-white flex items-center justify-center text-sm font-bold transition-colors"
             >
               ✕
             </button>
 
-            {!isQuizSubmitted ? (
-              <div>
-                <div className="flex items-center gap-2 mb-2">
-                  <span className="px-2.5 py-0.5 bg-orange-500 text-white text-[10px] font-black rounded-md uppercase">
-                    CARASA Assessment
-                  </span>
-                  <span className="text-xs text-slate-500">Soal {quizStep} dari 3</span>
-                </div>
-                <h3 className="text-lg font-bold text-slate-900 dark:text-white">
-                  Tes Pemetaan Minat &amp; Bakat Kejuruan
-                </h3>
-                <p className="text-xs text-slate-500 mt-1 mb-6">
-                  Pilih pernyataan yang paling menggambarkan kecenderungan dan kenyamanan kerjamu.
-                </p>
-
-                {quizStep === 1 && (
-                  <div className="space-y-3">
-                    <p className="text-sm font-semibold text-slate-800 dark:text-slate-200">
-                      1. Aktivitas pemecahan masalah apa yang paling kamu sukai?
-                    </p>
-                    {[
-                      'Menulis logika kode, algoritma, atau membuat fitur website/aplikasi (PPLG)',
-                      'Mengatur konfigurasi router, switch jaringan, dan troubleshoot server (TJKT)',
-                      'Merancang visual, poster estetis, animasi, dan user interface kreatif (DKV)',
-                      'Merekam video, shooting kamera, tata suara, dan podcast broadcasting (BCF)',
-                    ].map((opt, i) => (
-                      <label
-                        key={i}
-                        className={`flex items-start gap-3 p-3.5 rounded-xl border cursor-pointer transition-all ${
-                          quizAnswers[1] === opt
-                            ? 'border-orange-500 bg-orange-50/70 dark:bg-orange-950/40 text-orange-900 dark:text-orange-200'
-                            : 'border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300'
-                        }`}
-                      >
-                        <input
-                          type="radio"
-                          name="q1"
-                          checked={quizAnswers[1] === opt}
-                          onChange={() => setQuizAnswers({ ...quizAnswers, 1: opt })}
-                          className="mt-0.5 text-orange-500 focus:ring-orange-500"
-                        />
-                        <span className="text-xs leading-relaxed font-medium">{opt}</span>
-                      </label>
-                    ))}
-                  </div>
-                )}
-
-                {quizStep === 2 && (
-                  <div className="space-y-3">
-                    <p className="text-sm font-semibold text-slate-800 dark:text-slate-200">
-                      2. Lingkungan kerja seperti apa yang paling kamu impikan?
-                    </p>
-                    {[
-                      'Software house atau tech startup yang fleksibel dan penuh tantangan inovasi',
-                      'Data center, perusahaan telekomunikasi, atau lab infrastruktur jaringan berskala besar',
-                      'Creative design agency, branding studio, atau industri game & multimedia',
-                      'Stasiun televisi, production house siaran live, atau media kreatif digital',
-                    ].map((opt, i) => (
-                      <label
-                        key={i}
-                        className={`flex items-start gap-3 p-3.5 rounded-xl border cursor-pointer transition-all ${
-                          quizAnswers[2] === opt
-                            ? 'border-orange-500 bg-orange-50/70 dark:bg-orange-950/40 text-orange-900 dark:text-orange-200'
-                            : 'border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300'
-                        }`}
-                      >
-                        <input
-                          type="radio"
-                          name="q2"
-                          checked={quizAnswers[2] === opt}
-                          onChange={() => setQuizAnswers({ ...quizAnswers, 2: opt })}
-                          className="mt-0.5 text-orange-500 focus:ring-orange-500"
-                        />
-                        <span className="text-xs leading-relaxed font-medium">{opt}</span>
-                      </label>
-                    ))}
-                  </div>
-                )}
-
-                {quizStep === 3 && (
-                  <div className="space-y-3">
-                    <p className="text-sm font-semibold text-slate-800 dark:text-slate-200">
-                      3. Kekuatan utama apa yang paling menonjol pada dirimu?
-                    </p>
-                    {[
-                      'Analitis, detail-oriented, dan rasa ingin tahu mendalam tentang cara kerja teknologi',
-                      'Sistematis, cekatan menangani perangkat keras, dan tanggap atas gangguan jaringan',
-                      'Sense of art yang tinggi, peka terhadap warna, komposisi visual, dan estetika',
-                      'Komunikatif, percaya diri bekerja di bawah tekanan live show, dan kolaboratif',
-                    ].map((opt, i) => (
-                      <label
-                        key={i}
-                        className={`flex items-start gap-3 p-3.5 rounded-xl border cursor-pointer transition-all ${
-                          quizAnswers[3] === opt
-                            ? 'border-orange-500 bg-orange-50/70 dark:bg-orange-950/40 text-orange-900 dark:text-orange-200'
-                            : 'border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300'
-                        }`}
-                      >
-                        <input
-                          type="radio"
-                          name="q3"
-                          checked={quizAnswers[3] === opt}
-                          onChange={() => setQuizAnswers({ ...quizAnswers, 3: opt })}
-                          className="mt-0.5 text-orange-500 focus:ring-orange-500"
-                        />
-                        <span className="text-xs leading-relaxed font-medium">{opt}</span>
-                      </label>
-                    ))}
-                  </div>
-                )}
-
-                {/* Nav buttons */}
-                <div className="flex items-center justify-between mt-8 pt-4 border-t border-slate-200 dark:border-slate-800">
-                  {quizStep > 1 ? (
-                    <button
-                      type="button"
-                      onClick={() => setQuizStep(quizStep - 1)}
-                      className="px-4 py-2 text-xs font-bold text-slate-600 dark:text-slate-400 hover:text-slate-900"
-                    >
-                      &larr; Sebelumnya
-                    </button>
-                  ) : <div />}
-
-                  {quizStep < 3 ? (
-                    <button
-                      type="button"
-                      disabled={!quizAnswers[quizStep]}
-                      onClick={() => setQuizStep(quizStep + 1)}
-                      className="px-5 py-2 bg-orange-500 disabled:opacity-50 hover:bg-orange-600 text-white font-bold text-xs rounded-xl shadow-md"
-                    >
-                      Lanjut &rarr;
-                    </button>
-                  ) : (
-                    <button
-                      type="button"
-                      disabled={!quizAnswers[3]}
-                      onClick={() => setIsQuizSubmitted(true)}
-                      className="px-6 py-2 bg-emerald-600 hover:bg-emerald-700 disabled:opacity-50 text-white font-bold text-xs rounded-xl shadow-md"
-                    >
-                      Kirim &amp; Proses Hasil
-                    </button>
-                  )}
-                </div>
-              </div>
-            ) : (
-              <div className="text-center py-6">
-                <div className="w-16 h-16 bg-green-100 text-green-600 rounded-full flex items-center justify-center mx-auto mb-4 text-2xl font-bold">
-                  ✓
-                </div>
-                <h3 className="text-lg font-black text-slate-900 dark:text-white">
-                  Asesmen CARASA Selesai!
-                </h3>
-                <p className="text-xs text-slate-600 dark:text-slate-300 max-w-sm mx-auto mt-2 leading-relaxed">
-                  Jawabanmu telah dianalisis oleh algoritma pemetaan karir SMK Prestasi Prima. Kamu memiliki potensi tertinggi di bidang <strong>Teknologi Terapan &amp; Rekayasa Perangkat Lunak</strong>.
-                </p>
-
-                <div className="bg-orange-50 dark:bg-orange-950/40 p-4 rounded-xl border border-orange-200 dark:border-orange-900/50 mt-5 text-left text-xs space-y-1">
-                  <div className="font-bold text-orange-900 dark:text-orange-200">Rekomendasi Jalur Karir:</div>
-                  <div className="text-slate-700 dark:text-slate-300">• Software Engineer / Web Developer</div>
-                  <div className="text-slate-700 dark:text-slate-300">• Cloud &amp; DevOps Specialist</div>
-                  <div className="text-slate-700 dark:text-slate-300">• UI/UX Technical Specialist</div>
-                </div>
-
-                <div className="flex items-center justify-center gap-3 mt-6">
-                  <button
-                    onClick={() => {
-                      setIsTestModalOpen(false);
-                      setIsResultModalOpen(true);
-                    }}
-                    className="px-5 py-2.5 bg-orange-500 hover:bg-orange-600 text-white font-bold text-xs rounded-xl shadow-md"
-                  >
-                    Buka Laporan Hasil Lengkap
-                  </button>
-                </div>
-              </div>
-            )}
-
-          </div>
-        </div>
-      )}
-
-      {/* ========================================================= */}
-      {/* MODAL 2: HASIL CARASA (Result Report & Recommendations) */}
-      {/* ========================================================= */}
-      {isResultModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fadeIn">
-          <div className="bg-white dark:bg-slate-900 rounded-2xl max-w-lg w-full p-6 sm:p-8 shadow-2xl border border-slate-200 dark:border-slate-800 relative max-h-[90vh] overflow-y-auto">
-            
-            <button
-              onClick={() => setIsResultModalOpen(false)}
-              className="absolute top-4 right-4 w-8 h-8 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-500 hover:text-slate-800 flex items-center justify-center text-sm font-bold"
-            >
-              ✕
-            </button>
-
-            <div className="flex items-center gap-3 mb-4">
-              <div className="w-10 h-10 rounded-xl bg-orange-500/10 text-orange-500 flex items-center justify-center font-black">
-                ★
-              </div>
-              <div>
-                <span className="text-[10px] uppercase font-bold text-orange-600 dark:text-orange-400">
-                  Laporan Hasil Tes
+            {/* Quiz Header & Progress */}
+            <div className="mb-6">
+              <div className="flex items-center justify-between gap-2 mb-2">
+                <span className="px-2.5 py-0.5 bg-orange-500 text-white text-[10px] font-black rounded-md uppercase tracking-wider">
+                  CARASA — TES MINAT &amp; BAKAT
                 </span>
-                <h3 className="text-lg font-black text-slate-900 dark:text-white leading-tight">
-                  Pemetaan Potensi CARASA
-                </h3>
+                <span className="text-xs font-bold text-slate-500 dark:text-slate-400">
+                  Pertanyaan {minatIdx + 1} dari {MINAT_QUESTIONS.length}
+                </span>
+              </div>
+
+              {/* Progress Bar */}
+              <div className="w-full bg-slate-100 dark:bg-slate-800 h-2 rounded-full overflow-hidden mt-3">
+                <div
+                  className="bg-orange-500 h-full rounded-full transition-all duration-300"
+                  style={{ width: `${((minatIdx + 1) / MINAT_QUESTIONS.length) * 100}%` }}
+                />
               </div>
             </div>
 
-            {/* Score Breakdown */}
-            <div className="space-y-3 my-5">
-              <div>
-                <div className="flex justify-between text-xs font-bold mb-1">
-                  <span>Logika &amp; Rekayasa Software (PPLG)</span>
-                  <span className="text-orange-500">92%</span>
-                </div>
-                <div className="w-full bg-slate-200 dark:bg-slate-700 h-2 rounded-full overflow-hidden">
-                  <div className="bg-orange-500 h-full rounded-full" style={{ width: '92%' }} />
-                </div>
-              </div>
-
-              <div>
-                <div className="flex justify-between text-xs font-bold mb-1">
-                  <span>Infrastruktur &amp; Keamanan Jaringan (TJKT)</span>
-                  <span className="text-blue-500">84%</span>
-                </div>
-                <div className="w-full bg-slate-200 dark:bg-slate-700 h-2 rounded-full overflow-hidden">
-                  <div className="bg-blue-500 h-full rounded-full" style={{ width: '84%' }} />
-                </div>
-              </div>
-
-              <div>
-                <div className="flex justify-between text-xs font-bold mb-1">
-                  <span>Kreativitas Visual &amp; Desain (DKV)</span>
-                  <span className="text-purple-500">78%</span>
-                </div>
-                <div className="w-full bg-slate-200 dark:bg-slate-700 h-2 rounded-full overflow-hidden">
-                  <div className="bg-purple-500 h-full rounded-full" style={{ width: '78%' }} />
-                </div>
-              </div>
-
-              <div>
-                <div className="flex justify-between text-xs font-bold mb-1">
-                  <span>Komunikasi &amp; Live Production (BCF)</span>
-                  <span className="text-emerald-500">75%</span>
-                </div>
-                <div className="w-full bg-slate-200 dark:bg-slate-700 h-2 rounded-full overflow-hidden">
-                  <div className="bg-emerald-500 h-full rounded-full" style={{ width: '75%' }} />
-                </div>
-              </div>
+            {/* Question Text */}
+            <div className="my-6">
+              <h3 className="text-base sm:text-lg font-bold text-slate-900 dark:text-white leading-relaxed">
+                {MINAT_QUESTIONS[minatIdx].question}
+              </h3>
             </div>
 
-            {/* Recommendations */}
-            <div className="bg-slate-50 dark:bg-slate-800 p-4 rounded-xl border border-slate-200 dark:border-slate-700 space-y-2 mb-6">
-              <h4 className="text-xs font-bold uppercase text-slate-800 dark:text-slate-200">
-                Saran Pengembangan Karir Siswa:
-              </h4>
-              <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">
-                Kamu memiliki kekuatan logika komputasi yang sangat dominan. Disarankan mengambil pelatihan lanjutan seperti <strong>Fullstack Web Development</strong> dan <strong>Cloud Infrastructure</strong> untuk memaksimalkan portofolio siap kerja.
-              </p>
+            {/* Options */}
+            <div className="space-y-3">
+              {MINAT_QUESTIONS[minatIdx].options.map((option, optIdx) => {
+                const isSelected = minatAnswers[minatIdx] === optIdx;
+                return (
+                  <button
+                    key={optIdx}
+                    type="button"
+                    onClick={() => handleSelectMinatOption(optIdx)}
+                    className={`w-full text-left p-4 rounded-2xl border transition-all duration-200 flex items-start gap-3.5 ${
+                      isSelected
+                        ? 'border-orange-500 bg-orange-500/10 text-orange-950 dark:text-orange-200 ring-2 ring-orange-500/30'
+                        : 'border-slate-200 dark:border-slate-700/80 bg-slate-50/50 dark:bg-slate-800/40 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-800 dark:text-slate-200'
+                    }`}
+                  >
+                    <span
+                      className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold shrink-0 mt-0.5 ${
+                        isSelected
+                          ? 'bg-orange-500 text-white'
+                          : 'bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-300'
+                      }`}
+                    >
+                      {String.fromCharCode(65 + optIdx)}
+                    </span>
+                    <span className="text-xs sm:text-sm font-medium leading-relaxed">
+                      {option[0]}
+                    </span>
+                  </button>
+                );
+              })}
             </div>
 
-            <div className="flex items-center justify-end gap-3">
+            {/* Navigation buttons */}
+            <div className="flex items-center justify-between mt-8 pt-5 border-t border-slate-200 dark:border-slate-800">
+              {minatIdx > 0 ? (
+                <button
+                  type="button"
+                  onClick={() => setMinatIdx(minatIdx - 1)}
+                  className="px-4 py-2.5 text-xs font-bold text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors"
+                >
+                  &larr; Sebelumnya
+                </button>
+              ) : (
+                <div />
+              )}
+
               <button
-                onClick={() => {
-                  setIsResultModalOpen(false);
-                  handleTabChange('kelas');
-                }}
-                className="px-5 py-2.5 bg-orange-500 hover:bg-orange-600 text-white font-bold text-xs rounded-xl shadow-md transition-colors"
+                type="button"
+                onClick={handleNextMinat}
+                className="px-6 py-2.5 bg-orange-500 hover:bg-orange-600 text-white font-bold text-xs rounded-xl shadow-md shadow-orange-500/20 transition-all hover:scale-105"
               >
-                Pilih Kelas Rekomendasi &rarr;
+                {minatIdx === MINAT_QUESTIONS.length - 1 ? 'Lihat Hasil →' : 'Lanjut →'}
               </button>
             </div>
 
@@ -1062,15 +1374,374 @@ export default function PresmaCareerSection({ initialTab = 'dashboard' }: { init
       )}
 
       {/* ========================================================= */}
-      {/* MODAL 3: DETAIL KELAS & DAFTAR PELATIHAN */}
+      {/* MODAL 2: HASIL CARASA MINAT & BAKAT (Matching User Format) */}
+      {/* ========================================================= */}
+      {isMinatResultOpen && minatResult && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fadeIn">
+          <div className="bg-white dark:bg-slate-900 rounded-3xl max-w-2xl w-full p-6 sm:p-8 shadow-2xl border border-slate-200 dark:border-slate-800 relative max-h-[90vh] overflow-y-auto">
+            
+            {/* Close Button */}
+            <button
+              onClick={() => setIsMinatResultOpen(false)}
+              className="absolute top-5 right-5 w-8 h-8 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-500 hover:text-slate-800 dark:hover:text-white flex items-center justify-center text-sm font-bold transition-colors"
+            >
+              ✕
+            </button>
+
+            {/* Header: sectiontitle */}
+            <div className="text-center mb-8">
+              <span className="inline-block px-3 py-1 bg-orange-500 text-white text-[11px] font-black rounded-full uppercase tracking-wider mb-2">
+                HASIL CARASA
+              </span>
+              <h2 className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-white tracking-tight">
+                {MAJOR_LABELS[minatResult.topMajor]}
+              </h2>
+              <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 mt-2 max-w-md mx-auto">
+                Hasil ini adalah bahan eksplorasi, bukan penentuan mutlak jurusan.
+              </p>
+            </div>
+
+            {/* resultgrid */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-5 mb-8">
+              
+              {/* Card 1: Profil Minat */}
+              <div className="bg-slate-50 dark:bg-slate-800/60 p-5 rounded-2xl border border-slate-200 dark:border-slate-700/80">
+                <h3 className="text-sm font-black uppercase tracking-wider text-slate-900 dark:text-white mb-4">
+                  Profil Minat
+                </h3>
+                <div className="space-y-4">
+                  {minatResult.sortedScores.map(([majorKey, score]) => {
+                    const percentage = Math.round((score / MINAT_QUESTIONS.length) * 100);
+                    return (
+                      <div key={majorKey} className="space-y-1.5">
+                        <div className="flex justify-between items-center text-xs font-bold text-slate-700 dark:text-slate-300">
+                          <span className="truncate pr-2">{MAJOR_DETAILS[majorKey].code}</span>
+                          <span className="text-orange-500 shrink-0">{percentage}%</span>
+                        </div>
+                        <div className="w-full bg-slate-200 dark:bg-slate-700 h-2.5 rounded-full overflow-hidden">
+                          <div
+                            className="bg-orange-500 h-full rounded-full transition-all duration-500"
+                            style={{ width: `${percentage}%` }}
+                          />
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* Card 2: Jurusan yang Dapat Kamu Eksplorasi */}
+              <div className="bg-slate-50 dark:bg-slate-800/60 p-5 rounded-2xl border border-slate-200 dark:border-slate-700/80 flex flex-col justify-between">
+                <div>
+                  <h3 className="text-sm font-black uppercase tracking-wider text-slate-900 dark:text-white mb-3">
+                    Jurusan yang Dapat Kamu Eksplorasi
+                  </h3>
+                  
+                  <div className="p-3.5 bg-orange-50 dark:bg-orange-950/40 border border-orange-200 dark:border-orange-900/50 rounded-xl mb-3">
+                    <span className="text-[10px] font-black uppercase text-orange-600 dark:text-orange-400 block mb-1">
+                      Profil Paling Menonjol
+                    </span>
+                    <h4 className="text-sm font-bold text-slate-900 dark:text-white">
+                      {MAJOR_DETAILS[minatResult.topMajor].name} ({MAJOR_DETAILS[minatResult.topMajor].code})
+                    </h4>
+                    <p className="text-xs text-slate-600 dark:text-slate-300 mt-1 leading-relaxed">
+                      {MAJOR_DETAILS[minatResult.topMajor].desc}
+                    </p>
+                  </div>
+
+                  <div className="mb-3">
+                    <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 block mb-1.5">
+                      Prospek Profesi Karir:
+                    </span>
+                    <div className="flex flex-wrap gap-1.5">
+                      {MAJOR_DETAILS[minatResult.topMajor].careers.map((career, cIdx) => (
+                        <span
+                          key={cIdx}
+                          className="px-2.5 py-1 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 text-[11px] font-semibold rounded-lg"
+                        >
+                          {career}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+
+                <div className="pt-3 border-t border-slate-200 dark:border-slate-700 text-[11px] text-slate-500 dark:text-slate-400 leading-relaxed">
+                  <strong>💡 Eksplorasi lebih lanjut:</strong> Gunakan hasil ini sebagai titik awal untuk mengenali pilihanmu. Pelajari jurusan dan karier yang menarik bagimu sebelum menentukan pilihan.
+                </div>
+              </div>
+
+            </div>
+
+            {/* Action buttons: Ulangi Assessment and Close */}
+            <div className="flex flex-col sm:flex-row items-center justify-between gap-3 pt-4 border-t border-slate-200 dark:border-slate-800">
+              <button
+                type="button"
+                onClick={resetMinatTest}
+                className="w-full sm:w-auto px-5 py-2.5 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-200 font-bold text-xs rounded-xl transition-all flex items-center justify-center gap-2"
+              >
+                <span>🔄</span>
+                <span>Ulangi Assessment</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setIsMinatResultOpen(false)}
+                className="w-full sm:w-auto px-6 py-2.5 bg-orange-500 hover:bg-orange-600 text-white font-bold text-xs rounded-xl shadow-md transition-all hover:scale-[1.02]"
+              >
+                Tutup &amp; Simpan Hasil
+              </button>
+            </div>
+
+            {/* Footer reference copyright */}
+            <div className="text-center text-[10px] text-slate-400 dark:text-slate-500 mt-6 pt-3 border-t border-slate-100 dark:border-slate-800">
+              CARASA — Career &amp; Study Assessment · Prototype Presma v.1.0 ©2026
+            </div>
+
+          </div>
+        </div>
+      )}
+
+      {/* ========================================================= */}
+      {/* MODAL 3: KUESIONER TES REKOMENDASI KARIR (Distinct 8 Questions) */}
+      {/* ========================================================= */}
+      {isCareerQuizOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fadeIn">
+          <div className="bg-white dark:bg-slate-900 rounded-3xl max-w-xl w-full p-6 sm:p-8 shadow-2xl border border-slate-200 dark:border-slate-800 relative max-h-[90vh] overflow-y-auto">
+            
+            {/* Close Button */}
+            <button
+              onClick={() => setIsCareerQuizOpen(false)}
+              className="absolute top-5 right-5 w-8 h-8 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-500 hover:text-slate-800 dark:hover:text-white flex items-center justify-center text-sm font-bold transition-colors"
+            >
+              ✕
+            </button>
+
+            {/* Quiz Header & Progress */}
+            <div className="mb-6">
+              <div className="flex items-center justify-between gap-2 mb-2">
+                <span className="px-2.5 py-0.5 bg-blue-600 text-white text-[10px] font-black rounded-md uppercase tracking-wider">
+                  ASESMEN KESIAPAN KARIR &amp; INDUSTRI
+                </span>
+                <span className="text-xs font-bold text-slate-500 dark:text-slate-400">
+                  Pertanyaan {careerIdx + 1} dari {CAREER_QUESTIONS.length}
+                </span>
+              </div>
+
+              {/* Progress Bar */}
+              <div className="w-full bg-slate-100 dark:bg-slate-800 h-2 rounded-full overflow-hidden mt-3">
+                <div
+                  className="bg-blue-600 h-full rounded-full transition-all duration-300"
+                  style={{ width: `${((careerIdx + 1) / CAREER_QUESTIONS.length) * 100}%` }}
+                />
+              </div>
+            </div>
+
+            {/* Question Text */}
+            <div className="my-6">
+              <h3 className="text-base sm:text-lg font-bold text-slate-900 dark:text-white leading-relaxed">
+                {CAREER_QUESTIONS[careerIdx].question}
+              </h3>
+            </div>
+
+            {/* Options */}
+            <div className="space-y-3">
+              {CAREER_QUESTIONS[careerIdx].options.map((option, optIdx) => {
+                const isSelected = careerAnswers[careerIdx] === optIdx;
+                return (
+                  <button
+                    key={optIdx}
+                    type="button"
+                    onClick={() => handleSelectCareerOption(optIdx)}
+                    className={`w-full text-left p-4 rounded-2xl border transition-all duration-200 flex items-start gap-3.5 ${
+                      isSelected
+                        ? 'border-blue-500 bg-blue-500/10 text-blue-950 dark:text-blue-200 ring-2 ring-blue-500/30'
+                        : 'border-slate-200 dark:border-slate-700/80 bg-slate-50/50 dark:bg-slate-800/40 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-800 dark:text-slate-200'
+                    }`}
+                  >
+                    <span
+                      className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold shrink-0 mt-0.5 ${
+                        isSelected
+                          ? 'bg-blue-600 text-white'
+                          : 'bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-300'
+                      }`}
+                    >
+                      {String.fromCharCode(65 + optIdx)}
+                    </span>
+                    <span className="text-xs sm:text-sm font-medium leading-relaxed">
+                      {option[0]}
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
+
+            {/* Navigation buttons */}
+            <div className="flex items-center justify-between mt-8 pt-5 border-t border-slate-200 dark:border-slate-800">
+              {careerIdx > 0 ? (
+                <button
+                  type="button"
+                  onClick={() => setCareerIdx(careerIdx - 1)}
+                  className="px-4 py-2.5 text-xs font-bold text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors"
+                >
+                  &larr; Sebelumnya
+                </button>
+              ) : (
+                <div />
+              )}
+
+              <button
+                type="button"
+                onClick={handleNextCareer}
+                className="px-6 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs rounded-xl shadow-md shadow-blue-500/20 transition-all hover:scale-105"
+              >
+                {careerIdx === CAREER_QUESTIONS.length - 1 ? 'Lihat Hasil Karir →' : 'Lanjut →'}
+              </button>
+            </div>
+
+          </div>
+        </div>
+      )}
+
+      {/* ========================================================= */}
+      {/* MODAL 4: HASIL TES REKOMENDASI KARIR & INDUSTRI */}
+      {/* ========================================================= */}
+      {isCareerResultOpen && careerResult && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fadeIn">
+          <div className="bg-white dark:bg-slate-900 rounded-3xl max-w-2xl w-full p-6 sm:p-8 shadow-2xl border border-slate-200 dark:border-slate-800 relative max-h-[90vh] overflow-y-auto">
+            
+            {/* Close Button */}
+            <button
+              onClick={() => setIsCareerResultOpen(false)}
+              className="absolute top-5 right-5 w-8 h-8 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-500 hover:text-slate-800 dark:hover:text-white flex items-center justify-center text-sm font-bold transition-colors"
+            >
+              ✕
+            </button>
+
+            {/* Header: sectiontitle */}
+            <div className="text-center mb-8">
+              <span className="inline-block px-3 py-1 bg-blue-600 text-white text-[11px] font-black rounded-full uppercase tracking-wider mb-2">
+                HASIL ASESMEN KARIR
+              </span>
+              <h2 className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-white tracking-tight">
+                {CAREER_LABELS[careerResult.topTrack]}
+              </h2>
+              <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 mt-2 max-w-md mx-auto">
+                Pemetaan kesiapan kerja industri dan rekomendasi spesialisasi profesi siswa.
+              </p>
+            </div>
+
+            {/* resultgrid */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-5 mb-8">
+              
+              {/* Card 1: Skor Kesiapan Karir */}
+              <div className="bg-slate-50 dark:bg-slate-800/60 p-5 rounded-2xl border border-slate-200 dark:border-slate-700/80">
+                <h3 className="text-sm font-black uppercase tracking-wider text-slate-900 dark:text-white mb-4">
+                  Skor Bidang Karir
+                </h3>
+                <div className="space-y-4">
+                  {careerResult.sortedScores.map(([trackKey, score]) => {
+                    const percentage = Math.round((score / CAREER_QUESTIONS.length) * 100);
+                    return (
+                      <div key={trackKey} className="space-y-1.5">
+                        <div className="flex justify-between items-center text-xs font-bold text-slate-700 dark:text-slate-300">
+                          <span className="truncate pr-2">{CAREER_DETAILS[trackKey].title.split('&')[0]}</span>
+                          <span className="text-blue-600 shrink-0">{percentage}%</span>
+                        </div>
+                        <div className="w-full bg-slate-200 dark:bg-slate-700 h-2.5 rounded-full overflow-hidden">
+                          <div
+                            className="bg-blue-600 h-full rounded-full transition-all duration-500"
+                            style={{ width: `${percentage}%` }}
+                          />
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* Card 2: Jalur Spesialisasi & Rekomendasi Karir */}
+              <div className="bg-slate-50 dark:bg-slate-800/60 p-5 rounded-2xl border border-slate-200 dark:border-slate-700/80 flex flex-col justify-between">
+                <div>
+                  <h3 className="text-sm font-black uppercase tracking-wider text-slate-900 dark:text-white mb-3">
+                    Jalur Karir Unggulanmu
+                  </h3>
+                  
+                  <div className="p-3.5 bg-blue-50 dark:bg-blue-950/40 border border-blue-200 dark:border-blue-900/50 rounded-xl mb-3">
+                    <span className="text-[10px] font-black uppercase text-blue-600 dark:text-blue-400 block mb-1">
+                      Kesiapan Kerja: {careerResult.readinessScore}% (Sangat Siap)
+                    </span>
+                    <h4 className="text-sm font-bold text-slate-900 dark:text-white">
+                      {CAREER_DETAILS[careerResult.topTrack].subtitle}
+                    </h4>
+                    <p className="text-xs text-slate-600 dark:text-slate-300 mt-1 leading-relaxed">
+                      {CAREER_DETAILS[careerResult.topTrack].desc}
+                    </p>
+                  </div>
+
+                  <div className="mb-3">
+                    <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 block mb-1.5">
+                      Rekomendasi Jabatan Karir:
+                    </span>
+                    <div className="flex flex-wrap gap-1.5">
+                      {CAREER_DETAILS[careerResult.topTrack].roles.map((role, rIdx) => (
+                        <span
+                          key={rIdx}
+                          className="px-2.5 py-1 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 text-[11px] font-semibold rounded-lg"
+                        >
+                          {role}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+
+                <div className="pt-3 border-t border-slate-200 dark:border-slate-700 text-[11px] text-slate-500 dark:text-slate-400 leading-relaxed">
+                  <strong>💡 Konsultasi Lanjutan BKK:</strong> Hasil ini dapat dibawa saat sesi bimbingan karir dan penyaluran PKL dengan guru BKK di sekolah.
+                </div>
+              </div>
+
+            </div>
+
+            {/* Action buttons: Ulangi Assessment and Close */}
+            <div className="flex flex-col sm:flex-row items-center justify-between gap-3 pt-4 border-t border-slate-200 dark:border-slate-800">
+              <button
+                type="button"
+                onClick={resetCareerTest}
+                className="w-full sm:w-auto px-5 py-2.5 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-200 font-bold text-xs rounded-xl transition-all flex items-center justify-center gap-2"
+              >
+                <span>🔄</span>
+                <span>Ulangi Assessment</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setIsCareerResultOpen(false)}
+                className="w-full sm:w-auto px-6 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs rounded-xl shadow-md transition-all hover:scale-[1.02]"
+              >
+                Tutup &amp; Simpan Hasil
+              </button>
+            </div>
+
+            {/* Footer reference */}
+            <div className="text-center text-[10px] text-slate-400 dark:text-slate-500 mt-6 pt-3 border-t border-slate-100 dark:border-slate-800">
+              CARASA Career Readiness Assessment · Prototype Presma v.1.0 ©2026
+            </div>
+
+          </div>
+        </div>
+      )}
+
+      {/* ========================================================= */}
+      {/* MODAL 5: DETAIL KELAS & DAFTAR PELATIHAN */}
       {/* ========================================================= */}
       {selectedCourse && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fadeIn">
-          <div className="bg-white dark:bg-slate-900 rounded-2xl max-w-lg w-full p-6 sm:p-8 shadow-2xl border border-slate-200 dark:border-slate-800 relative max-h-[90vh] overflow-y-auto">
+          <div className="bg-white dark:bg-slate-900 rounded-3xl max-w-lg w-full p-6 sm:p-8 shadow-2xl border border-slate-200 dark:border-slate-800 relative max-h-[90vh] overflow-y-auto">
             
             <button
               onClick={() => setSelectedCourse(null)}
-              className="absolute top-4 right-4 w-8 h-8 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-500 hover:text-slate-800 flex items-center justify-center text-sm font-bold"
+              className="absolute top-5 right-5 w-8 h-8 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-500 hover:text-slate-800 dark:hover:text-white flex items-center justify-center text-sm font-bold"
             >
               ✕
             </button>
