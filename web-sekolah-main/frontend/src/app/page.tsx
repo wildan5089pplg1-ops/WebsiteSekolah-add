@@ -186,33 +186,7 @@ export default async function HomePage() {
       {/* Program Keahlian Section */}
       <section className="relative w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-10 pb-24">
         
-        {/* Header Area */}
-        <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-12">
-          <div className="max-w-2xl">
-            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-orange-500/10 border border-orange-500/20 text-orange-600 dark:text-orange-400 text-[10px] sm:text-xs font-bold uppercase tracking-widest mb-4">
-              <span className="relative flex h-2 w-2">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-orange-400 opacity-75"></span>
-                <span className="relative inline-flex rounded-full h-2 w-2 bg-orange-500"></span>
-              </span>
-              Jurusan Unggulan
-            </div>
-            <h2 className="text-3xl sm:text-4xl lg:text-5xl font-black text-slate-900 dark:text-white leading-tight tracking-tight mb-4">
-              Program <span className="text-transparent bg-clip-text bg-gradient-to-r from-orange-500 to-amber-500">Keahlian</span>
-            </h2>
-            <p className="text-sm sm:text-base text-slate-600 dark:text-slate-400 leading-relaxed">
-              Empat jurusan unggulan siap membentuk generasi kreatif dan kompeten: PPLG, TJKT, BCF, dan DKV — lengkap dengan kurikulum praktik industri.
-            </p>
-          </div>
-          
-          <div className="flex items-center gap-3 shrink-0">
-            <Link href="/program" className="px-5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300 font-bold text-xs sm:text-sm hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors">
-              Semua Program
-            </Link>
-            <Link href="/ppdb" className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-orange-600 to-amber-500 text-white font-bold text-xs sm:text-sm shadow-lg shadow-orange-500/30 hover:shadow-orange-500/50 hover:-translate-y-0.5 transition-all">
-              Daftar Sekarang
-            </Link>
-          </div>
-        </div>
+        {/* Header Area moved inside InteractiveMajors */}
 
         {/* Interactive Canvas (Replaces 4 Cards Grid) */}
         <InteractiveMajors />

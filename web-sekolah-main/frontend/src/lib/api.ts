@@ -18,7 +18,7 @@ export interface SchoolInfo {
 }
 
 export interface NewsItem {
-  id: number;
+  id: number | string;
   title: string;
   category: string;
   date: string;
@@ -69,6 +69,15 @@ export async function getNewsList(): Promise<NewsItem[]> {
     return data.data;
   } catch (error) {
     return [
+      {
+        id: 'pengumuman',
+        title: 'Ultras Presma Raih Juara 1 Most Favorite Supporter DBL 2025',
+        category: 'Pengumuman Resmi',
+        date: '20 September 2026',
+        summary: 'Kreativitas tanpa batas, Ultras Presma berhasil memenangkan gelar 1st Place Best Supporter pada ajang Honda DBL 2025 East Jakarta.',
+        content: 'Kabar membanggakan datang dari barisan suporter setia SMK Prestasi Prima, Ultras Presma! Pada ajang basket pelajar terbesar di Indonesia, Honda DBL 2025 seri Jakarta Timur, Ultras Presma berhasil menyabet gelar "1st Place Best Supporter". Kekompakan, kreativitas koreografi raksasa, serta sorakan semangat yang tak henti-hentinya menggema di arena menjadi kunci kemenangan ini.\n\nKeberhasilan ini membuktikan bahwa siswa SMK Prestasi Prima tidak hanya unggul dalam bidang akademik dan teknologi, namun juga memiliki solidaritas, kreativitas, dan jiwa korsa yang tinggi di luar ruang kelas. Seluruh civitas akademika mengucapkan selamat untuk Ultras Presma! Teruslah mendukung dengan sportif dan satu hati.',
+        image: '/images/supporter.jpg'
+      },
       {
         id: 1,
         title: 'Tim Robotik SMA 1 Meraih Medali Emas Olimpiade Sains Nasional 2026',
