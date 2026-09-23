@@ -13,124 +13,133 @@ export interface NavSection {
 
 export const navigation: NavSection[] = [
   {
+    name: "Beranda",
+    href: "/",
+    description: "Halaman utama website SMK Prestasi Prima.",
+  },
+  {
     name: "Tentang Kami",
-    href: "/tentang",
-    description:
-      "Mengenal lebih dekat SMK Prestasi Prima.",
-
+    href: "/tentang/profile",
+    description: "Mengenal visi, kepemimpinan, dan sarana SMK Prestasi Prima.",
     subLinks: [
       {
         name: "Profil Sekolah",
         href: "/tentang/profile",
-        desc:
-          "Sejarah, visi, misi, dan identitas sekolah.",
+        desc: "Sejarah, visi, misi, dan identitas keunggulan sekolah.",
       },
       {
         name: "Sambutan Yayasan",
-        href: "/sambutan",
-        desc:
-          "Pesan dan arah pendidikan dari yayasan.",
+        href: "/tentang/sambutan",
+        desc: "Amanat dan arah pendidikan dari Ketua Yayasan.",
       },
       {
         name: "Fasilitas",
-        href: "/tentang/fasilitas",
-        desc:
-          "Sarana dan ruang pembelajaran sekolah.",
+        href: "/tentang/profile#fasilitas",
+        desc: "Sarana modern penunjang pembelajaran berkualitas.",
       },
     ],
   },
-
   {
-    name: "Program",
-    href: "/program",
-    description:
-      "Program pembelajaran dan pengembangan siswa.",
-
+    name: "Program Keahlian",
+    href: "/#program",
+    description: "Kompetensi keahlian unggulan berbasis industri masa depan.",
     subLinks: [
       {
-        name: "PPLG",
-        href: "/tentang/program/pplg",
-        desc:
-          "Pengembangan Perangkat Lunak dan Gim.",
+        name: "BCF (Broadcasting & Perfilman)",
+        href: "/#program",
+        desc: "Kreativitas produksi siaran, sinematografi, dan konten digital.",
       },
       {
-        name: "TJKT",
-        href: "/tentang/program/tjkt",
-        desc:
-          "Teknik Jaringan Komputer dan Telekomunikasi.",
+        name: "DKV (Desain Komunikasi Visual)",
+        href: "/#program",
+        desc: "Eksplorasi grafis, animasi, UI/UX, dan komunikasi visual.",
       },
       {
-        name: "DKV",
-        href: "/tentang/program/dkv",
-        desc:
-          "Desain Komunikasi Visual.",
+        name: "TJKT (Teknik Jaringan Komputer)",
+        href: "/#program",
+        desc: "Infrastruktur jaringan canggih, server, dan cybersecurity.",
       },
       {
-        name: "BCF",
-        href: "/tentang/program/bcf",
-        desc:
-          "Bisnis dan Creative Fashion.",
+        name: "PPLG (Pengembangan Perangkat Lunak)",
+        href: "/#program",
+        desc: "Software engineering, web development, dan mobile apps.",
       },
+    ],
+  },
+  {
+    name: "Presma",
+    href: "/program/presmacareer",
+    description: "Ekosistem pengembangan karier, riset literasi, dan asesmen bakat.",
+    subLinks: [
       {
         name: "Presma Lib",
         href: "/program/presmalib",
-        desc:
-          "Perpustakaan dan sumber belajar digital.",
+        desc: "Perpustakaan digital dan pusat referensi ilmiah modern.",
       },
       {
         name: "Presma Career",
         href: "/program/presmacareer",
-        desc:
-          "Eksplorasi karier dan dunia industri.",
+        desc: "Jembatan karir siswa menuju dunia usaha & dunia industri.",
       },
       {
-        name: "Presma Carasa",
-        href: "/program/presmacarasa",
-        desc:
-          "Career & Study Assessment.",
+        name: "Carasa",
+        href: "/program/presmacareer/carasa",
+        desc: "Career & Study Assessment untuk pemetaan potensi siswa.",
+      },
+      {
+        name: "Kelas Industri",
+        href: "/program/presmacareer/kelas",
+        desc: "Pembelajaran intensif kurikulum mitra industri ternama.",
+      },
+      {
+        name: "Dashboard Siswa",
+        href: "/program/presmacareer/dashboard",
+        desc: "Portal monitoring portofolio dan progres kesiapan karier.",
       },
     ],
   },
-
   {
     name: "Dokumentasi",
-    href: "/dokumentasi",
-    description:
-      "Cerita, aktivitas, dan karya warga sekolah.",
-
+    href: "/#our-journey-section",
+    description: "Rekam jejak, prestasi nasional, dan portofolio kebanggaan.",
     subLinks: [
       {
-        name: "Prestasi",
-        href: "/dokumentasi/prestasi",
-        desc:
-          "Pencapaian dan prestasi siswa.",
+        name: "Prestasi Siswa",
+        href: "/#prestasi",
+        desc: "Raihan medali dan penghargaan di tingkat regional & nasional.",
       },
       {
-        name: "Ekstrakurikuler",
-        href: "/dokumentasi/ekskul",
-        desc:
-          "Komunitas dan aktivitas siswa.",
+        name: "Bintang Lulusan PTN",
+        href: "/alumni-ptn",
+        desc: "Daftar alumni berprestasi yang menembus PTN ternama.",
       },
       {
-        name: "Karya Siswa",
-        href: "/dokumentasi/karya",
-        desc:
-          "Karya, proyek, dan kreativitas siswa.",
+        name: "Jejak Aktivitas & Perjalanan",
+        href: "/#our-journey-section",
+        desc: "Dokumentasi kegiatan akademik, ekstrakurikuler, dan komunitas.",
       },
     ],
   },
-
   {
     name: "Berita",
     href: "/news",
-    description:
-      "Berita dan informasi terbaru sekolah.",
+    description: "Kabar terbaru, agenda kegiatan, dan artikel edukasi terkini.",
   },
-
   {
     name: "Pendaftaran",
     href: "/ppdb",
-    description:
-      "Informasi penerimaan peserta didik baru.",
+    description: "Penerimaan Peserta Didik Baru (PPDB) SMK Prestasi Prima.",
+    subLinks: [
+      {
+        name: "PPDB Online",
+        href: "/ppdb",
+        desc: "Pendaftaran siswa baru dan informasi gelombang masuk.",
+      },
+      {
+        name: "Kontak & Layanan",
+        href: "/contact",
+        desc: "Informasi narahubung, konsultasi pendaftaran, dan lokasi sekolah.",
+      },
+    ],
   },
 ];
