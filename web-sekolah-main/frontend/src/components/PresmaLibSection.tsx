@@ -14,6 +14,125 @@ interface Book {
   isbn_issn: string | null;
 }
 
+// Curated aesthetic gradients for dynamic digital book covers
+const COVER_GRADIENTS = [
+  { bg: 'from-blue-600 via-indigo-800 to-slate-950', accent: 'bg-blue-400' },
+  { bg: 'from-emerald-600 via-teal-800 to-slate-950', accent: 'bg-emerald-400' },
+  { bg: 'from-orange-500 via-amber-700 to-stone-950', accent: 'bg-amber-400' },
+  { bg: 'from-rose-600 via-pink-800 to-purple-950', accent: 'bg-rose-400' },
+  { bg: 'from-purple-600 via-violet-800 to-slate-950', accent: 'bg-purple-400' },
+  { bg: 'from-cyan-600 via-sky-800 to-slate-950', accent: 'bg-cyan-400' },
+  { bg: 'from-red-600 via-rose-900 to-zinc-950', accent: 'bg-red-400' },
+  { bg: 'from-teal-600 via-emerald-900 to-slate-950', accent: 'bg-teal-400' },
+];
+
+function getCoverStyle(id: number, title: string) {
+  let hash = id || 0;
+  for (let i = 0; i < (title || '').length; i++) {
+    hash = (hash * 31 + title.charCodeAt(i)) % COVER_GRADIENTS.length;
+  }
+  return COVER_GRADIENTS[Math.abs(hash) % COVER_GRADIENTS.length];
+}
+
+// Hybrid Book Cover Component (Backend Upload -> OpenLibrary ISBN -> Stylized Digital Cover)
+function BookCover({ book, size = 'sm' }: { book: Book; size?: 'sm' | 'lg' }) {
+  const [imgSrc, setImgSrc] = useState<string | null>(null);
+  const [hasFailed, setHasFailed] = useState(false);
+
+  useEffect(() => {
+    setHasFailed(false);
+    if (book.nama_file_cover) {
+      setImgSrc(`http://localhost:8000/images/docs/${book.nama_file_cover}`);
+    } else if (book.isbn_issn) {
+      const cleanIsbn = book.isbn_issn.replace(/[^0-9X]/gi, '');
+      if (cleanIsbn.length >= 9) {
+        setImgSrc(`https://covers.openlibrary.org/b/isbn/${cleanIsbn}-${size === 'lg' ? 'L' : 'M'}.jpg`);
+      } else {
+        setImgSrc(null);
+      }
+    } else {
+      setImgSrc(null);
+    }
+  }, [book.id, book.nama_file_cover, book.isbn_issn, size]);
+
+  const style = getCoverStyle(book.id, book.judul);
+
+  // If there's an image source and it hasn't failed, show the <img>
+  if (imgSrc && !hasFailed) {
+    return (
+      <div className="relative w-full h-full">
+        <img
+          src={imgSrc}
+          alt={book.judul}
+          className="w-full h-full object-cover absolute inset-0 transition-transform duration-300"
+          onLoad={(e) => {
+            // OpenLibrary returns 1x1 blank gif when ISBN has no cover
+            if ((e.target as HTMLImageElement).naturalWidth <= 1) {
+              setHasFailed(true);
+            }
+          }}
+          onError={() => {
+            // If primary was backend upload and failed, try ISBN if available
+            if (book.nama_file_cover && book.isbn_issn && !imgSrc.includes('openlibrary.org')) {
+              const cleanIsbn = book.isbn_issn.replace(/[^0-9X]/gi, '');
+              if (cleanIsbn.length >= 9) {
+                setImgSrc(`https://covers.openlibrary.org/b/isbn/${cleanIsbn}-${size === 'lg' ? 'L' : 'M'}.jpg`);
+                return;
+              }
+            }
+            setHasFailed(true);
+          }}
+        />
+        {/* Subtle realistic book spine shadow along the left edge */}
+        <div className="absolute left-0 inset-y-0 w-2.5 bg-gradient-to-r from-black/40 via-black/10 to-transparent pointer-events-none" />
+      </div>
+    );
+  }
+
+  // Fallback: Dynamic Stylized Digital Book Cover
+  return (
+    <div className={`relative w-full h-full bg-gradient-to-br ${style.bg} ${size === 'lg' ? 'p-6' : 'p-3'} flex flex-col justify-between overflow-hidden select-none`}>
+      {/* 3D Book Spine Effect */}
+      <div className="absolute left-0 inset-y-0 w-3 bg-gradient-to-r from-black/50 via-black/20 to-transparent pointer-events-none" />
+      <div className="absolute left-3 inset-y-0 w-[1px] bg-white/15 pointer-events-none" />
+
+      {/* Decorative Geometric Patterns */}
+      <div className="absolute -right-6 -bottom-6 w-24 h-24 rounded-full bg-white/5 pointer-events-none" />
+      <div className="absolute -right-2 -top-2 w-16 h-16 rounded-full bg-white/5 pointer-events-none" />
+
+      {/* Top Header Badge */}
+      <div className="relative z-10 flex items-center justify-between">
+        <span className={`${size === 'lg' ? 'text-xs tracking-widest' : 'text-[8px] tracking-wider'} font-black uppercase text-white/80`}>
+          PRESMALIB
+        </span>
+        <div className={`${size === 'lg' ? 'w-3 h-3' : 'w-2 h-2'} rounded-full ${style.accent} shadow-sm`} />
+      </div>
+
+      {/* Center Title & Author */}
+      <div className="relative z-10 my-auto py-2">
+        <h4 className={`${size === 'lg' ? 'text-xl sm:text-2xl line-clamp-4' : 'text-[11px] sm:text-xs line-clamp-3'} font-black text-white leading-tight drop-shadow-sm`}>
+          {book.judul}
+        </h4>
+        {book.pengarang && (
+          <p className={`${size === 'lg' ? 'text-xs sm:text-sm mt-3' : 'text-[9px] mt-1'} text-white/75 font-medium line-clamp-1`}>
+            {book.pengarang}
+          </p>
+        )}
+      </div>
+
+      {/* Bottom Footer Info */}
+      <div className="relative z-10 pt-2 border-t border-white/10 flex items-center justify-between">
+        <span className={`${size === 'lg' ? 'text-[10px]' : 'text-[7px] sm:text-[8px]'} text-white/60 font-semibold tracking-wider uppercase`}>
+          {book.tahun_terbit ? `${book.tahun_terbit}` : 'E-LIBRARY'}
+        </span>
+        <span className={`${size === 'lg' ? 'text-[10px]' : 'text-[7px] sm:text-[8px]'} text-white/40 font-mono`}>
+          {book.isbn_issn ? 'ISBN' : 'SMK'}
+        </span>
+      </div>
+    </div>
+  );
+}
+
 export default function PresmaLibSection() {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedBook, setSelectedBook] = useState<Book | null>(null);
@@ -64,7 +183,7 @@ export default function PresmaLibSection() {
       
       {/* Background Watermark */}
       <div className="absolute inset-0 z-0 flex items-center justify-center opacity-[0.03] pointer-events-none">
-        <img src="/images/logo-smk.png" alt="Watermark" className="w-[600px] h-auto object-contain" />
+        <img src="/images/logo.png" alt="Watermark" className="w-[600px] h-auto object-contain" onError={(e) => { (e.target as HTMLImageElement).src = '/images/logo-smk.png'; }} />
       </div>
 
       <div className="relative z-10 flex flex-col gap-10">
@@ -130,32 +249,15 @@ export default function PresmaLibSection() {
               <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-9 gap-4 gap-y-8">
                 {books.map((book) => (
                   <div key={book.id} onClick={() => handleSelectBook(book)} className="flex flex-col items-center group cursor-pointer">
-                    {/* Book Cover */}
-                    <div className="w-full aspect-[2/3] bg-[#2a2a2a] rounded-md border-2 border-slate-700 shadow-md relative overflow-hidden flex flex-col items-center justify-center p-3 mb-3 group-hover:-translate-y-1 transition-transform">
-                      {book.nama_file_cover ? (
-                        <img 
-                          src={`http://localhost:8000/images/docs/${book.nama_file_cover}`} 
-                          alt={book.judul}
-                          className="w-full h-full object-cover absolute inset-0 opacity-90 group-hover:opacity-100 transition-opacity" 
-                          onError={(e) => {
-                            // Fallback to default if image is broken
-                            (e.target as HTMLImageElement).src = '/images/logo-smk.png';
-                            (e.target as HTMLImageElement).className = 'w-8 h-8 object-contain mb-3 opacity-90 z-10 relative';
-                          }}
-                        />
-                      ) : (
-                        <img src="/images/logo-smk.png" alt="Logo" className="w-8 h-8 object-contain mb-3 opacity-90 z-10 relative" />
-                      )}
-                      
-                      {!book.nama_file_cover && (
-                        <div className="bg-white text-slate-900 text-[8px] font-black tracking-widest px-2 py-0.5 rounded-sm uppercase mt-auto z-10 relative">
-                          PRESMALIB
-                        </div>
-                      )}
+                    {/* Book Cover Container with Shadow & Hover Animation */}
+                    <div className="w-full aspect-[2/3] bg-slate-900 rounded-lg border border-slate-200 shadow-md relative overflow-hidden mb-3 group-hover:-translate-y-1.5 group-hover:shadow-xl transition-all duration-300">
+                      <BookCover book={book} size="sm" />
                     </div>
                     
                     {/* Title & Action */}
-                    <h4 className="text-[10px] font-bold text-center text-slate-700 line-clamp-2 mb-1 h-7">{book.judul}</h4>
+                    <h4 className="text-[10px] font-bold text-center text-slate-700 line-clamp-2 mb-1.5 h-7 leading-tight group-hover:text-orange-500 transition-colors">
+                      {book.judul}
+                    </h4>
                     <button 
                       onClick={(e) => { e.stopPropagation(); handleSelectBook(book); }}
                       className="w-[90%] py-1.5 bg-orange-500 text-white text-[10px] font-bold rounded-full group-hover:bg-orange-600 transition-colors shadow-sm shadow-orange-500/20"
@@ -182,25 +284,8 @@ export default function PresmaLibSection() {
             
             {/* Left Column: Book Cover & Back Button */}
             <div className="w-full md:w-[30%] flex flex-col items-center shrink-0">
-               <div className="w-full aspect-[2/3] max-w-[280px] bg-[#2a2a2a] rounded-lg border-2 border-slate-700 shadow-xl relative overflow-hidden flex flex-col items-center justify-center mb-6 p-8">
-                  {selectedBook.nama_file_cover ? (
-                    <img 
-                      src={`http://localhost:8000/images/docs/${selectedBook.nama_file_cover}`} 
-                      alt={selectedBook.judul}
-                      className="w-full h-full object-cover absolute inset-0"
-                      onError={(e) => {
-                        (e.target as HTMLImageElement).src = '/images/logo-smk.png';
-                        (e.target as HTMLImageElement).className = 'w-20 h-20 object-contain mb-8 opacity-95 drop-shadow-md z-10 relative';
-                      }}
-                    />
-                  ) : (
-                    <>
-                      <img src="/images/logo-smk.png" alt="Logo" className="w-20 h-20 object-contain mb-8 opacity-95 drop-shadow-md z-10 relative" />
-                      <div className="bg-white text-slate-900 text-sm font-black tracking-widest px-4 py-1.5 rounded-md uppercase mt-auto z-10 relative">
-                        PRESMALIB
-                      </div>
-                    </>
-                  )}
+               <div className="w-full aspect-[2/3] max-w-[280px] bg-slate-900 rounded-2xl border-2 border-slate-700 shadow-2xl relative overflow-hidden flex flex-col items-center justify-center mb-6">
+                  <BookCover book={selectedBook} size="lg" />
                </div>
                <button onClick={() => setSelectedBook(null)} className="w-full max-w-[280px] py-3.5 bg-orange-500 text-white font-bold rounded-full hover:bg-orange-600 transition-all shadow-md hover:shadow-lg flex items-center justify-center gap-2 text-sm tracking-widest uppercase">
                   &larr; KEMBALI
