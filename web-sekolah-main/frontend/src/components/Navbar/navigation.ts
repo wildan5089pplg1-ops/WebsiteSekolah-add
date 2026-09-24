@@ -19,12 +19,12 @@ export const navigation: NavSection[] = [
   },
   {
     name: "Tentang Kami",
-    href: "/tentang/profile",
+    href: "/tentang/profile-sekolah",
     description: "Mengenal visi, kepemimpinan, dan sarana SMK Prestasi Prima.",
     subLinks: [
       {
         name: "Profil Sekolah",
-        href: "/tentang/profile",
+        href: "/tentang/profile-sekolah",
         desc: "Sejarah, visi, misi, dan identitas keunggulan sekolah.",
       },
       {
