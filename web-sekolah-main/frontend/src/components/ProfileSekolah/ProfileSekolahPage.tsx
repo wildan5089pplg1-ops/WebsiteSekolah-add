@@ -40,8 +40,7 @@ export default function ProfileSekolahPage() {
       {/* SECTION 09 — STUDENT / ALUMNI STORY */}
       <AlumniStory />
 
-
-      {/* SECTION 11 — CTA */}
+      {/* SECTION 10 — CTA */}
       <ProfileCTA />
     </div>
   );
