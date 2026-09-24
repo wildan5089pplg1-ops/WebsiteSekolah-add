@@ -117,7 +117,7 @@ export default function ProfileHero() {
               {/* Subtle Technical Grid Corner Element */}
               <div className="absolute top-4 right-4 flex items-center gap-1.5 p-2 rounded-lg bg-black/40 backdrop-blur-sm border border-white/10 text-[10px] font-mono text-slate-300">
                 <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping" />
-                <span>ACTIVE CAMPUS</span>
+                <span>ACTIVE VOCATIONAL SCHOOL</span>
               </div>
             </div>
 
