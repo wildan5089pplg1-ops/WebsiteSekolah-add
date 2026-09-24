@@ -86,21 +86,6 @@ export const navigation: NavSection[] = [
         href: "/program/presmacareer",
         desc: "Jembatan karir siswa menuju dunia usaha & dunia industri.",
       },
-      {
-        name: "Carasa",
-        href: "/program/presmacareer/carasa",
-        desc: "Career & Study Assessment untuk pemetaan potensi siswa.",
-      },
-      {
-        name: "Kelas Industri",
-        href: "/program/presmacareer/kelas",
-        desc: "Pembelajaran intensif kurikulum mitra industri ternama.",
-      },
-      {
-        name: "Dashboard Siswa",
-        href: "/program/presmacareer/dashboard",
-        desc: "Portal monitoring portofolio dan progres kesiapan karier.",
-      },
     ],
   },
   {

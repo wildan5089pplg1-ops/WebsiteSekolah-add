@@ -886,9 +886,15 @@ export default function PresmaCareerSection({ initialTab = 'dashboard' }: { init
                           className="flex items-center justify-between p-3 bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-700/70 hover:border-orange-400 cursor-pointer transition-colors"
                         >
                           <div className="flex items-center gap-3">
-                            <span className="w-8 h-8 rounded-lg bg-orange-500/10 text-orange-500 flex items-center justify-center text-xs font-black">
-                              {item.category}
-                            </span>
+                            {item.category !== 'Karir' ? (
+                              <div className="w-8 h-8 rounded-lg bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 flex items-center justify-center p-1.5 shrink-0">
+                                <img src={`/images/majors/${item.category.toLowerCase()}.png`} alt={item.category} className="w-full h-full object-contain" />
+                              </div>
+                            ) : (
+                              <span className="w-8 h-8 rounded-lg bg-orange-500/10 text-orange-500 flex items-center justify-center text-[10px] font-black shrink-0">
+                                {item.category}
+                              </span>
+                            )}
                             <div>
                               <h4 className="text-xs font-bold text-slate-900 dark:text-white line-clamp-1">
                                 {item.title}
@@ -1173,13 +1179,20 @@ export default function PresmaCareerSection({ initialTab = 'dashboard' }: { init
                   <button
                     key={cat}
                     onClick={() => setSelectedCategory(cat)}
-                    className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-colors shrink-0 ${
+                    className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-colors shrink-0 flex items-center gap-2 ${
                       selectedCategory === cat
                         ? 'bg-orange-500 text-white shadow-sm'
                         : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700'
                     }`}
                   >
-                    {cat}
+                    {cat !== 'Semua' && cat !== 'Karir' && (
+                      <img 
+                        src={`/images/majors/${cat.toLowerCase()}.png`}
+                        alt={`Logo ${cat}`}
+                        className={`w-4 h-4 object-contain ${selectedCategory === cat ? 'brightness-0 invert' : ''}`}
+                      />
+                    )}
+                    <span>{cat}</span>
                   </button>
                 ))}
               </div>
@@ -1210,11 +1223,19 @@ export default function PresmaCareerSection({ initialTab = 'dashboard' }: { init
                       {/* Left: Thumbnail & Main info */}
                       <div className="flex items-start gap-4 flex-1">
                         {/* Course Badge / Thumbnail */}
-                        <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-xl bg-[#e9ecef] dark:bg-slate-700 border border-slate-300/80 dark:border-slate-600 flex flex-col items-center justify-center p-2 shrink-0 group-hover:scale-105 transition-transform">
-                          <span className="text-[10px] font-black text-orange-600 dark:text-orange-400 tracking-wider">
-                            {course.category}
-                          </span>
-                          <span className="text-[9px] font-semibold text-slate-500 dark:text-slate-400 text-center leading-none mt-1">
+                        <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 flex flex-col items-center justify-center p-2 shrink-0 group-hover:scale-105 transition-transform overflow-hidden shadow-sm relative">
+                          {course.category !== 'Karir' ? (
+                            <img 
+                              src={`/images/majors/${course.category.toLowerCase()}.png`}
+                              alt={`Logo ${course.category}`}
+                              className="w-8 h-8 sm:w-10 sm:h-10 object-contain mb-1 drop-shadow-sm"
+                            />
+                          ) : (
+                            <span className="text-[10px] font-black text-orange-600 dark:text-orange-400 tracking-wider mb-1">
+                              {course.category}
+                            </span>
+                          )}
+                          <span className="text-[9px] font-semibold text-slate-500 dark:text-slate-400 text-center leading-none">
                             {course.level}
                           </span>
                         </div>
