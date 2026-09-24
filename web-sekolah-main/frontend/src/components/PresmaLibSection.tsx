@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 
 // Define the book interface matching the database
 interface Book {
@@ -12,6 +12,12 @@ interface Book {
   penerbit: string | null;
   tahun_terbit: string | null;
   isbn_issn: string | null;
+  subjek_kategori?: string | null;
+}
+
+interface Category {
+  name: string;
+  count: number;
 }
 
 // Curated aesthetic gradients for dynamic digital book covers
@@ -176,18 +182,45 @@ export default function PresmaLibSection() {
   const [books, setBooks] = useState<Book[]>([]);
   const [loading, setLoading] = useState(true);
 
+  // Category states
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+  const [isCategoryOpen, setIsCategoryOpen] = useState(false);
+  const [categorySearch, setCategorySearch] = useState('');
+  const categoryDropdownRef = useRef<HTMLDivElement>(null);
+
   // Pagination states
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [totalItems, setTotalItems] = useState(0);
 
-  // Fetch books from API
-  const fetchBooks = async (query: string = '', page: number = 1) => {
+  // Fetch categories from backend API
+  const fetchCategories = async () => {
+    try {
+      const res = await fetch('http://localhost:8000/api/v1/buku/kategori');
+      if (res.ok) {
+        const data = await res.json();
+        setCategories(data || []);
+      }
+    } catch (err) {
+      console.error('Error fetching categories:', err);
+    }
+  };
+
+  // Fetch books from API with search, page, and category filters
+  const fetchBooks = async (query: string = '', page: number = 1, category: string | null = selectedCategory) => {
     setLoading(true);
     try {
-      const response = await fetch(`http://localhost:8000/api/v1/buku?search=${encodeURIComponent(query)}&page=${page}`);
+      let url = `http://localhost:8000/api/v1/buku?page=${page}`;
+      if (query.trim()) {
+        url += `&search=${encodeURIComponent(query.trim())}`;
+      }
+      if (category) {
+        url += `&category=${encodeURIComponent(category)}`;
+      }
+      const response = await fetch(url);
       const data = await response.json();
-      // Laravel pagination returns the array of items in data.data
+      // Laravel pagination returns items in data.data
       setBooks(data.data || []);
       setCurrentPage(data.current_page || page);
       setTotalPages(data.last_page || 1);
@@ -198,6 +231,23 @@ export default function PresmaLibSection() {
       setLoading(false);
     }
   };
+
+  // Close dropdown on click outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (categoryDropdownRef.current && !categoryDropdownRef.current.contains(event.target as Node)) {
+        setIsCategoryOpen(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  // Initial fetch on mount
+  useEffect(() => {
+    fetchCategories();
+  }, []);
 
   // Handle clicking book to show detail & fetch complete data
   const handleSelectBook = async (book: Book) => {
@@ -217,22 +267,54 @@ export default function PresmaLibSection() {
   const handlePageChange = (newPage: number) => {
     if (newPage < 1 || newPage > totalPages || newPage === currentPage) return;
     setCurrentPage(newPage);
-    fetchBooks(searchQuery, newPage);
+    fetchBooks(searchQuery, newPage, selectedCategory);
     const element = document.getElementById('presmalib');
     if (element) {
       element.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
   };
 
-  // Initial fetch and on search change (reset to page 1)
+  // Handle category selection
+  const handleSelectCategory = (catName: string | null) => {
+    setSelectedCategory(catName);
+    setIsCategoryOpen(false);
+    setCurrentPage(1);
+    setSelectedBook(null);
+    fetchBooks(searchQuery, 1, catName);
+    const element = document.getElementById('presmalib');
+    if (element) {
+      element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  };
+
+  // Handle "Eksplorasi" button: Reset all filters & back to initial catalog state
+  const handleResetExploration = () => {
+    setSearchQuery('');
+    setSelectedCategory(null);
+    setSelectedBook(null);
+    setCurrentPage(1);
+    setIsCategoryOpen(false);
+    fetchBooks('', 1, null);
+    const element = document.getElementById('presmalib');
+    if (element) {
+      element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  };
+
+  // Handle search typing with debounce
   useEffect(() => {
     setCurrentPage(1);
     const delayDebounceFn = setTimeout(() => {
-      fetchBooks(searchQuery, 1);
+      fetchBooks(searchQuery, 1, selectedCategory);
     }, 500);
 
     return () => clearTimeout(delayDebounceFn);
   }, [searchQuery]);
+
+  // Filter categories by local search query in dropdown
+  const filteredCategories = categories.filter((c) =>
+    c.name.toLowerCase().includes(categorySearch.toLowerCase())
+  );
 
   return (
     <section id="presmalib" className="relative w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 mb-20 bg-white scroll-mt-24">
@@ -242,14 +324,14 @@ export default function PresmaLibSection() {
         <img src="/images/logo.png" alt="Watermark" className="w-[600px] h-auto object-contain" onError={(e) => { (e.target as HTMLImageElement).src = '/images/logo-smk.png'; }} />
       </div>
 
-      <div className="relative z-10 flex flex-col gap-10">
+      <div className="relative z-10 flex flex-col gap-8">
         
         {/* Header Section */}
         <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-6 pb-6 border-b border-slate-100">
           
           {/* Logo & Title */}
           <div className="flex items-center gap-4">
-            <div className="w-12 h-12 bg-black rounded-lg flex items-center justify-center text-white shrink-0">
+            <div className="w-12 h-12 bg-black rounded-lg flex items-center justify-center text-white shrink-0 shadow-md">
               {/* Book Icon */}
               <svg xmlns="http://www.w3.org/2000/svg" className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
@@ -265,19 +347,123 @@ export default function PresmaLibSection() {
             </div>
           </div>
 
-          {/* Navigation */}
-          <div className="flex items-center gap-8 font-bold text-sm text-slate-800">
-            <button className="hover:text-orange-500 transition-colors">Eksplorasi</button>
-            <button className="flex items-center gap-1 hover:text-orange-500 transition-colors">
-              Kategori
-              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+          {/* Navigation: Eksplorasi & Kategori Dropdown */}
+          <div className="flex items-center gap-3 sm:gap-4 font-bold text-sm">
+            {/* Tombol Eksplorasi: Kembali ke Awal */}
+            <button
+              onClick={handleResetExploration}
+              className={`flex items-center gap-2 px-4 py-2 rounded-full text-xs font-bold transition-all shadow-sm ${
+                !selectedCategory && !searchQuery
+                  ? 'bg-orange-500 text-white shadow-orange-500/30'
+                  : 'bg-white text-slate-700 hover:text-orange-600 hover:bg-orange-50 border border-slate-200'
+              }`}
+              title="Kembali ke katalog awal"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
               </svg>
+              <span>Eksplorasi</span>
             </button>
+
+            {/* Tombol & Dropdown Kategori */}
+            <div className="relative" ref={categoryDropdownRef}>
+              <button
+                onClick={() => setIsCategoryOpen(!isCategoryOpen)}
+                className={`flex items-center gap-2 px-4 py-2 rounded-full text-xs font-bold transition-all shadow-sm ${
+                  selectedCategory || isCategoryOpen
+                    ? 'bg-orange-500 text-white shadow-orange-500/30 ring-2 ring-orange-500/30'
+                    : 'bg-white text-slate-700 hover:text-orange-600 hover:bg-orange-50 border border-slate-200'
+                }`}
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
+                </svg>
+                <span className="max-w-[130px] truncate">
+                  {selectedCategory ? `${selectedCategory}` : 'Kategori'}
+                </span>
+                <svg
+                  className={`w-3.5 h-3.5 transition-transform duration-200 ${isCategoryOpen ? 'rotate-180' : ''}`}
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M19 9l-7 7-7-7" />
+                </svg>
+              </button>
+
+              {/* Dropdown Menu Categories */}
+              {isCategoryOpen && (
+                <div className="absolute top-full left-0 sm:right-auto mt-2 w-80 bg-white rounded-2xl shadow-2xl border border-slate-200/80 p-3.5 z-50 animate-in fade-in slide-in-from-top-2 duration-150">
+                  <div className="flex items-center justify-between pb-2 mb-2 border-b border-slate-100">
+                    <span className="text-[11px] font-black uppercase tracking-wider text-slate-800">Pilih Kategori Buku</span>
+                    <span className="text-[10px] text-orange-500 font-bold">{categories.length} Kategori</span>
+                  </div>
+
+                  {/* Search inside categories */}
+                  <div className="relative mb-2">
+                    <input
+                      type="text"
+                      placeholder="Cari kategori..."
+                      value={categorySearch}
+                      onChange={(e) => setCategorySearch(e.target.value)}
+                      className="w-full text-xs pl-8 pr-3 py-1.5 bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:bg-white focus:border-orange-500 transition-colors"
+                      autoFocus
+                    />
+                    <svg className="w-3.5 h-3.5 text-slate-400 absolute left-2.5 top-1/2 -translate-y-1/2 pointer-events-none" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                    </svg>
+                  </div>
+
+                  {/* List of categories */}
+                  <div className="max-h-64 overflow-y-auto space-y-1 pr-1">
+                    {/* Option: Semua Kategori */}
+                    <button
+                      onClick={() => handleSelectCategory(null)}
+                      className={`w-full text-left px-3 py-2 rounded-xl text-xs font-bold flex items-center justify-between transition-colors ${
+                        selectedCategory === null
+                          ? 'bg-orange-500 text-white shadow-sm'
+                          : 'text-slate-700 hover:bg-slate-100'
+                      }`}
+                    >
+                      <span>Semua Kategori</span>
+                      <span className={`text-[10px] px-2 py-0.5 rounded-full ${selectedCategory === null ? 'bg-white/20 text-white' : 'bg-slate-100 text-slate-500'}`}>
+                        Semua
+                      </span>
+                    </button>
+
+                    {filteredCategories.length > 0 ? (
+                      filteredCategories.map((cat) => {
+                        const isSelected = selectedCategory === cat.name;
+                        return (
+                          <button
+                            key={cat.name}
+                            onClick={() => handleSelectCategory(cat.name)}
+                            className={`w-full text-left px-3 py-2 rounded-xl text-xs font-semibold flex items-center justify-between transition-colors ${
+                              isSelected
+                                ? 'bg-orange-500 text-white shadow-sm'
+                                : 'text-slate-700 hover:bg-orange-50 hover:text-orange-600'
+                            }`}
+                          >
+                            <span className="truncate pr-2">{cat.name}</span>
+                            <span className={`text-[10px] px-2 py-0.5 rounded-full font-bold shrink-0 ${isSelected ? 'bg-white/20 text-white' : 'bg-slate-100 text-slate-500'}`}>
+                              {cat.count}
+                            </span>
+                          </button>
+                        );
+                      })
+                    ) : (
+                      <div className="text-center py-4 text-xs text-slate-400">
+                        Kategori &quot;{categorySearch}&quot; tidak ditemukan.
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
+            </div>
           </div>
 
           {/* Search Bar */}
-          <div className="relative w-full md:w-[300px]">
+          <div className="relative w-full md:w-[280px]">
             <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
               <svg className="h-5 w-5 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
@@ -293,6 +479,43 @@ export default function PresmaLibSection() {
           </div>
 
         </div>
+
+        {/* Active Filter Chips Bar */}
+        {(selectedCategory || searchQuery) && (
+          <div className="flex items-center gap-2 flex-wrap -mt-4 pb-2">
+            <span className="text-xs text-slate-400 font-semibold">Filter:</span>
+            {selectedCategory && (
+              <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-orange-100 text-orange-700 text-xs font-bold rounded-full border border-orange-200">
+                Kategori: {selectedCategory}
+                <button
+                  onClick={() => handleSelectCategory(null)}
+                  className="w-4 h-4 rounded-full bg-orange-200 hover:bg-orange-300 text-orange-800 flex items-center justify-center text-xs transition-colors"
+                  title="Hapus filter kategori"
+                >
+                  ✕
+                </button>
+              </span>
+            )}
+            {searchQuery && (
+              <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-slate-100 text-slate-700 text-xs font-semibold rounded-full border border-slate-200">
+                Pencarian: &quot;{searchQuery}&quot;
+                <button
+                  onClick={() => setSearchQuery('')}
+                  className="w-4 h-4 rounded-full bg-slate-200 hover:bg-slate-300 text-slate-700 flex items-center justify-center text-xs transition-colors"
+                  title="Hapus kata kunci"
+                >
+                  ✕
+                </button>
+              </span>
+            )}
+            <button
+              onClick={handleResetExploration}
+              className="text-xs text-orange-500 font-bold hover:underline hover:text-orange-600 transition-colors ml-1"
+            >
+              Reset Semua Filter
+            </button>
+          </div>
+        )}
 
         {/* Conditional Render: Books Grid OR Detail View */}
         {!selectedBook ? (
@@ -405,7 +628,17 @@ export default function PresmaLibSection() {
                   </svg>
                 </span>
                 <h3 className="text-lg font-black text-slate-700">Buku tidak ditemukan</h3>
-                <p className="text-sm text-slate-500 mt-1">Coba kata kunci lain, seperti &quot;Buku Java&quot;.</p>
+                <p className="text-sm text-slate-500 mt-1">
+                  {selectedCategory
+                    ? `Tidak ada buku ditemukan untuk kategori "${selectedCategory}".`
+                    : 'Coba kata kunci lain atau pilih kategori lain.'}
+                </p>
+                <button
+                  onClick={handleResetExploration}
+                  className="mt-4 px-5 py-2 bg-orange-500 text-white text-xs font-bold rounded-full hover:bg-orange-600 transition-colors shadow-sm"
+                >
+                  Kembali ke Eksplorasi
+                </button>
               </div>
             )}
           </div>

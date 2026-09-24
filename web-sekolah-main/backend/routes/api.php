@@ -51,6 +51,7 @@ Route::prefix('v1')->group(function () {
     Route::post('/ppdb', [PpdbController::class, 'store']);
 
     Route::get('/buku', [BukuController::class, 'index']);
+    Route::get('/buku/kategori', [BukuController::class, 'categories']);
     Route::get('/buku/{id}', [BukuController::class, 'show']);
 
 });

@@ -49,9 +49,51 @@ class BukuController extends Controller
             });
         }
 
+        // Filter berdasarkan kategori dari subjek_kategori
+        if ($request->filled('category')) {
+            $category = $request->input('category');
+            $query->where(function ($q) use ($category) {
+                $q->where('subjek_kategori', 'like', "%<{$category}>%")
+                  ->orWhere('subjek_kategori', 'like', "%{$category}%");
+            });
+        }
+
         $buku = $query->paginate(18);
 
         return response()->json($buku);
+    }
+
+    public function categories()
+    {
+        $raw = BukuSlims::whereNotNull('subjek_kategori')
+            ->where('subjek_kategori', '!=', '')
+            ->pluck('subjek_kategori');
+
+        $cats = [];
+        foreach ($raw as $r) {
+            preg_match_all('/<([^>]+)>/', $r, $matches);
+            if (!empty($matches[1])) {
+                foreach ($matches[1] as $c) {
+                    $c = trim($c);
+                    // Filter tag yang valid (panjang > 2)
+                    if (!empty($c) && strlen($c) > 2) {
+                        $cats[$c] = ($cats[$c] ?? 0) + 1;
+                    }
+                }
+            }
+        }
+
+        arsort($cats);
+
+        $result = [];
+        foreach ($cats as $name => $count) {
+            $result[] = [
+                'name' => $name,
+                'count' => $count,
+            ];
+        }
+
+        return response()->json($result);
     }
 
     public function show($id)
