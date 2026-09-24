@@ -276,7 +276,7 @@ export default function Navbar() {
           </div>
 
           <div className="pp-menu-footer">
-            <span>SMK PRESTASI PRIMA</span>
+            <span>SMK PRESTASI PRIMA • JAKARTA TIMUR</span>
             <span>BEYOND EDUCATION • IF BETTER IS POSSIBLE, GOOD IS NOT ENOUGH</span>
           </div>
         </div>
