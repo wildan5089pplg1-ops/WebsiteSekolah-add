@@ -4,7 +4,7 @@ import './globals.css';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import { ThemeProvider } from '@/components/ThemeProvider';
-import ChatBot from '@/components/ChatBot';
+import PresmaChatbot from "@/components/PresmaChatbot";
 
 const inter = Inter({ subsets: ['latin'] });
 
@@ -19,13 +19,23 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="id" className="scroll-smooth" suppressHydrationWarning>
-      <body className={`${inter.className} bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 min-h-screen flex flex-col antialiased selection:bg-amber-500 selection:text-slate-950 transition-colors duration-300`}>
+     <html lang="id" className="scroll-smooth" suppressHydrationWarning>
+      <body className={`${inter.className} bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-white`}>
         <ThemeProvider attribute="class" defaultTheme="light" enableSystem>
           <Navbar />
-          <main className="flex-1">{children}</main>
+
+          <main className="flex-1">
+            {children}
+          </main>
+
           <Footer />
-          <ChatBot />
+
+          <PresmaChatbot
+            proxyUrl="https://school-chatbot.rajendraonc.workers.dev/"
+            schoolName="SMK PRESTASI PRIMA"
+            accentColor="#F96501"
+            greeting="Halo! 👋 Saya PRESMA, asisten informasi SMK Prestasi Prima."
+          />
         </ThemeProvider>
       </body>
     </html>
