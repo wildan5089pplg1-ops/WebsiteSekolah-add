@@ -46,22 +46,22 @@ export const navigation: NavSection[] = [
   },
   {
     name: "Program Keahlian",
-    href: "/#program",
+    href: "/program",
     description: "Kompetensi keahlian unggulan berbasis industri masa depan.",
     subLinks: [
       {
         name: "BCF",
-        href: "/#program",
+        href: "/program/bcf",
         desc: "Kreativitas produksi siaran, sinematografi, dan konten digital.",
       },
       {
         name: "DKV",
-        href: "/#program",
+        href: "/program/dkv",
         desc: "Eksplorasi grafis, animasi, UI/UX, dan komunikasi visual.",
       },
       {
         name: "TJKT",
-        href: "/#program",
+        href: "/program/tjkt",
         desc: "Infrastruktur jaringan canggih, server, dan cybersecurity.",
       },
       {
