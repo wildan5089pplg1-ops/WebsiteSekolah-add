@@ -9,6 +9,24 @@ use Illuminate\Support\Facades\Validator;
 
 class ContactController extends Controller
 {
+    public function index()
+    {
+        $messages = ContactMessage::orderBy('created_at', 'desc')->get();
+        return response()->json([
+            'success' => true,
+            'data' => $messages
+        ]);
+    }
+
+    public function destroy($id)
+    {
+        $message = ContactMessage::find($id);
+        if (!$message) {
+            return response()->json(['success' => false, 'message' => 'Pesan tidak ditemukan'], 404);
+        }
+        $message->delete();
+        return response()->json(['success' => true, 'message' => 'Pesan berhasil dihapus']);
+    }
     public function store(Request $request)
     {
         $validator = Validator::make($request->all(), [
