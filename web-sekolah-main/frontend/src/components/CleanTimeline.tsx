@@ -57,9 +57,20 @@ const timelineData = [
         <path strokeLinecap="round" strokeLinejoin="round" d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M7 19h10a2 2 0 002-2V7a2 2 0 00-2-2H7a2 2 0 00-2 2v10a2 2 0 002 2zM9 9h6v6H9V9z" />
       </svg>
     )
+  },
+
+  {
+    id: 6,
+    year: '2026',
+    title: 'Achieving Perfection',
+    description: 'Melangkah menuju standar terbaik melalui inovasi, prestasi, dan kualitas berkelanjutan.',
+    icon: (
+      <svg className="w-10 h-10 md:w-12 md:h-12 text-slate-400 transition-colors" fill="currentColor" viewBox="0 0 24 24">
+        <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 14l-4-4 1.41-1.41L10 13.17l6.59-6.59L18 8l-8 8z" />
+      </svg>
+    )
   }
 ];
-
 export default function CleanTimeline() {
   const containerRef = useRef<HTMLDivElement>(null);
   const rafRef = useRef<number | null>(null);
@@ -71,27 +82,27 @@ export default function CleanTimeline() {
 
     const updateScroll = () => {
       if (!containerRef.current) return;
-      
+
       const rect = containerRef.current.getBoundingClientRect();
       const windowHeight = window.innerHeight;
       const scrollableDistance = rect.height - windowHeight;
-      
+
       let progress = 0;
       if (scrollableDistance > 0) {
         progress = -rect.top / scrollableDistance;
         progress = Math.min(1, Math.max(0, progress));
       }
-      
+
       setScrollProgress(progress);
-      
+
       const index = Math.round(progress * (timelineData.length - 1));
       setActiveIndex(index);
-      
+
       animationFrameId = requestAnimationFrame(updateScroll);
     };
 
     updateScroll();
-    
+
     return () => {
       if (animationFrameId) cancelAnimationFrame(animationFrameId);
     };
@@ -100,17 +111,17 @@ export default function CleanTimeline() {
   const baseAngle = 15;
   const totalAngle = baseAngle * (timelineData.length - 1);
   const startAngle = totalAngle / 2;
-  
+
   const currentRotation = startAngle - (scrollProgress * totalAngle);
-  
+
   const circleSize = 3000;
   const radius = circleSize / 2;
 
   return (
     <section id="clean-journey-section" ref={containerRef} className="relative w-full bg-[#0a1128]" style={{ height: '400vh' }}>
       <div className="sticky top-0 w-full h-screen overflow-hidden flex flex-col items-center">
-        
-        <div 
+
+        <div
           className="absolute inset-0 opacity-[0.15]"
           style={{
             backgroundImage: 'radial-gradient(circle at center, #cbd5e1 1px, transparent 1px)',
@@ -129,7 +140,7 @@ export default function CleanTimeline() {
           </div>
         </div>
 
-        <div 
+        <div
           className="absolute left-1/2 rounded-full border-t-[1.5px] border-slate-700/80"
           style={{
             width: `${circleSize}px`,
@@ -142,39 +153,39 @@ export default function CleanTimeline() {
           }}
         >
           {timelineData.map((item, i) => {
-             const itemAngle = -startAngle + (i * baseAngle);
-             return (
-               <div 
-                 key={item.id}
-                 className="absolute top-1/2 left-1/2 w-6 h-6 -ml-3 -mt-3"
-                 style={{
-                   transform: `rotate(${itemAngle}deg) translateY(-${radius}px)`
-                 }}
-               >
-                 <div className={`w-full h-full rounded-full border-[5px] border-[#0a1128] transition-all duration-300 ${i === activeIndex ? 'bg-orange-500 scale-125 shadow-[0_0_25px_#f97316]' : 'bg-slate-600 scale-75'}`}></div>
-                 
-                 <div 
-                   className="absolute bottom-full mb-6 left-1/2"
-                   style={{ 
-                     transform: `translateX(-50%) rotate(${-itemAngle - currentRotation}deg)`,
-                     willChange: 'transform'
-                   }}
-                 >
-                   <span className={`text-2xl md:text-3xl font-black transition-colors duration-500 ${i === activeIndex ? 'text-orange-500 drop-shadow-[0_0_10px_rgba(249,115,22,0.8)]' : 'text-slate-500/40'}`}>
-                     {item.year}
-                   </span>
-                 </div>
-               </div>
-             )
+            const itemAngle = -startAngle + (i * baseAngle);
+            return (
+              <div
+                key={item.id}
+                className="absolute top-1/2 left-1/2 w-6 h-6 -ml-3 -mt-3"
+                style={{
+                  transform: `rotate(${itemAngle}deg) translateY(-${radius}px)`
+                }}
+              >
+                <div className={`w-full h-full rounded-full border-[5px] border-[#0a1128] transition-all duration-300 ${i === activeIndex ? 'bg-orange-500 scale-125 shadow-[0_0_25px_#f97316]' : 'bg-slate-600 scale-75'}`}></div>
+
+                <div
+                  className="absolute bottom-full mb-6 left-1/2"
+                  style={{
+                    transform: `translateX(-50%) rotate(${-itemAngle - currentRotation}deg)`,
+                    willChange: 'transform'
+                  }}
+                >
+                  <span className={`text-2xl md:text-3xl font-black transition-colors duration-500 ${i === activeIndex ? 'text-orange-500 drop-shadow-[0_0_10px_rgba(249,115,22,0.8)]' : 'text-slate-500/40'}`}>
+                    {item.year}
+                  </span>
+                </div>
+              </div>
+            )
           })}
         </div>
-        
+
         <div className="absolute top-[52vh] left-0 right-0 flex justify-center px-4 w-full h-[48vh]">
           <div className="relative w-full max-w-4xl h-full flex flex-col items-center justify-start pt-2">
             {timelineData.map((item, i) => {
               const isActive = i === activeIndex;
               return (
-                <div 
+                <div
                   key={item.id}
                   className={`absolute inset-0 flex flex-col items-center text-center transition-all duration-700 ease-in-out ${isActive ? 'opacity-100 scale-100 pointer-events-auto' : 'opacity-0 scale-95 pointer-events-none'}`}
                 >
@@ -184,7 +195,7 @@ export default function CleanTimeline() {
                         {item.icon}
                       </div>
                     </div>
-                    
+
                     <h3 className="text-3xl md:text-4xl font-bold text-white mb-3 md:mb-4 drop-shadow-2xl">{item.title}</h3>
                     <p className="text-slate-300 text-sm md:text-base max-w-lg leading-relaxed">
                       {item.description}

@@ -58,6 +58,17 @@ const timelineData = [
         <path strokeLinecap="round" strokeLinejoin="round" d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M7 19h10a2 2 0 002-2V7a2 2 0 00-2-2H7a2 2 0 00-2 2v10a2 2 0 002 2zM9 9h6v6H9V9z" />
       </svg>
     )
+  },
+  {
+    id: 6,
+    year: '2026',
+    title: 'Achieving Perfection',
+    description: 'Melangkah menuju standar terbaik melalui inovasi, prestasi, dan kualitas berkelanjutan.',
+    icon: (
+      <svg className="w-10 h-10 md:w-12 md:h-12 text-slate-400 transition-colors" fill="currentColor" viewBox="0 0 24 24">
+        <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 14l-4-4 1.41-1.41L10 13.17l6.59-6.59L18 8l-8 8z" />
+      </svg>
+    )
   }
 ];
 
@@ -147,7 +158,8 @@ export default function TimelineSection() {
             top: '44vh',
             marginLeft: `-${radius}px`,
             transform: `rotate(${currentRotation}deg)`,
-            transformOrigin: '50% 50%'
+            transformOrigin: '50% 50%',
+            willChange: 'transform'
           }}
         >
           {/* Timeline Nodes */}
@@ -172,7 +184,8 @@ export default function TimelineSection() {
                    style={{ 
                      // We counter-rotate the text by exact opposite of the current overall rotation
                      // so the text ALWAYS stays perfectly upright during the scroll!
-                     transform: `translateX(-50%) rotate(${-itemAngle - currentRotation}deg)`
+                     transform: `translateX(-50%) rotate(${-itemAngle - currentRotation}deg)`,
+                     willChange: 'transform'
                    }}
                  >
                    <span className={`text-2xl md:text-3xl font-black transition-colors duration-500 ${i === activeIndex ? 'text-orange-500 drop-shadow-[0_0_10px_rgba(249,115,22,0.8)]' : 'text-slate-500/40'}`}>

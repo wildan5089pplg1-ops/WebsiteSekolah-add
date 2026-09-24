@@ -1,5 +1,5 @@
 import React from 'react';
-import Navbar from '@/components/Navbar';
+import Navbar from '@/components/Navbar_old';
 import Footer from '@/components/Footer';
 
 const alumniData = [
@@ -54,7 +54,7 @@ export default function AlumniPTNPage() {
       </div>
 
       <div className="flex-grow w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
-        
+
         {/* Poster Showcase */}
         <div className="mb-20 flex justify-center">
           <div className="rounded-3xl overflow-hidden shadow-2xl border-[10px] border-white dark:border-slate-800 bg-white inline-block max-w-[800px] w-full group relative">
@@ -65,8 +65,8 @@ export default function AlumniPTNPage() {
 
         {/* Text Roster */}
         <div className="text-center mb-12">
-           <h2 className="text-3xl md:text-4xl font-black text-slate-900 dark:text-white uppercase tracking-wider mb-4">Daftar Bintang Prestasi</h2>
-           <div className="w-24 h-1.5 bg-orange-500 mx-auto rounded-full mb-8"></div>
+          <h2 className="text-3xl md:text-4xl font-black text-slate-900 dark:text-white uppercase tracking-wider mb-4">Daftar Bintang Prestasi</h2>
+          <div className="w-24 h-1.5 bg-orange-500 mx-auto rounded-full mb-8"></div>
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8 mb-20 justify-center">
