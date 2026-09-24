@@ -55,7 +55,6 @@ Route::prefix('v1')->group(function () {
 
     Route::post('/contact', [ContactController::class, 'store']);
 
-    Route::get('/ppdb', [PpdbController::class, 'index']);
     Route::post('/ppdb', [PpdbController::class, 'store']);
 
     Route::get('/buku', [BukuController::class, 'index']);
@@ -81,6 +80,9 @@ Route::prefix('v1')->group(function () {
         // Contacts
         Route::get('/contact', [ContactController::class, 'index']);
         Route::delete('/contact/{id}', [ContactController::class, 'destroy']);
+
+        // PPDB
+        Route::get('/ppdb', [PpdbController::class, 'index']);
     });
 
 });
