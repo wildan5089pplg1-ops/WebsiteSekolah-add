@@ -1,6 +1,7 @@
 "use client";
 
 import React from 'react';
+import Link from 'next/link';
 
 const universities = [
   { id: 1, name: 'Universitas Indonesia', image: '/images/ptn/ui3.png', color: 'from-yellow-400 to-amber-500', shadow: 'shadow-yellow-500/20' },
@@ -93,6 +94,14 @@ export default function AlumniPTNSection() {
               />
             </div>
           ))}
+        </div>
+        
+        {/* Link to Detail Page */}
+        <div className="mt-16 text-center relative z-20">
+          <Link href="/alumni-ptn" className="inline-flex items-center gap-3 px-8 py-4 bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 text-white font-black rounded-full shadow-lg hover:shadow-orange-500/30 transition-all transform hover:-translate-y-1 group tracking-wider uppercase text-sm">
+            Lihat Detail Alumni PTN
+            <svg className="w-5 h-5 group-hover:translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M17 8l4 4m0 0l-4 4m4-4H3" /></svg>
+          </Link>
         </div>
         
       </div>
