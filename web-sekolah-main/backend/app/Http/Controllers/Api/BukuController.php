@@ -3,19 +3,41 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Http\Traits\ApiResponseTrait;
 use App\Models\BukuSlims;
+use App\Services\BukuCategoryService;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\DB;
 
+/**
+ * BukuController
+ *
+ * Mengelola endpoint API untuk katalog buku PresmaLib.
+ * Mengikuti prinsip Thin Controller: validasi → delegasi ke service → kembalikan response.
+ *
+ * Standar yang diterapkan:
+ * - Input validation di semua endpoint
+ * - Format response seragam via ApiResponseTrait
+ * - Logika bisnis di BukuCategoryService (bukan di Controller)
+ * - Cache server-side + HTTP Cache-Control headers
+ * - FULLTEXT search (bukan LIKE '%x%')
+ */
 class BukuController extends Controller
 {
-    // Kolom yang ditampilkan di grid dan detail cepat
+    use ApiResponseTrait;
+
+    /**
+     * Kolom untuk tampilan grid/kartu buku.
+     * deskripsi_abstrak tidak disertakan — kolom TEXT panjang yang hanya
+     * ditampilkan di detail view, bukan di grid.
+     */
     private const GRID_COLUMNS = [
         'id', 'judul', 'pengarang', 'nama_file_cover',
-        'penerbit', 'tahun_terbit', 'subjek_kategori',
-        'deskripsi_abstrak', 'isbn_issn',
+        'penerbit', 'tahun_terbit', 'isbn_issn',
     ];
 
-    // Kolom lengkap untuk halaman detail
     private const DETAIL_COLUMNS = [
         'id', 'judul', 'pengarang', 'nama_file_cover',
         'penerbit', 'tahun_terbit', 'isbn_issn',
@@ -23,88 +45,136 @@ class BukuController extends Controller
         'klasifikasi', 'no_panggil', 'subjek_kategori', 'gmd',
     ];
 
-    public function index(Request $request)
+    /** Cache key publik — dipakai oleh `php artisan buku:clear-cache`. */
+    public const CACHE_KEY_CATEGORIES = 'buku_categories_v2';
+
+    public function __construct(
+        private readonly BukuCategoryService $categoryService
+    ) {}
+
+    // =========================================================================
+    // PUBLIC ENDPOINTS
+    // =========================================================================
+
+    /**
+     * GET /api/v1/buku
+     *
+     * Daftar buku dengan paginasi, pencarian FULLTEXT, dan filter kategori.
+     *
+     * Response format:
+     * {
+     *   "success": true,
+     *   "data": [...books...],
+     *   "meta": { "current_page": 1, "last_page": 5, "total": 90, ... }
+     * }
+     */
+    public function index(Request $request): JsonResponse
     {
-        $query = BukuSlims::select(self::GRID_COLUMNS)
-            ->whereNotNull('judul')
-            ->where('judul', '!=', '')
-            ->whereIn('id', function ($sub) {
-                $sub->selectRaw('MIN(id)')
-                    ->from('buku_slims')
-                    ->whereNotNull('judul')
-                    ->where('judul', '!=', '')
-                    ->groupBy('judul');
-            })
-            ->orderBy('judul', 'asc');
+        $validated = $request->validate([
+            'search'   => ['sometimes', 'string', 'max:100'],
+            'category' => ['sometimes', 'string', 'max:150'],
+            'page'     => ['sometimes', 'integer', 'min:1'],
+        ]);
 
-        // Gunakan filled() bukan has() agar string kosong "" tidak memicu query search
-        if ($request->filled('search')) {
-            $search = $request->input('search');
+        $query = BukuSlims::select(array_map(fn($col) => "buku_slims.{$col}", self::GRID_COLUMNS))
+            ->joinSub($this->deduplicateJoin(), 'dedup', 'buku_slims.id', '=', 'dedup.min_id')
+            ->orderBy('buku_slims.judul', 'asc');
 
-            // Gunakan where(function) agar grouping benar:
-            // WHERE (judul LIKE '%x%' OR pengarang LIKE '%x%')
-            $query->where(function ($q) use ($search) {
-                $q->where('judul', 'like', "%{$search}%")
-                  ->orWhere('pengarang', 'like', "%{$search}%");
-            });
+        if (!empty($validated['search'])) {
+            $query->searchText($validated['search']);
         }
 
-        // Filter berdasarkan kategori dari subjek_kategori
-        if ($request->filled('category')) {
-            $category = $request->input('category');
-            $query->where(function ($q) use ($category) {
-                $q->where('subjek_kategori', 'like', "%<{$category}>%")
-                  ->orWhere('subjek_kategori', 'like', "%{$category}%");
-            });
+        if (!empty($validated['category'])) {
+            $query->filterByCategory($validated['category']);
         }
 
-        $buku = $query->paginate(18);
+        $paginator = $query->paginate(config('presmalib.per_page', 18));
 
-        return response()->json($buku);
+        return $this->paginatedResponse($paginator, 'OK', $this->cacheHeaders(60));
     }
 
-    public function categories()
+    /**
+     * GET /api/v1/buku/kategori
+     *
+     * Daftar kategori hierarkis. Server-side cache 1 jam.
+     *
+     * Response format:
+     * {
+     *   "success": true,
+     *   "data": [ { "name": "Fiksi & Novel", "count": 52, "children": [...] }, ... ]
+     * }
+     */
+    public function categories(): JsonResponse
     {
-        $raw = BukuSlims::whereNotNull('subjek_kategori')
-            ->where('subjek_kategori', '!=', '')
-            ->pluck('subjek_kategori');
+        $cacheKey = config('presmalib.cache.categories_key', self::CACHE_KEY_CATEGORIES);
+        $cacheTtl = config('presmalib.cache.categories_ttl', 3600);
 
-        $cats = [];
-        foreach ($raw as $r) {
-            preg_match_all('/<([^>]+)>/', $r, $matches);
-            if (!empty($matches[1])) {
-                foreach ($matches[1] as $c) {
-                    $c = trim($c);
-                    // Filter tag yang valid (panjang > 2)
-                    if (!empty($c) && strlen($c) > 2) {
-                        $cats[$c] = ($cats[$c] ?? 0) + 1;
-                    }
-                }
-            }
-        }
+        $data = Cache::remember($cacheKey, $cacheTtl, function () {
+            $raw = DB::table('buku_slims')
+                ->select('buku_slims.subjek_kategori')
+                ->joinSub($this->deduplicateJoin(), 'dedup', 'buku_slims.id', '=', 'dedup.min_id')
+                ->whereNotNull('buku_slims.subjek_kategori')
+                ->where('buku_slims.subjek_kategori', '!=', '')
+                ->pluck('buku_slims.subjek_kategori')
+                ->all();
 
-        arsort($cats);
+            // Delegasi ke Service — Controller tidak lagi tahu detail logika
+            return $this->categoryService->buildHierarchy($raw);
+        });
 
-        $result = [];
-        foreach ($cats as $name => $count) {
-            $result[] = [
-                'name' => $name,
-                'count' => $count,
-            ];
-        }
-
-        return response()->json($result);
+        return $this->successResponse($data, 'OK', 200, $this->cacheHeaders(300));
     }
 
-    public function show($id)
+    /**
+     * GET /api/v1/buku/{id}
+     *
+     * Detail satu buku. Lookup by PRIMARY KEY (O(log n)).
+     *
+     * Response format:
+     * { "success": true, "data": { ...book fields... } }
+     */
+    public function show(int $id): JsonResponse
     {
-        // Ambil hanya kolom yang diperlukan untuk halaman detail
+        if ($id <= 0) {
+            return $this->invalidResponse('ID buku tidak valid.');
+        }
+
         $buku = BukuSlims::select(self::DETAIL_COLUMNS)->find($id);
 
         if (!$buku) {
-            return response()->json(['message' => 'Buku tidak ditemukan'], 404);
+            return $this->notFoundResponse('Buku tidak ditemukan.');
         }
 
-        return response()->json($buku);
+        return $this->successResponse($buku, 'OK', 200, $this->cacheHeaders(300));
+    }
+
+    // =========================================================================
+    // PRIVATE HELPERS
+    // =========================================================================
+
+    /**
+     * Subquery JOIN untuk deduplikasi judul: ambil MIN(id) per judul unik.
+     * Dipakai bersama oleh index() dan categories() agar konsisten.
+     */
+    private function deduplicateJoin(): \Illuminate\Database\Query\Builder
+    {
+        return DB::table('buku_slims as dedup')
+            ->selectRaw('MIN(dedup.id) as min_id')
+            ->whereNotNull('dedup.judul')
+            ->where('dedup.judul', '!=', '')
+            ->groupBy('dedup.judul');
+    }
+
+    /**
+     * HTTP Cache-Control headers untuk response publik (read-only).
+     *
+     * @param int $seconds Durasi max-age cache dalam detik
+     */
+    private function cacheHeaders(int $seconds): array
+    {
+        return [
+            'Cache-Control' => "public, max-age={$seconds}, stale-while-revalidate=60",
+            'Vary'          => 'Accept-Encoding',
+        ];
     }
 }

@@ -15,9 +15,15 @@ interface Book {
   subjek_kategori?: string | null;
 }
 
-interface Category {
+interface CategoryChild {
   name: string;
   count: number;
+}
+
+interface CategoryGroup {
+  name: string;
+  count: number;
+  children: CategoryChild[];
 }
 
 // Curated aesthetic gradients for dynamic digital book covers
@@ -182,9 +188,11 @@ export default function PresmaLibSection() {
   const [books, setBooks] = useState<Book[]>([]);
   const [loading, setLoading] = useState(true);
 
-  // Category states
-  const [categories, setCategories] = useState<Category[]>([]);
+  // Category states (hierarchical)
+  const [categoryGroups, setCategoryGroups] = useState<CategoryGroup[]>([]);
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+  // Which parent group name is expanded in the dropdown
+  const [expandedGroup, setExpandedGroup] = useState<string | null>(null);
   const [isCategoryOpen, setIsCategoryOpen] = useState(false);
   const [categorySearch, setCategorySearch] = useState('');
   const categoryDropdownRef = useRef<HTMLDivElement>(null);
@@ -194,13 +202,14 @@ export default function PresmaLibSection() {
   const [totalPages, setTotalPages] = useState(1);
   const [totalItems, setTotalItems] = useState(0);
 
-  // Fetch categories from backend API
+  // Fetch hierarchical category groups from backend API
+  // Format response: { success: true, data: CategoryGroup[] }
   const fetchCategories = async () => {
     try {
       const res = await fetch('http://localhost:8000/api/v1/buku/kategori');
       if (res.ok) {
-        const data = await res.json();
-        setCategories(data || []);
+        const json = await res.json();
+        setCategoryGroups(json.data || []);
       }
     } catch (err) {
       console.error('Error fetching categories:', err);
@@ -208,6 +217,7 @@ export default function PresmaLibSection() {
   };
 
   // Fetch books from API with search, page, and category filters
+  // Format response: { success: true, data: Book[], meta: { current_page, last_page, total, ... } }
   const fetchBooks = async (query: string = '', page: number = 1, category: string | null = selectedCategory) => {
     setLoading(true);
     try {
@@ -219,12 +229,12 @@ export default function PresmaLibSection() {
         url += `&category=${encodeURIComponent(category)}`;
       }
       const response = await fetch(url);
-      const data = await response.json();
-      // Laravel pagination returns items in data.data
-      setBooks(data.data || []);
-      setCurrentPage(data.current_page || page);
-      setTotalPages(data.last_page || 1);
-      setTotalItems(data.total || 0);
+      const json = await response.json();
+      // Format baru: { success, data: [...books], meta: { pagination } }
+      setBooks(json.data || []);
+      setCurrentPage(json.meta?.current_page || page);
+      setTotalPages(json.meta?.last_page || 1);
+      setTotalItems(json.meta?.total || 0);
     } catch (error) {
       console.error('Error fetching books:', error);
     } finally {
@@ -278,6 +288,8 @@ export default function PresmaLibSection() {
   const handleSelectCategory = (catName: string | null) => {
     setSelectedCategory(catName);
     setIsCategoryOpen(false);
+    setExpandedGroup(null);
+    setCategorySearch('');
     setCurrentPage(1);
     setSelectedBook(null);
     fetchBooks(searchQuery, 1, catName);
@@ -311,10 +323,24 @@ export default function PresmaLibSection() {
     return () => clearTimeout(delayDebounceFn);
   }, [searchQuery]);
 
-  // Filter categories by local search query in dropdown
-  const filteredCategories = categories.filter((c) =>
-    c.name.toLowerCase().includes(categorySearch.toLowerCase())
-  );
+  // When searching, flatten all children and filter by query
+  const searchLower = categorySearch.toLowerCase();
+  const filteredGroups: CategoryGroup[] = categorySearch.trim()
+    ? categoryGroups
+        .map((g) => ({
+          ...g,
+          children: g.children.filter((c) =>
+            c.name.toLowerCase().includes(searchLower) ||
+            g.name.toLowerCase().includes(searchLower)
+          ),
+        }))
+        .filter((g) => g.children.length > 0)
+    : categoryGroups;
+
+  // The parent group that the currently selected category belongs to
+  const selectedGroupName = selectedCategory
+    ? categoryGroups.find((g) => g.children.some((c) => c.name === selectedCategory))?.name ?? null
+    : null;
 
   return (
     <section id="presmalib" className="relative w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 mb-20 bg-white scroll-mt-24">
@@ -391,12 +417,12 @@ export default function PresmaLibSection() {
                 </svg>
               </button>
 
-              {/* Dropdown Menu Categories */}
+              {/* Dropdown Menu Categories — Hierarchical */}
               {isCategoryOpen && (
                 <div className="absolute top-full left-0 sm:right-auto mt-2 w-80 bg-white rounded-2xl shadow-2xl border border-slate-200/80 p-3.5 z-50 animate-in fade-in slide-in-from-top-2 duration-150">
                   <div className="flex items-center justify-between pb-2 mb-2 border-b border-slate-100">
                     <span className="text-[11px] font-black uppercase tracking-wider text-slate-800">Pilih Kategori Buku</span>
-                    <span className="text-[10px] text-orange-500 font-bold">{categories.length} Kategori</span>
+                    <span className="text-[10px] text-orange-500 font-bold">{categoryGroups.length} Grup</span>
                   </div>
 
                   {/* Search inside categories */}
@@ -405,7 +431,7 @@ export default function PresmaLibSection() {
                       type="text"
                       placeholder="Cari kategori..."
                       value={categorySearch}
-                      onChange={(e) => setCategorySearch(e.target.value)}
+                      onChange={(e) => { setCategorySearch(e.target.value); setExpandedGroup(null); }}
                       className="w-full text-xs pl-8 pr-3 py-1.5 bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:bg-white focus:border-orange-500 transition-colors"
                       autoFocus
                     />
@@ -414,8 +440,8 @@ export default function PresmaLibSection() {
                     </svg>
                   </div>
 
-                  {/* List of categories */}
-                  <div className="max-h-64 overflow-y-auto space-y-1 pr-1">
+                  {/* List of hierarchical categories */}
+                  <div className="max-h-72 overflow-y-auto space-y-1 pr-1">
                     {/* Option: Semua Kategori */}
                     <button
                       onClick={() => handleSelectCategory(null)}
@@ -431,24 +457,73 @@ export default function PresmaLibSection() {
                       </span>
                     </button>
 
-                    {filteredCategories.length > 0 ? (
-                      filteredCategories.map((cat) => {
-                        const isSelected = selectedCategory === cat.name;
+                    {/* Group separator */}
+                    <div className="pt-1 pb-0.5">
+                      <span className="text-[9px] font-black uppercase tracking-widest text-slate-400 px-1">Berdasarkan Grup</span>
+                    </div>
+
+                    {filteredGroups.length > 0 ? (
+                      filteredGroups.map((group) => {
+                        const isGroupOpen = expandedGroup === group.name || !!categorySearch.trim() || selectedGroupName === group.name;
+                        const isGroupActive = selectedGroupName === group.name;
+
                         return (
-                          <button
-                            key={cat.name}
-                            onClick={() => handleSelectCategory(cat.name)}
-                            className={`w-full text-left px-3 py-2 rounded-xl text-xs font-semibold flex items-center justify-between transition-colors ${
-                              isSelected
-                                ? 'bg-orange-500 text-white shadow-sm'
-                                : 'text-slate-700 hover:bg-orange-50 hover:text-orange-600'
-                            }`}
-                          >
-                            <span className="truncate pr-2">{cat.name}</span>
-                            <span className={`text-[10px] px-2 py-0.5 rounded-full font-bold shrink-0 ${isSelected ? 'bg-white/20 text-white' : 'bg-slate-100 text-slate-500'}`}>
-                              {cat.count}
-                            </span>
-                          </button>
+                          <div key={group.name}>
+                            {/* Parent Group Button */}
+                            <button
+                              onClick={() => setExpandedGroup(isGroupOpen && !categorySearch.trim() ? null : group.name)}
+                              className={`w-full text-left px-3 py-2 rounded-xl text-xs font-bold flex items-center justify-between transition-all ${
+                                isGroupActive
+                                  ? 'bg-orange-100 text-orange-700'
+                                  : 'text-slate-800 hover:bg-slate-50'
+                              }`}
+                            >
+                              <span className="flex items-center gap-2">
+                                {/* Expand chevron */}
+                                <svg
+                                  className={`w-3 h-3 shrink-0 transition-transform duration-200 ${
+                                    isGroupOpen ? 'rotate-90 text-orange-500' : 'text-slate-400'
+                                  }`}
+                                  fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                                >
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 5l7 7-7 7" />
+                                </svg>
+                                <span className="truncate">{group.name}</span>
+                              </span>
+                              <span className={`text-[10px] px-2 py-0.5 rounded-full font-bold shrink-0 ml-2 ${
+                                isGroupActive ? 'bg-orange-200 text-orange-700' : 'bg-slate-100 text-slate-500'
+                              }`}>
+                                {group.count}
+                              </span>
+                            </button>
+
+                            {/* Children Sub-categories */}
+                            {isGroupOpen && (
+                              <div className="ml-4 mt-0.5 space-y-0.5 border-l-2 border-orange-100 pl-2">
+                                {group.children.map((child) => {
+                                  const isSelected = selectedCategory === child.name;
+                                  return (
+                                    <button
+                                      key={child.name}
+                                      onClick={() => handleSelectCategory(child.name)}
+                                      className={`w-full text-left px-2.5 py-1.5 rounded-lg text-[11px] font-semibold flex items-center justify-between transition-colors ${
+                                        isSelected
+                                          ? 'bg-orange-500 text-white shadow-sm'
+                                          : 'text-slate-600 hover:bg-orange-50 hover:text-orange-600'
+                                      }`}
+                                    >
+                                      <span className="truncate pr-2">{child.name}</span>
+                                      <span className={`text-[10px] px-1.5 py-0.5 rounded-full font-bold shrink-0 ${
+                                        isSelected ? 'bg-white/25 text-white' : 'bg-slate-100 text-slate-400'
+                                      }`}>
+                                        {child.count}
+                                      </span>
+                                    </button>
+                                  );
+                                })}
+                              </div>
+                            )}
+                          </div>
                         );
                       })
                     ) : (
