@@ -74,11 +74,18 @@ class BukuController extends Controller
             'search'   => ['sometimes', 'string', 'max:100'],
             'category' => ['sometimes', 'string', 'max:150'],
             'page'     => ['sometimes', 'integer', 'min:1'],
+            'per_page' => ['sometimes', 'integer', 'min:1'],
+            'admin'    => ['sometimes', 'boolean'],
         ]);
 
-        $query = BukuSlims::select(array_map(fn($col) => "buku_slims.{$col}", self::GRID_COLUMNS))
-            ->joinSub($this->deduplicateJoin(), 'dedup', 'buku_slims.id', '=', 'dedup.min_id')
-            ->orderBy('buku_slims.judul', 'asc');
+        $query = BukuSlims::select(array_map(fn($col) => "buku_slims.{$col}", self::GRID_COLUMNS));
+
+        // Skip deduplication if admin is true
+        if (empty($validated['admin'])) {
+            $query->joinSub($this->deduplicateJoin(), 'dedup', 'buku_slims.id', '=', 'dedup.min_id');
+        }
+
+        $query->orderBy('buku_slims.id', 'desc');
 
         if (!empty($validated['search'])) {
             $query->searchText($validated['search']);
@@ -88,9 +95,10 @@ class BukuController extends Controller
             $query->filterByCategory($validated['category']);
         }
 
-        $paginator = $query->paginate(config('presmalib.per_page', 18));
+        $perPage = $validated['per_page'] ?? config('presmalib.per_page', 18);
+        $paginator = $query->paginate($perPage);
 
-        return $this->paginatedResponse($paginator, 'OK', $this->cacheHeaders(60));
+        return $this->paginatedResponse($paginator, 'OK', empty($validated['admin']) ? $this->cacheHeaders(60) : []);
     }
 
     /**
@@ -176,5 +184,67 @@ class BukuController extends Controller
             'Cache-Control' => "public, max-age={$seconds}, stale-while-revalidate=60",
             'Vary'          => 'Accept-Encoding',
         ];
+    }
+
+    // =========================================================================
+    // ADMIN ROUTES (Protected)
+    // =========================================================================
+    
+    public function store(Request $request)
+    {
+        $validated = $request->validate([
+            'judul' => 'required|string|max:255',
+            'pengarang' => 'nullable|string|max:255',
+            'penerbit' => 'nullable|string|max:255',
+            'tahun_terbit' => 'nullable|string|max:4',
+            'isbn_issn' => 'nullable|string|max:255',
+            'deskripsi_fisik' => 'nullable|string',
+            'image' => 'nullable|string',
+            'kategori_1' => 'nullable|string|max:255',
+            'kategori_2' => 'nullable|string|max:255',
+        ]);
+
+        $buku = BukuSlims::create($validated);
+        Cache::flush();
+
+        return $this->successResponse($buku, 'Buku berhasil ditambahkan', 201);
+    }
+
+    public function update(Request $request, $id)
+    {
+        $buku = BukuSlims::find($id);
+        if (!$buku) {
+            return $this->errorResponse('Buku tidak ditemukan', 404);
+        }
+
+        $validated = $request->validate([
+            'judul' => 'sometimes|required|string|max:255',
+            'pengarang' => 'nullable|string|max:255',
+            'penerbit' => 'nullable|string|max:255',
+            'tahun_terbit' => 'nullable|string|max:4',
+            'isbn_issn' => 'nullable|string|max:255',
+            'deskripsi_fisik' => 'nullable|string',
+            'image' => 'nullable|string',
+            'kategori_1' => 'nullable|string|max:255',
+            'kategori_2' => 'nullable|string|max:255',
+        ]);
+
+        $buku->update($validated);
+        Cache::flush();
+
+        return $this->successResponse($buku, 'Buku berhasil diperbarui');
+    }
+
+    public function destroy($id)
+    {
+        $buku = BukuSlims::find($id);
+        if (!$buku) {
+            return $this->errorResponse('Buku tidak ditemukan', 404);
+        }
+
+        $buku->delete();
+        Cache::flush();
+
+        return $this->successResponse(null, 'Buku berhasil dihapus');
     }
 }
