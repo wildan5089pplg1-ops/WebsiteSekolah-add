@@ -188,6 +188,10 @@ a {
     border-color: rgba(249, 115, 22, .55);
 }
 
+.greeting-card--right {
+    justify-content: flex-end;
+}
+
 .greeting-card--right:hover {
     border-color: rgba(249, 115, 22, .55);
 }
