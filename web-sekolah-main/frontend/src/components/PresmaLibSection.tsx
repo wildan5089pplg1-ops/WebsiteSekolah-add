@@ -34,6 +34,43 @@ function getCoverStyle(id: number, title: string) {
   return COVER_GRADIENTS[Math.abs(hash) % COVER_GRADIENTS.length];
 }
 
+// Generates pagination items: 5 numbers in window, with '...' for remaining
+function getPaginationRange(currentPage: number, totalPages: number): (number | string)[] {
+  if (totalPages <= 7) {
+    return Array.from({ length: totalPages }, (_, i) => i + 1);
+  }
+
+  // 5 numbers window
+  let start = Math.max(1, currentPage - 2);
+  let end = Math.min(totalPages, currentPage + 2);
+
+  if (currentPage <= 3) {
+    start = 1;
+    end = 5;
+  } else if (currentPage >= totalPages - 2) {
+    start = totalPages - 4;
+    end = totalPages;
+  }
+
+  const range: (number | string)[] = [];
+
+  if (start > 1) {
+    range.push(1);
+    if (start > 2) range.push('...');
+  }
+
+  for (let i = start; i <= end; i++) {
+    range.push(i);
+  }
+
+  if (end < totalPages) {
+    if (end < totalPages - 1) range.push('...');
+    range.push(totalPages);
+  }
+
+  return range;
+}
+
 // Hybrid Book Cover Component (Backend Upload -> OpenLibrary ISBN -> Stylized Digital Cover)
 function BookCover({ book, size = 'sm' }: { book: Book; size?: 'sm' | 'lg' }) {
   const [imgSrc, setImgSrc] = useState<string | null>(null);
@@ -139,14 +176,22 @@ export default function PresmaLibSection() {
   const [books, setBooks] = useState<Book[]>([]);
   const [loading, setLoading] = useState(true);
 
+  // Pagination states
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [totalItems, setTotalItems] = useState(0);
+
   // Fetch books from API
-  const fetchBooks = async (query: string = '') => {
+  const fetchBooks = async (query: string = '', page: number = 1) => {
     setLoading(true);
     try {
-      const response = await fetch(`http://localhost:8000/api/v1/buku?search=${encodeURIComponent(query)}`);
+      const response = await fetch(`http://localhost:8000/api/v1/buku?search=${encodeURIComponent(query)}&page=${page}`);
       const data = await response.json();
       // Laravel pagination returns the array of items in data.data
       setBooks(data.data || []);
+      setCurrentPage(data.current_page || page);
+      setTotalPages(data.last_page || 1);
+      setTotalItems(data.total || 0);
     } catch (error) {
       console.error('Error fetching books:', error);
     } finally {
@@ -168,18 +213,29 @@ export default function PresmaLibSection() {
     }
   };
 
-  // Initial fetch and on search change
+  // Handle page change with smooth scroll to PresmaLib top
+  const handlePageChange = (newPage: number) => {
+    if (newPage < 1 || newPage > totalPages || newPage === currentPage) return;
+    setCurrentPage(newPage);
+    fetchBooks(searchQuery, newPage);
+    const element = document.getElementById('presmalib');
+    if (element) {
+      element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  };
+
+  // Initial fetch and on search change (reset to page 1)
   useEffect(() => {
-    // Add a small debounce for search typing
+    setCurrentPage(1);
     const delayDebounceFn = setTimeout(() => {
-      fetchBooks(searchQuery);
+      fetchBooks(searchQuery, 1);
     }, 500);
 
     return () => clearTimeout(delayDebounceFn);
   }, [searchQuery]);
 
   return (
-    <section className="relative w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 mb-20 bg-white">
+    <section id="presmalib" className="relative w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 mb-20 bg-white scroll-mt-24">
       
       {/* Background Watermark */}
       <div className="absolute inset-0 z-0 flex items-center justify-center opacity-[0.03] pointer-events-none">
@@ -246,27 +302,101 @@ export default function PresmaLibSection() {
                 <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-500"></div>
               </div>
             ) : books.length > 0 ? (
-              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-9 gap-4 gap-y-8">
-                {books.map((book) => (
-                  <div key={book.id} onClick={() => handleSelectBook(book)} className="flex flex-col items-center group cursor-pointer">
-                    {/* Book Cover Container with Shadow & Hover Animation */}
-                    <div className="w-full aspect-[2/3] bg-slate-900 rounded-lg border border-slate-200 shadow-md relative overflow-hidden mb-3 group-hover:-translate-y-1.5 group-hover:shadow-xl transition-all duration-300">
-                      <BookCover book={book} size="sm" />
+              <>
+                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-9 gap-4 gap-y-8">
+                  {books.map((book) => (
+                    <div key={book.id} onClick={() => handleSelectBook(book)} className="flex flex-col items-center group cursor-pointer">
+                      {/* Book Cover Container with Shadow & Hover Animation */}
+                      <div className="w-full aspect-[2/3] bg-slate-900 rounded-lg border border-slate-200 shadow-md relative overflow-hidden mb-3 group-hover:-translate-y-1.5 group-hover:shadow-xl transition-all duration-300">
+                        <BookCover book={book} size="sm" />
+                      </div>
+                      
+                      {/* Title & Action */}
+                      <h4 className="text-[10px] font-bold text-center text-slate-700 line-clamp-2 mb-1.5 h-7 leading-tight group-hover:text-orange-500 transition-colors">
+                        {book.judul}
+                      </h4>
+                      <button 
+                        onClick={(e) => { e.stopPropagation(); handleSelectBook(book); }}
+                        className="w-[90%] py-1.5 bg-orange-500 text-white text-[10px] font-bold rounded-full group-hover:bg-orange-600 transition-colors shadow-sm shadow-orange-500/20"
+                      >
+                        Lihat Detail
+                      </button>
                     </div>
-                    
-                    {/* Title & Action */}
-                    <h4 className="text-[10px] font-bold text-center text-slate-700 line-clamp-2 mb-1.5 h-7 leading-tight group-hover:text-orange-500 transition-colors">
-                      {book.judul}
-                    </h4>
-                    <button 
-                      onClick={(e) => { e.stopPropagation(); handleSelectBook(book); }}
-                      className="w-[90%] py-1.5 bg-orange-500 text-white text-[10px] font-bold rounded-full group-hover:bg-orange-600 transition-colors shadow-sm shadow-orange-500/20"
-                    >
-                      Lihat Detail
-                    </button>
+                  ))}
+                </div>
+
+                {/* Pagination Controls */}
+                {totalPages > 1 && (
+                  <div className="flex flex-col sm:flex-row items-center justify-between gap-4 mt-12 pt-8 border-t border-slate-100">
+                    {/* Information Text */}
+                    <p className="text-xs sm:text-sm text-slate-500 font-medium">
+                      Halaman <strong className="text-slate-800">{currentPage}</strong> dari <strong className="text-slate-800">{totalPages}</strong> ({totalItems} buku tersedia)
+                    </p>
+
+                    {/* Buttons Group */}
+                    <div className="flex items-center gap-1 sm:gap-2">
+                      {/* Previous Page Button */}
+                      <button
+                        onClick={() => handlePageChange(currentPage - 1)}
+                        disabled={currentPage === 1}
+                        className="px-3 py-2 text-xs font-bold rounded-xl border border-slate-200 bg-white text-slate-700 hover:bg-orange-50 hover:text-orange-600 hover:border-orange-200 disabled:opacity-35 disabled:cursor-not-allowed disabled:hover:bg-white disabled:hover:text-slate-700 disabled:hover:border-slate-200 transition-all flex items-center gap-1.5 shadow-sm"
+                        aria-label="Halaman sebelumnya"
+                      >
+                        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M15 19l-7-7 7-7" />
+                        </svg>
+                        <span className="hidden sm:inline">Sebelumnya</span>
+                      </button>
+
+                      {/* Numbered Buttons & Ellipsis */}
+                      <div className="flex items-center gap-1">
+                        {getPaginationRange(currentPage, totalPages).map((item, idx) => {
+                          if (item === '...') {
+                            return (
+                              <span
+                                key={`dots-${idx}`}
+                                className="w-8 h-8 sm:w-9 sm:h-9 flex items-center justify-center text-slate-400 font-black tracking-widest text-xs select-none"
+                              >
+                                ...
+                              </span>
+                            );
+                          }
+
+                          const pageNum = Number(item);
+                          const isActive = pageNum === currentPage;
+
+                          return (
+                            <button
+                              key={pageNum}
+                              onClick={() => handlePageChange(pageNum)}
+                              className={`w-8 h-8 sm:w-9 sm:h-9 rounded-xl text-xs font-bold transition-all flex items-center justify-center ${
+                                isActive
+                                  ? 'bg-orange-500 text-white shadow-md shadow-orange-500/30 scale-105'
+                                  : 'bg-white text-slate-700 border border-slate-200 hover:bg-orange-50 hover:text-orange-600 hover:border-orange-200 shadow-sm'
+                              }`}
+                            >
+                              {pageNum}
+                            </button>
+                          );
+                        })}
+                      </div>
+
+                      {/* Next Page Button */}
+                      <button
+                        onClick={() => handlePageChange(currentPage + 1)}
+                        disabled={currentPage === totalPages}
+                        className="px-3 py-2 text-xs font-bold rounded-xl border border-slate-200 bg-white text-slate-700 hover:bg-orange-50 hover:text-orange-600 hover:border-orange-200 disabled:opacity-35 disabled:cursor-not-allowed disabled:hover:bg-white disabled:hover:text-slate-700 disabled:hover:border-slate-200 transition-all flex items-center gap-1.5 shadow-sm"
+                        aria-label="Halaman selanjutnya"
+                      >
+                        <span className="hidden sm:inline">Selanjutnya</span>
+                        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 5l7 7-7 7" />
+                        </svg>
+                      </button>
+                    </div>
                   </div>
-                ))}
-              </div>
+                )}
+              </>
             ) : (
               <div className="flex flex-col items-center justify-center py-20 text-center">
                 <span className="w-14 h-14 bg-slate-100 rounded-full flex items-center justify-center text-slate-400 mb-4">
