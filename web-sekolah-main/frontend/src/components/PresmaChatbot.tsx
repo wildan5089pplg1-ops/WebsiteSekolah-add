@@ -28,22 +28,22 @@ interface PresmaChatbotProps {
 
 const QUICK_ACTIONS: QuickAction[] = [
   {
-    label: "🎓 Jurusan",
+    label: " Jurusan",
     prompt:
       "Apa saja jurusan yang tersedia di SMK Prestasi Prima?",
   },
   {
-    label: "📝 PPDB",
+    label: " PPDB",
     prompt:
       "Bagaimana cara pendaftaran PPDB SMK Prestasi Prima?",
   },
   {
-    label: "🏫 Fasilitas",
+    label: " Fasilitas",
     prompt:
       "Apa saja fasilitas yang tersedia di sekolah?",
   },
   {
-    label: "📞 Kontak",
+    label: " Kontak",
     prompt:
       "Bagaimana cara menghubungi SMK Prestasi Prima?",
   },
@@ -56,7 +56,7 @@ export default function PresmaChatbot({
   schoolName = "SMK PRESTASI PRIMA",
   accentColor = "#F97316",
   greeting =
-    "Halo! 👋 Saya PRESMA, asisten informasi SMK Prestasi Prima.",
+    "Halo! Saya PRESMA HELP, asisten informasi SMK Prestasi Prima.",
 }: PresmaChatbotProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [isSending, setIsSending] = useState(false);
@@ -428,7 +428,7 @@ export default function PresmaChatbot({
         {
           role: "assistant",
           content:
-            "Maaf, terjadi kendala saat menghubungkan ke PRESMA AI. " +
+            "Maaf, terjadi kendala saat menghubungkan ke PRESMA HELP. " +
             "Silakan coba lagi sebentar lagi. 🙏",
         },
       ]);
