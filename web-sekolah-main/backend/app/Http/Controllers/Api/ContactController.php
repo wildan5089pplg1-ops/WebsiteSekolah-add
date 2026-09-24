@@ -9,6 +9,9 @@ use Illuminate\Support\Facades\Validator;
 
 class ContactController extends Controller
 {
+    /**
+     * Menyimpan data pesan kontak yang dikirim oleh pengguna umum.
+     */
     public function store(Request $request)
     {
         $validator = Validator::make($request->all(), [
