@@ -66,7 +66,7 @@ export const navigation: NavSection[] = [
       },
       {
         name: "PPLG",
-        href: "/#program",
+        href: "/program/pplg",
         desc: "Software engineering, web development, dan mobile apps.",
       },
     ],
