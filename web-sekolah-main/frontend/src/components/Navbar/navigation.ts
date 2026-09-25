@@ -38,6 +38,11 @@ export const navigation: NavSection[] = [
         desc: "Sarana modern penunjang pembelajaran berkualitas.",
       },
       {
+        name: "Virtual Tour 360°",
+        href: "/virtual-tour",
+        desc: "Jelajahi seluruh fasilitas sekolah secara interaktif 360°.",
+      },
+      {
         name: "Prima Board",
         href: "/prima-board",
         desc: "Papan informasi digital dan pengumuman sekolah.",

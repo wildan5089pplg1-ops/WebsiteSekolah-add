@@ -6,6 +6,7 @@ import {
   useState,
   type KeyboardEvent,
 } from "react";
+import { usePathname } from "next/navigation";
 
 type Role = "user" | "assistant";
 
@@ -58,6 +59,7 @@ export default function PresmaChatbot({
   greeting =
     "Halo! Saya PRESMA HELP, asisten informasi SMK Prestasi Prima.",
 }: PresmaChatbotProps) {
+  const pathname = usePathname();
   const [isOpen, setIsOpen] = useState(false);
   const [isSending, setIsSending] = useState(false);
   const [input, setInput] = useState("");
@@ -537,6 +539,10 @@ export default function PresmaChatbot({
    * RENDER
    * =========================================================
    */
+
+  if (pathname?.startsWith("/virtual-tour")) {
+    return null;
+  }
 
   return (
     <>
