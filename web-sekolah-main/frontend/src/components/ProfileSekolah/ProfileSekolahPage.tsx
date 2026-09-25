@@ -7,7 +7,6 @@ import SchoolHighlights from "./SchoolHighlights";
 import CampusGallery from "./CampusGallery";
 import PrincipalMessage from "./PrincipalMessage";
 import SchoolVideo from "./SchoolVideo";
-import AlumniStory from "./AlumniStory";
 import ProfileCTA from "./ProfileCTA";
 
 export default function ProfileSekolahPage() {
@@ -37,8 +36,6 @@ export default function ProfileSekolahPage() {
       {/* SECTION 08 — VIDEO / SCHOOL EXPERIENCE */}
       <SchoolVideo />
 
-      {/* SECTION 09 — STUDENT / ALUMNI STORY */}
-      <AlumniStory />
 
       {/* SECTION 10 — CTA */}
       <ProfileCTA />
