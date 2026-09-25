@@ -829,7 +829,7 @@ export default function PresmaCareerSection({ initialTab = 'dashboard' }: { init
                           className="flex items-center justify-between p-3 bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-700/70 hover:border-orange-400 cursor-pointer transition-colors"
                         >
                           <div className="flex items-center gap-3">
-                            {item.category !== 'Semua' && item.category !== 'Karir' ? (
+                            {item.category !== 'Karir' ? (
                               <div className="w-8 h-8 rounded-lg bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 flex items-center justify-center p-1.5 shrink-0">
                                 <img src={`/images/majors/${item.category.toLowerCase()}.png`} alt={item.category} className="w-full h-full object-contain" />
                               </div>
@@ -1181,7 +1181,7 @@ export default function PresmaCareerSection({ initialTab = 'dashboard' }: { init
                       <div className="flex items-start gap-4 flex-1">
                         {/* Course Badge / Thumbnail */}
                         <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 flex flex-col items-center justify-center p-2 shrink-0 group-hover:scale-105 transition-transform overflow-hidden shadow-sm relative">
-                          {course.category !== 'Semua' && course.category !== 'Karir' ? (
+                          {course.category !== 'Karir' ? (
                             <img 
                               src={`/images/majors/${course.category.toLowerCase()}.png`}
                               alt={`Logo ${course.category}`}

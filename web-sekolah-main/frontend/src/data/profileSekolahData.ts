@@ -373,20 +373,6 @@ export const PROFILE_DATA = {
     },
   ] as AlumniStoryItem[],
 
-  location: {
-    label: "CAMPUS LOCATION",
-    title: "Temukan Kami.",
-    subtitle: "Kunjungi kampus modern kami di kawasan strategis Jakarta Timur.",
-    schoolName: "SMK Prestasi Prima",
-    addressLine1: "Jl. Hankam Raya No. 89, Cilangkap",
-    addressLine2: "Kecamatan Cipayung, Kota Jakarta Timur, DKI Jakarta 13870",
-    phone: "(021) 8430-8989",
-    whatsapp: "+62 812-9000-8989",
-    email: "info@prestasiprima.sch.id",
-    operationalHours: "Senin – Jumat: 06.30 – 17.00 WIB",
-    mapsUrl: "https://maps.google.com/?q=SMK+Prestasi+Prima+Jakarta",
-  },
-
   cta: {
     badge: "PENDAFTARAN PESERTA DIDIK BARU",
     headline: "Bangun Masa Depanmu Bersama Prestasi Prima.",

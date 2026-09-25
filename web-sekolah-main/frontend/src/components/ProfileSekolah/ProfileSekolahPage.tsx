@@ -8,7 +8,6 @@ import CampusGallery from "./CampusGallery";
 import PrincipalMessage from "./PrincipalMessage";
 import SchoolVideo from "./SchoolVideo";
 import AlumniStory from "./AlumniStory";
-import LocationSection from "./LocationSection";
 import ProfileCTA from "./ProfileCTA";
 
 export default function ProfileSekolahPage() {
@@ -41,10 +40,7 @@ export default function ProfileSekolahPage() {
       {/* SECTION 09 — STUDENT / ALUMNI STORY */}
       <AlumniStory />
 
-      {/* SECTION 10 — CAMPUS LOCATION */}
-      <LocationSection />
-
-      {/* SECTION 11 — CTA */}
+      {/* SECTION 10 — CTA */}
       <ProfileCTA />
     </div>
   );
