@@ -42,6 +42,14 @@ const achievements = [
     student: 'Tim Basket',
     image: '/images/prestasi-basket.jpeg',
     color: 'from-yellow-500 to-orange-500'
+  },
+  {
+    id: 6,
+    title: 'Juara 3 Piala Suratin U15 2025',
+    event: 'Asprov PSSI DKI Jakarta',
+    student: 'Fattah Fadhlurrohman Hermawan',
+    image: '/images/prestasi-sepakbola.jpg',
+    color: 'from-orange-500 to-red-500'
   }
 ];
 
