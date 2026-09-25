@@ -8,96 +8,12 @@ interface Course {
   id: number;
   title: string;
   category: 'PPLG' | 'TJKT' | 'DKV' | 'BCF' | 'Karir';
-  instructor: string;
-  duration: string;
-  modules: number;
-  level: string;
-  rating: number;
-  enrolled: number;
   desc: string;
-  topics: string[];
+  link: string;
+  biaya?: 'Gratis' | 'Biaya tertera';
 }
 
-const COURSES_DATA: Course[] = [
-  {
-    id: 1,
-    title: 'Fullstack Web Development with Next.js & TypeScript',
-    category: 'PPLG',
-    instructor: 'Ir. Hendra Pratama (Senior Tech Lead)',
-    duration: '24 Jam',
-    modules: 12,
-    level: 'Menengah',
-    rating: 4.9,
-    enrolled: 184,
-    desc: 'Pelatihan komprehensif membangun web app modern berbasis Next.js App Router, Tailwind CSS, REST API, dan deployment ke cloud Vercel.',
-    topics: ['Next.js 14 App Router', 'TypeScript Essentials', 'REST API & State', 'Database Integration', 'CI/CD Deployment'],
-  },
-  {
-    id: 2,
-    title: 'Cloud Infrastructure & MikroTik Network Engineering',
-    category: 'TJKT',
-    instructor: 'Rian Syahputra, S.Kom., MTCNA',
-    duration: '20 Jam',
-    modules: 10,
-    level: 'Menengah - Lanjutan',
-    rating: 4.8,
-    enrolled: 152,
-    desc: 'Konfigurasi router MikroTik profesional, VLAN, routing BGP/OSPF, firewall keamanan jaringan, serta integrasi AWS/GCP cloud basics.',
-    topics: ['MikroTik RouterOS v7', 'Routing & Switching', 'Firewall & Security', 'VLAN Management', 'Cloud Virtual Private Server'],
-  },
-  {
-    id: 3,
-    title: 'UI/UX Design Masterclass: Figma to Design System',
-    category: 'DKV',
-    instructor: 'Nadia Larasati (Lead Product Designer)',
-    duration: '18 Jam',
-    modules: 9,
-    level: 'Semua Tingkat',
-    rating: 4.9,
-    enrolled: 210,
-    desc: 'Eksplorasi user research, wireframing, interactive prototyping tingkat lanjut, dan perancangan Design System standar industri startup unicorn.',
-    topics: ['Design Thinking & User Persona', 'Wireframing & Auto-Layout', 'Interactive Component Prototyping', 'Design Tokens & Variables', 'Hand-off ke Developer'],
-  },
-  {
-    id: 4,
-    title: 'Broadcasting & Multi-Camera Live Production',
-    category: 'BCF',
-    instructor: 'Bambang Sudiro (Broadcasting Director)',
-    duration: '16 Jam',
-    modules: 8,
-    level: 'Menengah',
-    rating: 4.7,
-    enrolled: 128,
-    desc: 'Keahlian teknis pengoperasian studio siaran TV & streaming live, visual switcher vMix/OBS, lighting panggung, dan manajemen audio mixer.',
-    topics: ['Multi-Cam Setup & Switching', 'Audio Production & Mixing', 'Lighting Studio Setup', 'Live Stream Encoding', 'Post-Production Workflow'],
-  },
-  {
-    id: 5,
-    title: 'Mastering Job Interview & ATS-Friendly CV Strategy',
-    category: 'Karir',
-    instructor: 'Dra. Maya Anggraini (HR Consultant & BKK)',
-    duration: '8 Jam',
-    modules: 5,
-    level: 'Semua Tingkat',
-    rating: 5.0,
-    enrolled: 340,
-    desc: 'Persiapan matang menghadapi seleksi kerja dan magang PKL di perusahaan nasional maupun multinasional, teknik menjawab pertanyaan HR & User.',
-    topics: ['Struktur CV Standar ATS', 'Portfolio Showcase Online', 'STAR Method Interview Technique', 'Simulasi Tes Psikotes Kerja', 'Etika & Negosiasi Gaji Pemula'],
-  },
-  {
-    id: 6,
-    title: 'Cybersecurity Essentials & Penetration Testing',
-    category: 'TJKT',
-    instructor: 'Fajar Nugroho, CEH, CHFI',
-    duration: '22 Jam',
-    modules: 11,
-    level: 'Lanjutan',
-    rating: 4.9,
-    enrolled: 115,
-    desc: 'Pemahaman fundamental keamanan siber, analisis celah kerentanan aplikasi web, pertahanan jaringan, dan etika ethical hacking bersertifikat.',
-    topics: ['Network Reconnaissance', 'OWASP Top 10 Web Vulnerabilities', 'Wireshark & Packet Analysis', 'Hardening Server Linux', 'Incident Handling'],
-  },
-];
+// The COURSES_DATA is now fetched from the API
 
 // =====================================================================
 // DATA KUESIONER TES 1: MINAT & BAKAT (Exact 12 Questions from User)
@@ -399,6 +315,9 @@ export default function PresmaCareerSection({ initialTab = 'dashboard' }: { init
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string>('Semua');
 
+  const [courses, setCourses] = useState<Course[]>([]);
+  const [isLoadingCourses, setIsLoadingCourses] = useState(false);
+
   // Completed Test Results (Stored in localStorage)
   const [minatResult, setMinatResult] = useState<MinatResultData | null>(null);
   const [careerResult, setCareerResult] = useState<CareerResultData | null>(null);
@@ -418,8 +337,33 @@ export default function PresmaCareerSection({ initialTab = 'dashboard' }: { init
   const [careerIdx, setCareerIdx] = useState(0);
   const [careerAnswers, setCareerAnswers] = useState<number[]>([]);
 
-  // Load saved results on mount
+  // Load saved results and fetch courses on mount
   useEffect(() => {
+    const fetchCourses = async () => {
+      setIsLoadingCourses(true);
+      try {
+        const response = await fetch('http://127.0.0.1:8000/api/v1/kelas-pelatihan');
+        const data = await response.json();
+        if (data.success) {
+          // Map backend fields to frontend interface
+          const mappedCourses: Course[] = data.data.map((c: any) => ({
+            id: c.id,
+            title: c.judul,
+            category: c.tipe,
+            desc: c.deskripsi,
+            link: c.link,
+            biaya: c.biaya,
+          }));
+          setCourses(mappedCourses);
+        }
+      } catch (err) {
+        console.error('Failed to fetch courses:', err);
+      } finally {
+        setIsLoadingCourses(false);
+      }
+    };
+
+    fetchCourses();
     if (typeof window !== 'undefined') {
       try {
         const savedMinat = localStorage.getItem('presma_carasa_minat_result');
@@ -592,11 +536,10 @@ export default function PresmaCareerSection({ initialTab = 'dashboard' }: { init
   };
 
   // Filter courses for tab 3
-  const filteredCourses = COURSES_DATA.filter((course) => {
+  const filteredCourses = courses.filter((course) => {
     const matchesSearch =
       course.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      course.desc.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      course.instructor.toLowerCase().includes(searchQuery.toLowerCase());
+      course.desc.toLowerCase().includes(searchQuery.toLowerCase());
     const matchesCategory = selectedCategory === 'Semua' || course.category === selectedCategory;
     return matchesSearch && matchesCategory;
   });
@@ -768,11 +711,11 @@ export default function PresmaCareerSection({ initialTab = 'dashboard' }: { init
               <div className="relative z-10 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                 <div className="bg-slate-50 dark:bg-slate-800/60 p-5 rounded-2xl border border-slate-200 dark:border-slate-700/60">
                   <div className="flex items-center justify-between">
-                    <span className="text-xs font-semibold text-slate-500 dark:text-slate-400">Pelatihan Siap Ikut</span>
-                    <span className="w-8 h-8 rounded-lg bg-orange-500/10 text-orange-500 flex items-center justify-center font-bold text-sm">6+</span>
+                    <span className="text-xs font-semibold text-slate-500 dark:text-slate-400">Total Pelatihan Aktif</span>
                   </div>
-                  <div className="text-2xl font-black text-slate-900 dark:text-white mt-2">12 Modul</div>
-                  <span className="text-[11px] text-green-600 dark:text-green-400 font-medium mt-1 block">Tersertifikasi Industri</span>
+                  <div className="text-2xl font-black text-slate-900 dark:text-white mt-2">
+                    {isLoadingCourses ? '...' : `${courses.length} Kelas`}
+                  </div>
                 </div>
 
                 <div className="bg-slate-50 dark:bg-slate-800/60 p-5 rounded-2xl border border-slate-200 dark:border-slate-700/60">
@@ -879,7 +822,7 @@ export default function PresmaCareerSection({ initialTab = 'dashboard' }: { init
                       </button>
                     </div>
                     <div className="space-y-3 mt-4">
-                      {COURSES_DATA.slice(0, 3).map((item) => (
+                      {courses.slice(0, 3).map((item) => (
                         <div
                           key={item.id}
                           onClick={() => setSelectedCourse(item)}
@@ -899,9 +842,6 @@ export default function PresmaCareerSection({ initialTab = 'dashboard' }: { init
                               <h4 className="text-xs font-bold text-slate-900 dark:text-white line-clamp-1">
                                 {item.title}
                               </h4>
-                              <p className="text-[10px] text-slate-500 dark:text-slate-400">
-                                {item.duration} · {item.modules} Modul
-                              </p>
                             </div>
                           </div>
                           <span className="text-[11px] text-orange-600 font-semibold shrink-0 ml-2">Detail</span>
@@ -1199,19 +1139,36 @@ export default function PresmaCareerSection({ initialTab = 'dashboard' }: { init
 
               {/* Grid of Class Cards (Row layout matching screenshot 0: Left box + Right info) */}
               <div className="space-y-4">
-                {filteredCourses.length === 0 ? (
+                {isLoadingCourses ? (
                   <div className="text-center py-16 bg-slate-50 dark:bg-slate-800/50 rounded-2xl border border-dashed border-slate-300 dark:border-slate-700">
                     <p className="text-sm font-bold text-slate-600 dark:text-slate-300">
-                      Tidak ada kelas yang sesuai dengan pencarian "{searchQuery}"
+                      Memuat kelas & pelatihan...
                     </p>
+                  </div>
+                ) : filteredCourses.length === 0 ? (
+                  <div className="flex flex-col items-center justify-center text-center py-20 bg-gradient-to-b from-slate-50 to-white dark:from-slate-900/50 dark:to-slate-900 rounded-3xl border border-dashed border-slate-300 dark:border-slate-700 relative overflow-hidden group">
+                    <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-orange-100/50 dark:from-orange-500/10 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700"></div>
+                    
+                    <div className="w-24 h-24 mb-6 rounded-full bg-orange-100 dark:bg-orange-500/20 flex items-center justify-center relative z-10 transform group-hover:scale-110 group-hover:-rotate-3 transition-transform duration-500 shadow-inner">
+                      <svg className="w-12 h-12 text-orange-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                      </svg>
+                    </div>
+                    
+                    <h3 className="text-xl font-black text-slate-800 dark:text-white mb-2 relative z-10 tracking-tight">Oops! Kelas Belum Tersedia</h3>
+                    <p className="text-sm font-medium text-slate-500 dark:text-slate-400 mb-6 max-w-md relative z-10 leading-relaxed">
+                      Waduh, sepertinya tidak ada kelas yang cocok dengan kata kunci <strong className="text-slate-700 dark:text-slate-200">"{searchQuery}"</strong> di kategori <strong className="text-slate-700 dark:text-slate-200">{selectedCategory}</strong>. Coba kata kunci lain yuk!
+                    </p>
+                    
                     <button
                       onClick={() => {
                         setSearchQuery('');
                         setSelectedCategory('Semua');
                       }}
-                      className="mt-3 text-xs text-orange-500 font-bold hover:underline"
+                      className="relative z-10 px-6 py-3 rounded-xl bg-slate-900 dark:bg-white text-white dark:text-slate-900 text-sm font-bold hover:bg-orange-500 dark:hover:bg-orange-500 hover:text-white hover:-translate-y-1 transition-all duration-300 flex items-center gap-2 shadow-lg hover:shadow-orange-500/30"
                     >
-                      Reset Filter
+                      <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg>
+                      Reset Filter Pencarian
                     </button>
                   </div>
                 ) : (
@@ -1246,19 +1203,15 @@ export default function PresmaCareerSection({ initialTab = 'dashboard' }: { init
                             <span className="text-[10px] font-black uppercase px-2 py-0.5 rounded bg-orange-100 text-orange-700 dark:bg-orange-950/60 dark:text-orange-300">
                               {course.category}
                             </span>
-                            <span className="text-xs text-slate-500 dark:text-slate-400">
-                              • {course.duration} ({course.modules} Modul)
-                            </span>
-                            <span className="text-xs text-amber-500 font-semibold flex items-center gap-0.5">
-                              ★ {course.rating}
-                            </span>
+                            {course.biaya && (
+                              <span className={`text-[10px] font-bold px-2 py-0.5 rounded ${course.biaya === 'Gratis' ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-400' : 'bg-blue-100 text-blue-700 dark:bg-blue-950/60 dark:text-blue-400'}`}>
+                                {course.biaya}
+                              </span>
+                            )}
                           </div>
                           <h3 className="text-sm sm:text-base font-bold text-slate-900 dark:text-white group-hover:text-orange-500 transition-colors leading-snug">
                             {course.title}
                           </h3>
-                          <p className="text-xs text-slate-500 dark:text-slate-400 line-clamp-1 mt-1">
-                            Instruktur: <span className="font-medium text-slate-700 dark:text-slate-300">{course.instructor}</span>
-                          </p>
                           <p className="text-xs text-slate-600 dark:text-slate-400 line-clamp-2 mt-1 hidden sm:block">
                             {course.desc}
                           </p>
@@ -1289,6 +1242,8 @@ export default function PresmaCareerSection({ initialTab = 'dashboard' }: { init
 
             </div>
           )}
+
+
 
         </div>
       </div>
@@ -1752,78 +1707,66 @@ export default function PresmaCareerSection({ initialTab = 'dashboard' }: { init
           </div>
         </div>
       )}
-
       {/* ========================================================= */}
       {/* MODAL 5: DETAIL KELAS & DAFTAR PELATIHAN */}
       {/* ========================================================= */}
       {selectedCourse && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fadeIn">
-          <div className="bg-white dark:bg-slate-900 rounded-3xl max-w-lg w-full p-6 sm:p-8 shadow-2xl border border-slate-200 dark:border-slate-800 relative max-h-[90vh] overflow-y-auto">
+        <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 sm:p-6 bg-black/60 backdrop-blur-sm animate-fadeIn">
+          <div className="bg-white dark:bg-slate-900 rounded-3xl max-w-4xl w-full p-6 sm:p-10 shadow-2xl border border-slate-200 dark:border-slate-800 relative max-h-[90vh] overflow-hidden flex flex-col">
             
             <button
               onClick={() => setSelectedCourse(null)}
-              className="absolute top-5 right-5 w-8 h-8 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-500 hover:text-slate-800 dark:hover:text-white flex items-center justify-center text-sm font-bold"
+              className="absolute top-5 right-5 w-10 h-10 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-500 hover:text-slate-800 dark:hover:text-white flex items-center justify-center text-lg font-bold transition-colors z-10"
             >
               ✕
             </button>
 
-            <div className="flex items-center gap-2 mb-3">
-              <span className="px-2.5 py-0.5 rounded-md bg-orange-500 text-white text-[10px] font-black uppercase">
-                {selectedCourse.category}
-              </span>
-              <span className="text-xs text-slate-500">Level: {selectedCourse.level}</span>
+            <div className="flex-1 overflow-y-auto pr-2 custom-scrollbar pb-6">
+              <div className="flex flex-wrap items-center gap-3 mb-4 mt-2">
+                <span className="px-3 py-1 rounded-lg bg-orange-100 text-orange-700 dark:bg-orange-950/60 dark:text-orange-300 text-xs font-black uppercase">
+                  {selectedCourse.category}
+                </span>
+                {selectedCourse.biaya && (
+                  <span className={`px-3 py-1 rounded-lg text-xs font-bold ${selectedCourse.biaya === 'Gratis' ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-400' : 'bg-blue-100 text-blue-700 dark:bg-blue-950/60 dark:text-blue-400'}`}>
+                    {selectedCourse.biaya}
+                  </span>
+                )}
+              </div>
+
+              <h3 className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-white leading-snug mb-6 pr-8">
+                {selectedCourse.title}
+              </h3>
+
+              <div className="bg-slate-50 dark:bg-slate-800/50 p-6 rounded-2xl border border-slate-100 dark:border-slate-800 mt-4">
+                <h4 className="text-base font-bold text-slate-800 dark:text-slate-200 mb-3 flex items-center gap-2">
+                  <svg className="w-5 h-5 text-orange-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                  Informasi &amp; Deskripsi
+                </h4>
+                <p className="text-[15px] text-slate-600 dark:text-slate-300 leading-relaxed text-justify whitespace-pre-line">
+                  {selectedCourse.desc}
+                </p>
+              </div>
             </div>
 
-            <h3 className="text-lg font-black text-slate-900 dark:text-white leading-snug">
-              {selectedCourse.title}
-            </h3>
-
-            <p className="text-xs text-slate-600 dark:text-slate-300 mt-2 leading-relaxed">
-              {selectedCourse.desc}
-            </p>
-
-            <div className="grid grid-cols-3 gap-2 my-4 text-center">
-              <div className="p-2.5 bg-slate-100 dark:bg-slate-800 rounded-xl">
-                <span className="text-[10px] text-slate-400 block font-semibold">Durasi</span>
-                <span className="text-xs font-bold text-slate-800 dark:text-slate-200">{selectedCourse.duration}</span>
-              </div>
-              <div className="p-2.5 bg-slate-100 dark:bg-slate-800 rounded-xl">
-                <span className="text-[10px] text-slate-400 block font-semibold">Materi</span>
-                <span className="text-xs font-bold text-slate-800 dark:text-slate-200">{selectedCourse.modules} Modul</span>
-              </div>
-              <div className="p-2.5 bg-slate-100 dark:bg-slate-800 rounded-xl">
-                <span className="text-[10px] text-slate-400 block font-semibold">Peserta</span>
-                <span className="text-xs font-bold text-slate-800 dark:text-slate-200">{selectedCourse.enrolled} Siswa</span>
-              </div>
-            </div>
-
-            <div className="mt-4">
-              <h4 className="text-xs font-bold uppercase tracking-wider text-slate-800 dark:text-slate-200 mb-2">
-                Topik yang Dipelajari:
-              </h4>
-              <ul className="space-y-1.5 text-xs text-slate-600 dark:text-slate-400">
-                {selectedCourse.topics.map((t, idx) => (
-                  <li key={idx} className="flex items-center gap-2">
-                    <span className="text-orange-500 font-bold">✓</span>
-                    <span>{t}</span>
-                  </li>
-                ))}
-              </ul>
-            </div>
-
-            <div className="mt-6 pt-4 border-t border-slate-200 dark:border-slate-800 flex items-center justify-between">
+            <div className="mt-4 pt-5 border-t border-slate-200 dark:border-slate-800 flex flex-col sm:flex-row items-center justify-between gap-4 shrink-0 bg-white dark:bg-slate-900 z-10">
               <div>
-                <span className="text-[10px] text-slate-400 block">Biaya Siswa</span>
-                <span className="text-sm font-black text-green-600 dark:text-green-400">Gratis (Program BKK)</span>
+                <span className="text-[11px] text-slate-500 block uppercase font-bold tracking-wider mb-1">Status Biaya</span>
+                <span className={`text-sm font-black ${selectedCourse.biaya === 'Gratis' ? 'text-green-600 dark:text-green-400' : 'text-blue-600 dark:text-blue-400'}`}>
+                  {selectedCourse.biaya === 'Gratis' ? 'Gratis (Fasilitas BKK)' : 'Biaya Tertera'}
+                </span>
               </div>
               <button
                 onClick={() => {
-                  alert(`Pendaftaran kelas "${selectedCourse.title}" berhasil dicatat! Tim BKK akan mengonfirmasi jadwal pelatihanmu.`);
-                  setSelectedCourse(null);
+                  window.open(selectedCourse.link, '_blank', 'noopener,noreferrer');
                 }}
-                className="px-6 py-2.5 bg-orange-500 hover:bg-orange-600 text-white font-bold text-xs rounded-xl shadow-md transition-all hover:scale-105"
+                className="w-full sm:w-auto px-8 py-3 bg-orange-500 hover:bg-orange-600 text-white font-bold text-sm rounded-xl shadow-lg shadow-orange-500/20 transition-all hover:scale-105 flex items-center justify-center gap-2"
               >
-                Konfirmasi Daftar Kelas
+                <span>Konfirmasi Daftar Kelas</span>
+                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 5l7 7m0 0l-7 7m7-7H3" />
+                </svg>
               </button>
             </div>
 
