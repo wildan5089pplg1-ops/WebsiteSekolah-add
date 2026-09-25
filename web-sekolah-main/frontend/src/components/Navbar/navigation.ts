@@ -38,11 +38,6 @@ export const navigation: NavSection[] = [
         desc: "Sarana modern penunjang pembelajaran berkualitas.",
       },
       {
-        name: "Virtual Tour 360°",
-        href: "/virtual-tour",
-        desc: "Jelajahi seluruh fasilitas sekolah secara interaktif 360°.",
-      },
-      {
         name: "Prima Board",
         href: "/prima-board",
         desc: "Papan informasi digital dan pengumuman sekolah.",
@@ -77,19 +72,24 @@ export const navigation: NavSection[] = [
     ],
   },
   {
-    name: "Presma",
+    name: "PRESMA",
     href: "/program/presmacareer",
     description: "Ekosistem pengembangan karier, riset literasi, dan asesmen bakat.",
     subLinks: [
       {
-        name: "Presma Lib",
+        name: "PRESMA LIB",
         href: "/program/presmalib",
         desc: "Perpustakaan digital dan pusat referensi ilmiah modern.",
       },
       {
-        name: "Presma Career",
+        name: "PRESMA CAREER",
         href: "/program/presmacareer",
         desc: "Jembatan karir siswa menuju dunia usaha & dunia industri.",
+      },
+      {
+        name: "PRESMA TOUR",
+        href: "/virtual-tour",
+        desc: "Jelajahi seluruh fasilitas sekolah secara interaktif 360°.",
       },
     ],
   },
