@@ -11,6 +11,10 @@ export interface NavSection {
   subLinks?: SubLink[];
 }
 
+/**
+ * Centralized navigation configuration for SMK Prestasi Prima.
+ * Consumed by both desktop and mobile navigation.
+ */
 export const navigation: NavSection[] = [
   {
     name: "Beranda",
@@ -18,7 +22,7 @@ export const navigation: NavSection[] = [
     description: "Halaman utama website SMK Prestasi Prima.",
   },
   {
-    name: "Tentang Kami",
+    name: "Profil",
     href: "/tentang/profile-sekolah",
     description: "Mengenal visi, kepemimpinan, dan sarana SMK Prestasi Prima.",
     subLinks: [
@@ -37,11 +41,6 @@ export const navigation: NavSection[] = [
         href: "/tentang/profile#fasilitas",
         desc: "Sarana modern penunjang pembelajaran berkualitas.",
       },
-      {
-        name: "Prima Board",
-        href: "/prima-board",
-        desc: "Papan informasi digital dan pengumuman sekolah.",
-      },
     ],
   },
   {
@@ -49,6 +48,16 @@ export const navigation: NavSection[] = [
     href: "/program",
     description: "Kompetensi keahlian unggulan berbasis industri masa depan.",
     subLinks: [
+      {
+        name: "PPLG",
+        href: "/program/pplg",
+        desc: "Software engineering, web development, dan mobile apps.",
+      },
+      {
+        name: "TJKT",
+        href: "/program/tjkt",
+        desc: "Infrastruktur jaringan canggih, server, dan cybersecurity.",
+      },
       {
         name: "BCF",
         href: "/program/bcf",
@@ -58,16 +67,6 @@ export const navigation: NavSection[] = [
         name: "DKV",
         href: "/program/dkv",
         desc: "Eksplorasi grafis, animasi, UI/UX, dan komunikasi visual.",
-      },
-      {
-        name: "TJKT",
-        href: "/program/tjkt",
-        desc: "Infrastruktur jaringan canggih, server, dan cybersecurity.",
-      },
-      {
-        name: "PPLG",
-        href: "/program/pplg",
-        desc: "Software engineering, web development, dan mobile apps.",
       },
     ],
   },
@@ -114,16 +113,11 @@ export const navigation: NavSection[] = [
         desc: "Raihan medali dan penghargaan di tingkat regional & nasional.",
       },
       {
-        name: "Jejak Aktivitas & Perjalanan",
-        href: "/#our-journey-section",
-        desc: "Dokumentasi kegiatan akademik, ekstrakurikuler, dan komunitas.",
+        name: "Berita & Artikel",
+        href: "/news",
+        desc: "Kabar terbaru, agenda kegiatan, dan artikel edukasi terkini.",
       },
     ],
-  },
-  {
-    name: "Berita",
-    href: "/news",
-    description: "Kabar terbaru, agenda kegiatan, dan artikel edukasi terkini.",
   },
   {
     name: "Pendaftaran",
@@ -136,9 +130,9 @@ export const navigation: NavSection[] = [
         desc: "Pendaftaran siswa baru dan informasi gelombang masuk.",
       },
       {
-        name: "Kontak & Layanan",
+        name: "Kontak",
         href: "/contact",
-        desc: "Informasi narahubung, konsultasi pendaftaran, dan lokasi sekolah.",
+        desc: "Hubungi kami dan informasi narahubung sekolah.",
       },
     ],
   },

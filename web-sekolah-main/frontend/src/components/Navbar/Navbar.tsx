@@ -1,94 +1,150 @@
 "use client";
 
-import { useEffect, useRef, useState, useMemo } from "react";
+import { useEffect, useRef, useState, useCallback } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { navigation, type NavSection } from "./navigation";
+import { navigation } from "./navigation";
 import "./Navbar.css";
 
 export default function Navbar() {
   const pathname = usePathname();
   const isHomePage = pathname === "/";
 
+  // Navbar solid vs transparent state
   const [isScrolled, setIsScrolled] = useState(!isHomePage);
+
+  // Desktop hover state with debounce
+  const [activeDropdown, setActiveDropdown] = useState<string | null>(null);
+  const hoverTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  // Mobile drawer & accordion state
   const [mobileOpen, setMobileOpen] = useState(false);
   const [mobileExpanded, setMobileExpanded] = useState<string | null>(null);
 
   const navRef = useRef<HTMLElement | null>(null);
 
-  // Close mobile menu on route changes
+  // Close mobile and desktop menus on route changes
   useEffect(() => {
     setMobileOpen(false);
     setMobileExpanded(null);
+    setActiveDropdown(null);
   }, [pathname]);
 
-  // Monitor Hero visibility on the homepage using IntersectionObserver
+  // =========================================================================
+  // ROUTE & SCROLL STATE MANAGEMENT (ROOT-CAUSE FIX)
+  // =========================================================================
   useEffect(() => {
+    // Non-home routes are always solid
     if (!isHomePage) {
       setIsScrolled(true);
       return;
     }
 
+    let observer: IntersectionObserver | null = null;
+    let isDisposed = false;
+
+    // Evaluate scroll position relative to current Home Hero DOM element
+    const evaluateHeroVisibility = () => {
+      if (isDisposed) return;
+
+      const currentScrollY =
+        window.scrollY || document.documentElement.scrollTop || 0;
+
+      // When at or near the very top of Home page (<= 15px), always transparent
+      if (currentScrollY <= 15) {
+        setIsScrolled(false);
+        return;
+      }
+
+      const heroEl =
+        document.getElementById("hero-section") ||
+        document.querySelector(".fullscreen-hero-container");
+
+      if (heroEl) {
+        const rect = heroEl.getBoundingClientRect();
+        // If element is mounted with measured height
+        if (rect.height > 60) {
+          // Hero bottom scrolled past navbar clearance threshold
+          setIsScrolled(rect.bottom <= 80);
+          return;
+        }
+      }
+
+      // Fallback threshold if hero layout is still computing
+      setIsScrolled(currentScrollY > 350);
+    };
+
+    // 1. Initial synchronous evaluation
+    evaluateHeroVisibility();
+
+    // 2. Schedule re-evaluation after DOM layout / route transition
+    const rafId = requestAnimationFrame(evaluateHeroVisibility);
+    const timerId = setTimeout(evaluateHeroVisibility, 100);
+
+    // 3. Attach IntersectionObserver to the current Home Hero element
     const heroEl =
       document.getElementById("hero-section") ||
       document.querySelector(".fullscreen-hero-container");
 
-    if (!heroEl) {
-      // Fallback threshold if hero is not immediately available
-      const handleScrollFallback = () => {
-        setIsScrolled(window.scrollY > 350);
-      };
-      handleScrollFallback();
-      window.addEventListener("scroll", handleScrollFallback, { passive: true });
-      return () => window.removeEventListener("scroll", handleScrollFallback);
+    if (heroEl) {
+      observer = new IntersectionObserver(
+        (entries) => {
+          if (isDisposed) return;
+          const entry = entries[0];
+          if (!entry) return;
+
+          const currentScrollY =
+            window.scrollY || document.documentElement.scrollTop || 0;
+
+          if (currentScrollY <= 15) {
+            setIsScrolled(false);
+          } else {
+            // Becomes solid when hero bottom passes navbar clearance
+            setIsScrolled(!entry.isIntersecting);
+          }
+        },
+        {
+          root: null,
+          rootMargin: "-80px 0px 0px 0px",
+          threshold: 0,
+        }
+      );
+      observer.observe(heroEl);
     }
 
-    // Initial position check
-    const rect = heroEl.getBoundingClientRect();
-    setIsScrolled(rect.bottom <= 120);
+    // 4. Listen to native scroll & resize for ultra-responsive feedback
+    window.addEventListener("scroll", evaluateHeroVisibility, { passive: true });
+    window.addEventListener("resize", evaluateHeroVisibility, { passive: true });
 
-    // Observe Hero section with threshold
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        // When hero bottom scrolls past navbar zone, navbar becomes solid
-        setIsScrolled(!entry.isIntersecting);
-      },
-      {
-        root: null,
-        rootMargin: "-120px 0px 0px 0px",
-        threshold: 0,
-      }
-    );
-
-    observer.observe(heroEl);
-
-    // Also handle scroll directly as fallback for ultra-fast scrolling
-    const handleScroll = () => {
-      const currentRect = heroEl.getBoundingClientRect();
-      const pastHero = currentRect.bottom <= 120;
-      setIsScrolled(pastHero);
-    };
-    window.addEventListener("scroll", handleScroll, { passive: true });
-
+    // Cleanup: disconnect observer and remove listeners
     return () => {
-      observer.disconnect();
-      window.removeEventListener("scroll", handleScroll);
+      isDisposed = true;
+      cancelAnimationFrame(rafId);
+      clearTimeout(timerId);
+      if (observer) {
+        observer.disconnect();
+        observer = null;
+      }
+      window.removeEventListener("scroll", evaluateHeroVisibility);
+      window.removeEventListener("resize", evaluateHeroVisibility);
     };
-  }, [isHomePage]);
+  }, [isHomePage, pathname]);
 
-  // Handle ESC key and outside clicks to close menus
+  // Close menus on ESC key or clicking outside navbar
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
       if (event.key === "Escape") {
         setMobileOpen(false);
         setMobileExpanded(null);
+        setActiveDropdown(null);
       }
     };
 
     const handleClickOutside = (event: MouseEvent) => {
       if (navRef.current && !navRef.current.contains(event.target as Node)) {
         setMobileOpen(false);
+        setActiveDropdown(null);
       }
     };
 
@@ -101,24 +157,32 @@ export default function Navbar() {
     };
   }, []);
 
-  // Visual state calculation:
-  // When over Hero on Homepage without mobile menu open, navbar is transparent.
-  // Otherwise, it is solid.
-  const isTransparent = isHomePage && !isScrolled && !mobileOpen;
-
-  // Curated navigation sections for a clean classic desktop layout
-  const navSections = useMemo(() => {
-    return navigation.map((item) => {
-      if (item.name === "Tentang Kami") {
-        return { ...item, name: "Profil" };
-      }
-      return item;
-    });
+  // Desktop hover handlers with debounce
+  const handleDropdownEnter = useCallback((name: string) => {
+    if (hoverTimeoutRef.current) {
+      clearTimeout(hoverTimeoutRef.current);
+      hoverTimeoutRef.current = null;
+    }
+    setActiveDropdown(name);
   }, []);
 
-  const toggleMobileSubmenu = (name: string) => {
+  const handleDropdownLeave = useCallback(() => {
+    if (hoverTimeoutRef.current) {
+      clearTimeout(hoverTimeoutRef.current);
+    }
+    hoverTimeoutRef.current = setTimeout(() => {
+      setActiveDropdown(null);
+    }, 150);
+  }, []);
+
+  // Mobile submenu accordion toggle
+  const toggleMobileSubmenu = useCallback((name: string) => {
     setMobileExpanded((prev) => (prev === name ? null : name));
-  };
+  }, []);
+
+  // Transparent hero navbar state:
+  // Over Hero on HomePage when mobile drawer is closed.
+  const isTransparent = isHomePage && !isScrolled && !mobileOpen;
 
   return (
     <>
@@ -170,14 +234,15 @@ export default function Navbar() {
           </Link>
 
           {/* =========================================================
-              CENTER: CLEAN DESKTOP NAVIGATION TEXT LINKS
+              CENTER: CENTRALIZED DESKTOP NAVIGATION
               ========================================================= */}
           <nav
             className="hidden lg:flex items-center gap-1 xl:gap-2"
             aria-label="Navigasi Utama"
           >
-            {navSections.map((item) => {
+            {navigation.map((item) => {
               const hasSub = Boolean(item.subLinks && item.subLinks.length > 0);
+              const isOpen = activeDropdown === item.name;
 
               if (!hasSub) {
                 return (
@@ -187,7 +252,7 @@ export default function Navbar() {
                     className={`text-[13.5px] font-medium px-3.5 py-2 rounded-lg transition-colors duration-200 ${
                       isTransparent
                         ? "text-white/90 hover:text-white hover:bg-white/10 drop-shadow-[0_1px_2px_rgba(0,0,0,0.5)]"
-                        : "text-slate-700 dark:text-slate-200 hover:text-[#F96501] dark:hover:text-[#F96501] hover:bg-slate-100/70 dark:hover:bg-slate-800/60"
+                        : "text-slate-700 dark:text-slate-200 hover:text-[#002B49] dark:hover:text-[#F96501] hover:bg-slate-100/70 dark:hover:bg-slate-800/60"
                     }`}
                   >
                     {item.name}
@@ -198,20 +263,29 @@ export default function Navbar() {
               return (
                 <div
                   key={item.name}
-                  className="relative classic-dropdown-wrapper py-2"
+                  className="relative py-2"
+                  onMouseEnter={() => handleDropdownEnter(item.name)}
+                  onMouseLeave={handleDropdownLeave}
                 >
                   <button
                     type="button"
                     className={`flex items-center gap-1 text-[13.5px] font-medium px-3.5 py-2 rounded-lg transition-colors duration-200 group ${
                       isTransparent
-                        ? "text-white/90 hover:text-white hover:bg-white/10 drop-shadow-[0_1px_2px_rgba(0,0,0,0.5)]"
-                        : "text-slate-700 dark:text-slate-200 hover:text-[#F96501] dark:hover:text-[#F96501] hover:bg-slate-100/70 dark:hover:bg-slate-800/60"
+                        ? isOpen
+                          ? "bg-white/15 text-white drop-shadow-[0_1px_2px_rgba(0,0,0,0.5)]"
+                          : "text-white/90 hover:text-white hover:bg-white/10 drop-shadow-[0_1px_2px_rgba(0,0,0,0.5)]"
+                        : isOpen
+                        ? "text-[#002B49] dark:text-[#F96501] bg-slate-100/90 dark:bg-slate-800/80"
+                        : "text-slate-700 dark:text-slate-200 hover:text-[#002B49] dark:hover:text-[#F96501] hover:bg-slate-100/70 dark:hover:bg-slate-800/60"
                     }`}
                     aria-haspopup="true"
+                    aria-expanded={isOpen}
                   >
                     <span>{item.name}</span>
                     <svg
-                      className={`w-3.5 h-3.5 transition-transform duration-200 group-hover:rotate-180 ${
+                      className={`w-3.5 h-3.5 transition-transform duration-200 ${
+                        isOpen ? "rotate-180" : ""
+                      } ${
                         isTransparent
                           ? "text-white/70 group-hover:text-white"
                           : "text-slate-400 group-hover:text-[#F96501]"
@@ -221,24 +295,58 @@ export default function Navbar() {
                       stroke="currentColor"
                       strokeWidth="2.2"
                     >
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        d="M19 9l-7 7-7-7"
+                      />
                     </svg>
                   </button>
 
                   {/* Desktop Dropdown Popover */}
-                  <div className="absolute top-full left-0 pt-1 classic-dropdown-menu z-50">
-                    <div className="bg-slate-950/95 backdrop-blur-2xl border border-white/10 rounded-2xl shadow-[0_20px_40px_rgba(0,0,0,0.6)] p-2 min-w-[270px] flex flex-col gap-0.5">
+                  <div
+                    className={`absolute top-full left-0 pt-2 z-50 transition-all duration-200 ease-out ${
+                      isOpen
+                        ? "opacity-100 translate-y-0 visible pointer-events-auto"
+                        : "opacity-0 translate-y-2 invisible pointer-events-none"
+                    }`}
+                    onMouseEnter={() => handleDropdownEnter(item.name)}
+                    onMouseLeave={handleDropdownLeave}
+                  >
+                    <div
+                      className={`p-2 min-w-[275px] rounded-2xl flex flex-col gap-0.5 backdrop-blur-2xl transition-colors duration-200 ${
+                        isTransparent
+                          ? "bg-slate-950/95 border border-white/10 shadow-[0_20px_40px_rgba(0,0,0,0.6)]"
+                          : "bg-white/98 dark:bg-slate-950/98 border border-slate-200/90 dark:border-white/10 shadow-[0_20px_40px_rgba(0,0,0,0.12)] dark:shadow-[0_20px_40px_rgba(0,0,0,0.6)]"
+                      }`}
+                    >
                       {item.subLinks!.map((sub) => (
                         <Link
                           key={sub.name}
                           href={sub.href}
-                          className="group/item flex flex-col px-3.5 py-2.5 rounded-xl hover:bg-white/10 transition-colors"
+                          className={`group/item flex flex-col px-3.5 py-2.5 rounded-xl transition-colors ${
+                            isTransparent
+                              ? "hover:bg-white/10"
+                              : "hover:bg-orange-50/70 dark:hover:bg-white/10"
+                          }`}
                         >
-                          <span className="text-[13px] font-semibold text-white group-hover/item:text-[#F96501] transition-colors">
+                          <span
+                            className={`text-[13px] font-semibold transition-colors ${
+                              isTransparent
+                                ? "text-white group-hover/item:text-[#F96501]"
+                                : "text-slate-900 dark:text-white group-hover/item:text-[#F96501]"
+                            }`}
+                          >
                             {sub.name}
                           </span>
                           {sub.desc && (
-                            <span className="text-[11px] text-slate-300 group-hover/item:text-slate-100 font-normal leading-snug mt-0.5 line-clamp-1 transition-colors">
+                            <span
+                              className={`text-[11px] font-normal leading-snug mt-0.5 line-clamp-1 transition-colors ${
+                                isTransparent
+                                  ? "text-slate-300 group-hover/item:text-slate-100"
+                                  : "text-slate-500 dark:text-slate-400 group-hover/item:text-slate-700 dark:group-hover/item:text-slate-200"
+                              }`}
+                            >
                               {sub.desc}
                             </span>
                           )}
@@ -252,35 +360,39 @@ export default function Navbar() {
           </nav>
 
           {/* =========================================================
-              RIGHT: PRIMARY CTA + MOBILE TRIGGER
+              RIGHT: PRIMARY CTA (MIKROTIK ACADEMY) + MOBILE TRIGGER
               ========================================================= */}
           <div className="flex items-center gap-3">
-            {/* Quick Contact link on larger displays */}
+            {/* Desktop MIKROTIK ACADEMY CTA Button */}
             <Link
-              href="/contact"
-              className={`hidden xl:inline-flex text-[13px] font-semibold px-3 py-1.5 rounded-lg transition-colors ${
-                isTransparent
-                  ? "text-white/80 hover:text-white"
-                  : "text-slate-600 dark:text-slate-300 hover:text-[#F96501]"
-              }`}
+              href="/mikrotik"
+              className="px-4 py-2 sm:px-4.5 sm:py-2.5 rounded-full bg-[#F96501] hover:bg-[#e05900] active:scale-95 text-white font-bold text-xs tracking-wide shadow-[0_4px_14px_rgba(249,101,1,0.35)] hover:shadow-[0_6px_20px_rgba(249,101,1,0.45)] transition-all duration-200 flex items-center gap-2 shrink-0 group"
+              aria-label="Mikrotik Academy"
             >
-              Kontak
-            </Link>
-
-            {/* Primary Orange CTA Button */}
-            <Link
-              href="/ppdb"
-              className="px-5 py-2.5 rounded-full bg-[#F96501] hover:bg-[#e05900] active:scale-95 text-white font-bold text-xs sm:text-sm tracking-wide shadow-[0_4px_14px_rgba(249,101,1,0.35)] hover:shadow-[0_6px_20px_rgba(249,101,1,0.45)] transition-all duration-200 flex items-center gap-1.5"
-            >
-              <span>PPDB 2026</span>
+              <div className="relative w-4 h-4 shrink-0 flex items-center justify-center">
+                <Image
+                  src="/images/mikrotik.png"
+                  alt="MikroTik Logo"
+                  width={18}
+                  height={18}
+                  className="object-contain w-full h-full brightness-0 invert"
+                />
+              </div>
+              <span className="font-extrabold tracking-wider text-[11px] sm:text-xs">
+                MIKROTIK ACADEMY
+              </span>
               <svg
-                className="w-3.5 h-3.5"
+                className="w-3.5 h-3.5 transition-transform duration-200 group-hover:translate-x-0.5"
                 fill="none"
                 viewBox="0 0 24 24"
                 stroke="currentColor"
                 strokeWidth="2.5"
               >
-                <path strokeLinecap="round" strokeLinejoin="round" d="M14 5l7 7m0 0l-7 7m7-7H3" />
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M14 5l7 7m0 0l-7 7m7-7H3"
+                />
               </svg>
             </Link>
 
@@ -297,12 +409,32 @@ export default function Navbar() {
               aria-expanded={mobileOpen}
             >
               {mobileOpen ? (
-                <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.2">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                <svg
+                  className="w-6 h-6"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                  strokeWidth="2.2"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M6 18L18 6M6 6l12 12"
+                  />
                 </svg>
               ) : (
-                <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.2">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M4 6h16M4 12h16M4 18h16" />
+                <svg
+                  className="w-6 h-6"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                  strokeWidth="2.2"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M4 6h16M4 12h16M4 18h16"
+                  />
                 </svg>
               )}
             </button>
@@ -315,7 +447,7 @@ export default function Navbar() {
         {mobileOpen && (
           <div className="lg:hidden bg-white/98 dark:bg-slate-950/98 backdrop-blur-2xl border-b border-slate-200 dark:border-slate-800 shadow-2xl max-h-[calc(100dvh-5rem)] overflow-y-auto animate-in slide-in-from-top-2 duration-200">
             <div className="px-4 py-4 space-y-1">
-              {navSections.map((item) => {
+              {navigation.map((item) => {
                 const hasSub = Boolean(item.subLinks && item.subLinks.length > 0);
                 const isExpanded = mobileExpanded === item.name;
 
@@ -324,7 +456,10 @@ export default function Navbar() {
                     <Link
                       key={item.name}
                       href={item.href || "#"}
-                      onClick={() => setMobileOpen(false)}
+                      onClick={() => {
+                        setMobileOpen(false);
+                        setMobileExpanded(null);
+                      }}
                       className="block px-3.5 py-2.5 rounded-xl text-sm font-semibold text-slate-800 dark:text-slate-100 hover:bg-orange-50/70 dark:hover:bg-slate-800/60 hover:text-[#F96501] transition-colors"
                     >
                       {item.name}
@@ -350,7 +485,11 @@ export default function Navbar() {
                         stroke="currentColor"
                         strokeWidth="2.2"
                       >
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          d="M19 9l-7 7-7-7"
+                        />
                       </svg>
                     </button>
 
@@ -360,10 +499,15 @@ export default function Navbar() {
                           <Link
                             key={sub.name}
                             href={sub.href}
-                            onClick={() => setMobileOpen(false)}
+                            onClick={() => {
+                              setMobileOpen(false);
+                              setMobileExpanded(null);
+                            }}
                             className="block px-3 py-2 rounded-lg text-xs font-semibold text-white hover:text-[#F96501] hover:bg-white/10 transition-colors"
                           >
-                            <span className="block text-white font-medium">{sub.name}</span>
+                            <span className="block text-white font-medium">
+                              {sub.name}
+                            </span>
                             {sub.desc && (
                               <span className="block text-[10.5px] text-slate-300 font-normal mt-0.5 line-clamp-1">
                                 {sub.desc}
@@ -377,14 +521,26 @@ export default function Navbar() {
                 );
               })}
 
-              {/* Mobile CTA Button */}
+              {/* Mobile CTA: MIKROTIK ACADEMY */}
               <div className="pt-4 pb-2">
                 <Link
-                  href="/ppdb"
-                  onClick={() => setMobileOpen(false)}
-                  className="w-full py-3 rounded-xl bg-[#F96501] hover:bg-[#e05900] active:scale-98 text-white font-bold text-sm tracking-wide shadow-md flex items-center justify-center gap-2 transition-all"
+                  href="/mikrotik"
+                  onClick={() => {
+                    setMobileOpen(false);
+                    setMobileExpanded(null);
+                  }}
+                  className="w-full py-3 rounded-xl bg-[#F96501] hover:bg-[#e05900] active:scale-98 text-white font-bold text-sm tracking-wide shadow-md flex items-center justify-center gap-2.5 transition-all"
                 >
-                  <span>Pendaftaran PPDB 2026</span>
+                  <div className="relative w-4 h-4 shrink-0 flex items-center justify-center">
+                    <Image
+                      src="/images/mikrotik.png"
+                      alt="MikroTik Logo"
+                      width={18}
+                      height={18}
+                      className="object-contain w-full h-full brightness-0 invert"
+                    />
+                  </div>
+                  <span>MIKROTIK ACADEMY</span>
                   <span aria-hidden="true">→</span>
                 </Link>
               </div>
@@ -397,7 +553,7 @@ export default function Navbar() {
                   onClick={() => setMobileOpen(false)}
                   className="text-[#F96501] font-semibold hover:underline"
                 >
-                  Hubungi Sekolah →
+                  Hubungi Narahubung →
                 </Link>
               </div>
             </div>
