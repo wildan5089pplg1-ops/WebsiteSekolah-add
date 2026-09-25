@@ -27,6 +27,10 @@ class ContactController extends Controller
         $message->delete();
         return response()->json(['success' => true, 'message' => 'Pesan berhasil dihapus']);
     }
+
+    /**
+     * Menyimpan data pesan kontak yang dikirim oleh pengguna umum.
+     */
     public function store(Request $request)
     {
         $validator = Validator::make($request->all(), [
