@@ -11,6 +11,7 @@ interface Course {
   desc: string;
   link: string;
   biaya?: 'Gratis' | 'Biaya tertera';
+  level?: string;
 }
 
 // The COURSES_DATA is now fetched from the API

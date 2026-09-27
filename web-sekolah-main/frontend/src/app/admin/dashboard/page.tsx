@@ -28,7 +28,6 @@ interface PpdbRegistration {
   full_name: string;
   nisn: string;
   gender: string;
-  gender: string;
   birth_place: string;
   birth_date: string;
   religion: string;
