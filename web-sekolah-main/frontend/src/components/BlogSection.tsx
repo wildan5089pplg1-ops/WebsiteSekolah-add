@@ -53,7 +53,7 @@ export default function BlogSection() {
             </h2>
           </div>
           
-          <Link href="/blog" className="inline-flex items-center gap-2 text-[#e65c4f] font-bold text-sm sm:text-base border-b border-transparent hover:border-[#e65c4f] hover:gap-3 transition-all pb-1 mb-2 md:mb-4">
+          <Link href="/news" className="inline-flex items-center gap-2 text-[#e65c4f] font-bold text-sm sm:text-base border-b border-transparent hover:border-[#e65c4f] hover:gap-3 transition-all pb-1 mb-2 md:mb-4">
             Lihat semua
             <svg className="w-4 h-4 sm:w-5 sm:h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M14 5l7 7m0 0l-7 7m7-7H3" /></svg>
           </Link>
@@ -95,7 +95,7 @@ export default function BlogSection() {
 
                 {/* Footer Link */}
                 <div className="mt-auto pt-5 border-t border-slate-200/60">
-                  <Link href={`/blog/${article.id}`} className="inline-flex items-center gap-2 text-[#e65c4f] font-bold text-[13px] hover:gap-3 transition-all">
+                  <Link href={`/news/${article.id}`} className="inline-flex items-center gap-2 text-[#e65c4f] font-bold text-[13px] hover:gap-3 transition-all">
                     Baca selengkapnya
                     <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M14 5l7 7m0 0l-7 7m7-7H3" /></svg>
                   </Link>
