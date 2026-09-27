@@ -357,6 +357,7 @@ export default function FullScreenHero() {
   return (
     <div
       ref={containerRef}
+      id="hero-section"
       className="fullscreen-hero-container"
       onMouseEnter={() => pauseAutoRotation(6000)}
       onMouseLeave={() => pauseAutoRotation(4000)}
