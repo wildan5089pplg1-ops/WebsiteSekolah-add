@@ -117,8 +117,8 @@ export default function InteractiveMajors() {
                     <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent pointer-events-none"></div>
                     
                     {/* Logo inside Image */}
-                    <div className={`absolute bottom-3 left-4 w-11 h-11 backdrop-blur-md rounded-xl flex items-center justify-center border transition-colors duration-300 ${isActive ? 'bg-[#e65c4f]/90 border-white/20' : 'bg-white/20 border-white/30 group-hover:bg-white/40'}`}>
-                      <img src={major.iconPath} alt={`${major.acronym} Logo`} className="w-6 h-6 object-contain brightness-0 invert drop-shadow-sm" />
+                    <div className={`absolute bottom-4 left-5 w-16 h-16 backdrop-blur-md rounded-2xl flex items-center justify-center border shadow-lg transition-colors duration-300 ${isActive ? 'bg-white border-[#e65c4f]/30' : 'bg-white/90 border-white group-hover:bg-white'}`}>
+                      <img src={major.iconPath} alt={`${major.acronym} Logo`} className="w-10 h-10 object-contain drop-shadow-sm" />
                     </div>
                   </div>
 
