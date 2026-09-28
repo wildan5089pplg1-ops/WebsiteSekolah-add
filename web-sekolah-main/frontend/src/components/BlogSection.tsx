@@ -41,7 +41,7 @@ export default function BlogSection({ articles }: BlogSectionProps) {
               Cerita & <span className="text-orange-500">Kabar Terbaru</span>
             </h2>
           </div>
-          <Link href="/blog" className="shrink-0 flex items-center gap-2 px-6 py-2.5 rounded-full bg-white dark:bg-slate-800 text-slate-900 dark:text-white font-bold text-sm shadow-md hover:shadow-lg transition-all border border-slate-200 dark:border-slate-700 group">
+          <Link href="/news" className="shrink-0 flex items-center gap-2 px-6 py-2.5 rounded-full bg-white dark:bg-slate-800 text-slate-900 dark:text-white font-bold text-sm shadow-md hover:shadow-lg transition-all border border-slate-200 dark:border-slate-700 group">
             Lihat Semua Berita
             <svg className="w-4 h-4 transform group-hover:translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M14 5l7 7m0 0l-7 7m7-7H3" /></svg>
           </Link>
@@ -52,7 +52,7 @@ export default function BlogSection({ articles }: BlogSectionProps) {
           
           {/* FEATURED ARTICLE (Left Side) */}
           <div className="lg:col-span-7 flex flex-col">
-            <Link href={`/blog/${featured.slug || featured.id}`} className="group relative w-full h-[450px] md:h-[550px] rounded-3xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-500 flex flex-col justify-end isolate">
+            <Link href={`/news/${featured.slug || featured.id}`} className="group relative w-full h-[450px] md:h-[550px] rounded-3xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-500 flex flex-col justify-end isolate">
               
               {/* Image & Zoom */}
               <div className="absolute inset-0 z-0">
@@ -103,7 +103,7 @@ export default function BlogSection({ articles }: BlogSectionProps) {
             {list.map((article) => (
               <Link 
                 key={article.id} 
-                href={`/blog/${article.slug || article.id}`}
+                href={`/news/${article.slug || article.id}`}
                 className="group flex flex-row items-center gap-4 md:gap-6 p-3 md:p-4 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300"
               >
                 {/* Square Thumbnail */}
