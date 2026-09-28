@@ -90,7 +90,7 @@ export default async function HomePage() {
       <MitraSection />
 
       {/* Blog & Artikel Section */}
-      <BlogSection />
+      <BlogSection articles={news} />
 
       {/* Bottom CTA Banner */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-10">

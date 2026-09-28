@@ -20,11 +20,14 @@ export interface SchoolInfo {
 export interface NewsItem {
   id: number;
   title: string;
+  slug?: string;
   category: string;
   date: string;
   summary: string;
   content: string;
   image: string;
+  author?: string;
+  views_count?: number;
 }
 
 export interface FacilityItem {
