@@ -18,7 +18,7 @@ return new class extends Migration
             $table->date('date');
             $table->text('summary');
             $table->longText('content');
-            $table->string('image');
+            $table->text('image');
             $table->timestamps();
         });
     }

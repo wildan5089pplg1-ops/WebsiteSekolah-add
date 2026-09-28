@@ -5,16 +5,22 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\News;
 use Illuminate\Http\Request;
+use App\Http\Traits\ApiResponseTrait;
 
 class NewsController extends Controller
 {
-    public function index()
+    use ApiResponseTrait;
+
+    public function index(Request $request)
     {
-        $news = News::orderBy('date', 'desc')->get();
-        return response()->json([
-            'success' => true,
-            'data' => $news
+        $request->validate([
+            'per_page' => 'sometimes|integer|min:1|max:100'
         ]);
+
+        $perPage = (int) $request->input('per_page', 10);
+        $news = News::orderBy('date', 'desc')->paginate($perPage);
+
+        return $this->successResponse($news, 'Data berita berhasil dimuat');
     }
 
     public function show($id)
@@ -22,15 +28,9 @@ class NewsController extends Controller
         $news = News::find($id);
         
         if (!$news) {
-            return response()->json([
-                'success' => false,
-                'message' => 'News not found'
-            ], 404);
+            return $this->errorResponse('Berita tidak ditemukan', 404);
         }
 
-        return response()->json([
-            'success' => true,
-            'data' => $news
-        ]);
+        return $this->successResponse($news, 'Detail berita berhasil dimuat');
     }
 }
