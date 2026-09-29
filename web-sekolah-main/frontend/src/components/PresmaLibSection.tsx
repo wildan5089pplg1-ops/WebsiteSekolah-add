@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
+import { useState, useEffect, useRef } from 'react';
 
 // Define the book interface matching the database
 interface Book {
@@ -83,197 +83,114 @@ function getPaginationRange(currentPage: number, totalPages: number): (number | 
   return range;
 }
 
-// =====================================================================
-// GLOBAL IMAGE CACHE — Persist across re-renders, survives pagination
-// Key: bookId → { url: resolved image URL | null, status: 'loaded'|'failed'|'pending' }
-// =====================================================================
-const imageCache = new Map<number, { url: string | null; status: 'loaded' | 'failed' | 'pending' }>();
-
-function getBookImageUrl(book: Book, size: 'sm' | 'lg' = 'sm'): string | null {
-  if (book.nama_file_cover) {
-    const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL?.replace('/api/v1', '') || 'http://localhost:8000';
-    return `${baseUrl}/images/docs/${book.nama_file_cover}`;
-  }
-  if (book.isbn_issn) {
-    const cleanIsbn = book.isbn_issn.replace(/[^0-9X]/gi, '');
-    if (cleanIsbn.length >= 9) {
-      return `https://covers.openlibrary.org/b/isbn/${cleanIsbn}-${size === 'lg' ? 'L' : 'M'}.jpg`;
-    }
-  }
-  return null;
-}
-
-/** Preload images for an array of books in the background */
-function preloadBookImages(books: Book[]) {
-  books.forEach((book) => {
-    if (imageCache.has(book.id)) return; // Already cached
-    const url = getBookImageUrl(book);
-    if (!url) {
-      imageCache.set(book.id, { url: null, status: 'failed' });
-      return;
-    }
-    imageCache.set(book.id, { url, status: 'pending' });
-    const img = new Image();
-    img.onload = () => {
-      // OpenLibrary returns 1x1 blank gif when ISBN has no cover
-      if (img.naturalWidth <= 1) {
-        imageCache.set(book.id, { url: null, status: 'failed' });
-      } else {
-        imageCache.set(book.id, { url, status: 'loaded' });
-      }
-    };
-    img.onerror = () => {
-      // Fallback: try OpenLibrary if backend cover failed
-      if (book.nama_file_cover && book.isbn_issn) {
-        const cleanIsbn = book.isbn_issn.replace(/[^0-9X]/gi, '');
-        if (cleanIsbn.length >= 9) {
-          const fallbackUrl = `https://covers.openlibrary.org/b/isbn/${cleanIsbn}-M.jpg`;
-          imageCache.set(book.id, { url: fallbackUrl, status: 'pending' });
-          const fallbackImg = new Image();
-          fallbackImg.onload = () => {
-            if (fallbackImg.naturalWidth <= 1) {
-              imageCache.set(book.id, { url: null, status: 'failed' });
-            } else {
-              imageCache.set(book.id, { url: fallbackUrl, status: 'loaded' });
-            }
-          };
-          fallbackImg.onerror = () => imageCache.set(book.id, { url: null, status: 'failed' });
-          fallbackImg.src = fallbackUrl;
-          return;
-        }
-      }
-      imageCache.set(book.id, { url: null, status: 'failed' });
-    };
-    img.src = url;
-  });
-}
-
-// =====================================================================
-// DATA CACHE — In-memory SWR-like cache for book pages
-// Key: "page_1_search_cat" → { books, meta, timestamp }
-// =====================================================================
-interface CachedPage {
-  books: Book[];
-  meta: { current_page: number; last_page: number; total: number };
-  timestamp: number;
-}
-const pageCache = new Map<string, CachedPage>();
-const CACHE_TTL = 5 * 60 * 1000; // 5 minutes
-
-function getCacheKey(page: number, search: string, category: string | null): string {
-  return `p${page}_s${search}_c${category || 'all'}`;
-}
-
-// =====================================================================
-// DETAIL CACHE — Pre-cached full book detail to eliminate detail loading
-// =====================================================================
-const detailCache = new Map<number, Book>();
-
 // Hybrid Book Cover Component (Backend Upload -> OpenLibrary ISBN -> Stylized Digital Cover)
-// Now uses global imageCache for instant rendering
 function BookCover({ book, size = 'sm' }: { book: Book; size?: 'sm' | 'lg' }) {
-  const cached = imageCache.get(book.id);
-  const [, forceUpdate] = useState(0);
+  // 1. Tentukan sumber gambar secara langsung (synchronous) agar langsung dirender di pass pertama
+  const initialImgSrc = book.nama_file_cover 
+    ? `http://localhost:8000/images/docs/${book.nama_file_cover}`
+    : (book.isbn_issn && book.isbn_issn.replace(/[^0-9X]/gi, '').length >= 9)
+      ? `https://covers.openlibrary.org/b/isbn/${book.isbn_issn.replace(/[^0-9X]/gi, '')}-${size === 'lg' ? 'L' : 'M'}.jpg`
+      : null;
 
+  const [imgSrc, setImgSrc] = useState<string | null>(initialImgSrc);
+  const [hasFailed, setHasFailed] = useState(false);
+  const [isLoaded, setIsLoaded] = useState(false);
+
+  // Jika prop book berubah (misal pindah buku di modal), reset semua state
   useEffect(() => {
-    // If image is still pending, poll briefly until resolved
-    if (cached?.status === 'pending') {
-      const interval = setInterval(() => {
-        const current = imageCache.get(book.id);
-        if (current?.status !== 'pending') {
-          clearInterval(interval);
-          forceUpdate((n) => n + 1);
-        }
-      }, 100);
-      return () => clearInterval(interval);
-    }
-    // If no cache entry yet, create one
-    if (!cached) {
-      preloadBookImages([book]);
-      const interval = setInterval(() => {
-        const current = imageCache.get(book.id);
-        if (current?.status !== 'pending') {
-          clearInterval(interval);
-          forceUpdate((n) => n + 1);
-        }
-      }, 100);
-      return () => clearInterval(interval);
-    }
-  }, [book.id, cached?.status]);
+    setImgSrc(initialImgSrc);
+    setHasFailed(false);
+    setIsLoaded(false);
+  }, [book.id, initialImgSrc]);
 
   const style = getCoverStyle(book.id, book.judul);
 
-  // If image loaded successfully, show it instantly (already in browser cache)
-  if (cached?.status === 'loaded' && cached.url) {
-    return (
-      <div className="relative w-full h-full">
-        <img
-          src={cached.url}
-          alt={book.judul}
-          className="w-full h-full object-cover absolute inset-0"
-          loading="eager"
-        />
-        <div className="absolute left-0 inset-y-0 w-2.5 bg-gradient-to-r from-black/40 via-black/10 to-transparent pointer-events-none" />
-      </div>
-    );
-  }
-
-  // Fallback: Dynamic Stylized Digital Book Cover (instant, no loading)
   return (
-    <div className={`relative w-full h-full bg-gradient-to-br ${style.bg} ${size === 'lg' ? 'p-6' : 'p-3'} flex flex-col justify-between overflow-hidden select-none`}>
-      {/* 3D Book Spine Effect */}
-      <div className="absolute left-0 inset-y-0 w-3 bg-gradient-to-r from-black/50 via-black/20 to-transparent pointer-events-none" />
-      <div className="absolute left-3 inset-y-0 w-[1px] bg-white/15 pointer-events-none" />
+    <div className="relative w-full h-full bg-slate-900 overflow-hidden">
+      
+      {/* LAYER 1: Fallback Stylized Cover (Selalu di-render di bawah sebagai placeholder/skeleton) */}
+      <div className={`absolute inset-0 w-full h-full bg-gradient-to-br ${style.bg} ${size === 'lg' ? 'p-6' : 'p-3'} flex flex-col justify-between overflow-hidden select-none`}>
+        {/* 3D Book Spine Effect */}
+        <div className="absolute left-0 inset-y-0 w-3 bg-gradient-to-r from-black/50 via-black/20 to-transparent pointer-events-none" />
+        <div className="absolute left-3 inset-y-0 w-[1px] bg-white/15 pointer-events-none" />
 
-      {/* Decorative Geometric Patterns */}
-      <div className="absolute -right-6 -bottom-6 w-24 h-24 rounded-full bg-white/5 pointer-events-none" />
-      <div className="absolute -right-2 -top-2 w-16 h-16 rounded-full bg-white/5 pointer-events-none" />
+        {/* Decorative Geometric Patterns */}
+        <div className="absolute -right-6 -bottom-6 w-24 h-24 rounded-full bg-white/5 pointer-events-none" />
+        <div className="absolute -right-2 -top-2 w-16 h-16 rounded-full bg-white/5 pointer-events-none" />
 
-      {/* Top Header Badge */}
-      <div className="relative z-10 flex items-center justify-between">
-        <span className={`${size === 'lg' ? 'text-xs tracking-widest' : 'text-[8px] tracking-wider'} font-black uppercase text-white/80`}>
-          PRESMALIB
-        </span>
-        <div className={`${size === 'lg' ? 'w-3 h-3' : 'w-2 h-2'} rounded-full ${style.accent} shadow-sm`} />
+        {/* Top Header Badge */}
+        <div className="relative z-10 flex items-center justify-between">
+          <span className={`${size === 'lg' ? 'text-xs tracking-widest' : 'text-[8px] tracking-wider'} font-black uppercase text-white/80`}>
+            PRESMALIB
+          </span>
+          <div className={`${size === 'lg' ? 'w-3 h-3' : 'w-2 h-2'} rounded-full ${style.accent} shadow-sm`} />
+        </div>
+
+        {/* Center Title & Author */}
+        <div className="relative z-10 my-auto py-2">
+          <h4 className={`${size === 'lg' ? 'text-xl sm:text-2xl line-clamp-4' : 'text-[11px] sm:text-xs line-clamp-3'} font-black text-white leading-tight drop-shadow-sm`}>
+            {book.judul}
+          </h4>
+          {book.pengarang && (
+            <p className={`${size === 'lg' ? 'text-xs sm:text-sm mt-3' : 'text-[9px] mt-1'} text-white/75 font-medium line-clamp-1`}>
+              {book.pengarang}
+            </p>
+          )}
+        </div>
+
+        {/* Bottom Footer Info */}
+        <div className="relative z-10 pt-2 border-t border-white/10 flex items-center justify-between">
+          <span className={`${size === 'lg' ? 'text-[10px]' : 'text-[7px] sm:text-[8px]'} text-white/60 font-semibold tracking-wider uppercase`}>
+            {book.tahun_terbit ? `${book.tahun_terbit}` : 'E-LIBRARY'}
+          </span>
+          <span className={`${size === 'lg' ? 'text-[10px]' : 'text-[7px] sm:text-[8px]'} text-white/40 font-mono`}>
+            {book.isbn_issn ? 'ISBN' : 'SMK'}
+          </span>
+        </div>
       </div>
 
-      {/* Center Title & Author */}
-      <div className="relative z-10 my-auto py-2">
-        <h4 className={`${size === 'lg' ? 'text-xl sm:text-2xl line-clamp-4' : 'text-[11px] sm:text-xs line-clamp-3'} font-black text-white leading-tight drop-shadow-sm`}>
-          {book.judul}
-        </h4>
-        {book.pengarang && (
-          <p className={`${size === 'lg' ? 'text-xs sm:text-sm mt-3' : 'text-[9px] mt-1'} text-white/75 font-medium line-clamp-1`}>
-            {book.pengarang}
-          </p>
-        )}
-      </div>
-
-      {/* Bottom Footer Info */}
-      <div className="relative z-10 pt-2 border-t border-white/10 flex items-center justify-between">
-        <span className={`${size === 'lg' ? 'text-[10px]' : 'text-[7px] sm:text-[8px]'} text-white/60 font-semibold tracking-wider uppercase`}>
-          {book.tahun_terbit ? `${book.tahun_terbit}` : 'E-LIBRARY'}
-        </span>
-        <span className={`${size === 'lg' ? 'text-[10px]' : 'text-[7px] sm:text-[8px]'} text-white/40 font-mono`}>
-          {book.isbn_issn ? 'ISBN' : 'SMK'}
-        </span>
-      </div>
+      {/* LAYER 2: Gambar Cover Asli (Berada di atas, muncul secara perlahan (fade-in) setelah selesai didownload) */}
+      {imgSrc && !hasFailed && (
+        <div className={`absolute inset-0 w-full h-full transition-opacity duration-700 ease-out z-20 ${isLoaded ? 'opacity-100' : 'opacity-0'}`}>
+          <img
+            src={imgSrc}
+            alt={book.judul}
+            className="w-full h-full object-cover absolute inset-0"
+            onLoad={(e) => {
+              // OpenLibrary returns 1x1 blank gif when ISBN has no cover
+              if ((e.target as HTMLImageElement).naturalWidth <= 1) {
+                setHasFailed(true);
+              } else {
+                setIsLoaded(true);
+              }
+            }}
+            onError={() => {
+              // Jika gagal memuat gambar lokal, coba beralih ke ISBN
+              if (book.nama_file_cover && book.isbn_issn && !imgSrc.includes('openlibrary.org')) {
+                const cleanIsbn = book.isbn_issn.replace(/[^0-9X]/gi, '');
+                if (cleanIsbn.length >= 9) {
+                  setImgSrc(`https://covers.openlibrary.org/b/isbn/${cleanIsbn}-${size === 'lg' ? 'L' : 'M'}.jpg`);
+                  return;
+                }
+              }
+              setHasFailed(true);
+            }}
+          />
+          {/* Subtle realistic book spine shadow di atas gambar asli */}
+          <div className="absolute left-0 inset-y-0 w-2.5 bg-gradient-to-r from-black/40 via-black/10 to-transparent pointer-events-none" />
+        </div>
+      )}
     </div>
   );
 }
 
 export default function PresmaLibSection() {
-  const API_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8000/api/v1';
-
+  const [searchInput, setSearchInput] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
-  // appliedSearch = search term yang benar-benar aktif (hanya berubah saat Enter)
-  const [appliedSearch, setAppliedSearch] = useState('');
   const [selectedBook, setSelectedBook] = useState<Book | null>(null);
   const [books, setBooks] = useState<Book[]>([]);
-  // CHANGE: Start with false — show content skeleton instead of spinner on first load
-  const [loading, setLoading] = useState(false);
-  const [initialLoaded, setInitialLoaded] = useState(false);
-  const [detailLoading, setDetailLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [loadingDetail, setLoadingDetail] = useState(false);
 
   // Category states (hierarchical)
   const [categoryGroups, setCategoryGroups] = useState<CategoryGroup[]>([]);
@@ -290,9 +207,10 @@ export default function PresmaLibSection() {
   const [totalItems, setTotalItems] = useState(0);
 
   // Fetch hierarchical category groups from backend API
-  const fetchCategories = useCallback(async () => {
+  // Format response: { success: true, data: CategoryGroup[] }
+  const fetchCategories = async () => {
     try {
-      const res = await fetch(`${API_URL}/buku/kategori`);
+      const res = await fetch('http://localhost:8000/api/v1/buku/kategori');
       if (res.ok) {
         const json = await res.json();
         setCategoryGroups(json.data || []);
@@ -300,30 +218,14 @@ export default function PresmaLibSection() {
     } catch (err) {
       console.error('Error fetching categories:', err);
     }
-  }, [API_URL]);
+  };
 
-  // Fetch books with IN-MEMORY CACHE — no loading spinner if data is cached
-  const fetchBooks = useCallback(async (query: string = '', page: number = 1, category: string | null = null) => {
-    const cacheKey = getCacheKey(page, query, category);
-
-    // CHECK CACHE FIRST — if valid, render instantly (zero loading)
-    const cached = pageCache.get(cacheKey);
-    if (cached && Date.now() - cached.timestamp < CACHE_TTL) {
-      setBooks(cached.books);
-      setCurrentPage(cached.meta.current_page);
-      setTotalPages(cached.meta.last_page);
-      setTotalItems(cached.meta.total);
-      setInitialLoaded(true);
-      // Preload images from cache instantly
-      preloadBookImages(cached.books);
-      return;
-    }
-
-    // Only show loading if we have NO cached data to show
-    if (!cached) setLoading(true);
-
+  // Fetch books from API with search, page, and category filters
+  // Format response: { success: true, data: Book[], meta: { current_page, last_page, total, ... } }
+  const fetchBooks = async (query: string = '', page: number = 1, category: string | null = selectedCategory) => {
+    setLoading(true);
     try {
-      let url = `${API_URL}/buku?page=${page}`;
+      let url = `http://localhost:8000/api/v1/buku?page=${page}`;
       if (query.trim()) {
         url += `&search=${encodeURIComponent(query.trim())}`;
       }
@@ -332,49 +234,17 @@ export default function PresmaLibSection() {
       }
       const response = await fetch(url);
       const json = await response.json();
-      const newBooks = json.data || [];
-      const meta = {
-        current_page: json.meta?.current_page || page,
-        last_page: json.meta?.last_page || 1,
-        total: json.meta?.total || 0,
-      };
-
-      // STORE IN CACHE
-      pageCache.set(cacheKey, { books: newBooks, meta, timestamp: Date.now() });
-
-      // PRELOAD ALL IMAGES BEFORE rendering (hidden, in background)
-      preloadBookImages(newBooks);
-
-      setBooks(newBooks);
-      setCurrentPage(meta.current_page);
-      setTotalPages(meta.last_page);
-      setTotalItems(meta.total);
-      setInitialLoaded(true);
-
-      // PREFETCH next page in background for instant pagination
-      if (meta.current_page < meta.last_page) {
-        const nextCacheKey = getCacheKey(page + 1, query, category);
-        if (!pageCache.has(nextCacheKey)) {
-          fetch(`${API_URL}/buku?page=${page + 1}${query.trim() ? `&search=${encodeURIComponent(query.trim())}` : ''}${category ? `&category=${encodeURIComponent(category)}` : ''}`)
-            .then(r => r.json())
-            .then(nextJson => {
-              const nextBooks = nextJson.data || [];
-              pageCache.set(nextCacheKey, {
-                books: nextBooks,
-                meta: { current_page: nextJson.meta?.current_page || page + 1, last_page: nextJson.meta?.last_page || 1, total: nextJson.meta?.total || 0 },
-                timestamp: Date.now(),
-              });
-              preloadBookImages(nextBooks);
-            })
-            .catch(() => {}); // Silent fail for prefetch
-        }
-      }
+      // Format baru: { success, data: [...books], meta: { pagination } }
+      setBooks(json.data || []);
+      setCurrentPage(json.meta?.current_page || page);
+      setTotalPages(json.meta?.last_page || 1);
+      setTotalItems(json.meta?.total || 0);
     } catch (error) {
       console.error('Error fetching books:', error);
     } finally {
       setLoading(false);
     }
-  }, [API_URL]);
+  };
 
   // Close dropdown on click outside
   useEffect(() => {
@@ -391,66 +261,32 @@ export default function PresmaLibSection() {
   // Initial fetch on mount
   useEffect(() => {
     fetchCategories();
-  }, [fetchCategories]);
+  }, []);
 
-  // OPTIMISTIC DETAIL VIEW: Show book immediately with grid data,
-  // then silently upgrade with full detail data in background
-  const handleSelectBook = useCallback(async (book: Book) => {
-    // Check detail cache first — if we prefetched, it's instant!
-    const cachedDetail = detailCache.get(book.id);
-    if (cachedDetail) {
-      setSelectedBook(cachedDetail);
-      setDetailLoading(false);
-      return;
-    }
-
-    // INSTANT: Show immediately with data we already have
+  // Handle clicking book to show detail & fetch complete data
+  const handleSelectBook = async (book: Book) => {
     setSelectedBook(book);
-    setDetailLoading(true); // Mark that we're loading detail
-
-    // Also preload the large cover version immediately
-    if (book.nama_file_cover || book.isbn_issn) {
-      const lgUrl = getBookImageUrl(book, 'lg');
-      if (lgUrl && !imageCache.has(-book.id)) {
-        const lgImg = new Image();
-        lgImg.src = lgUrl;
-      }
-    }
-    // BACKGROUND: Fetch full detail (deskripsi_abstrak, etc.)
+    setLoadingDetail(true);
     try {
-      const response = await fetch(`${API_URL}/buku/${book.id}`);
+      const response = await fetch(`http://localhost:8000/api/v1/buku/${book.id}`);
       if (response.ok) {
         const json = await response.json();
         if (json.success && json.data) {
-          detailCache.set(book.id, json.data);
           setSelectedBook(json.data);
         }
       }
     } catch (error) {
-      // Silent fail — we already have the grid data displayed
+      console.error('Error fetching book detail:', error);
     } finally {
-      setDetailLoading(false);
+      setLoadingDetail(false);
     }
-  }, [API_URL]);
-
-  // PREFETCH detail on hover — by the time user clicks, data is already cached
-  const handleHoverBook = useCallback((book: Book) => {
-    if (detailCache.has(book.id)) return; // Already cached
-    fetch(`${API_URL}/buku/${book.id}`)
-      .then(r => r.json())
-      .then(json => {
-        if (json.success && json.data) {
-          detailCache.set(book.id, json.data);
-        }
-      })
-      .catch(() => {}); // Silent
-  }, [API_URL]);
+  };
 
   // Handle page change with smooth scroll to PresmaLib top
   const handlePageChange = (newPage: number) => {
     if (newPage < 1 || newPage > totalPages || newPage === currentPage) return;
     setCurrentPage(newPage);
-    fetchBooks(appliedSearch, newPage, selectedCategory);
+    fetchBooks(searchQuery, newPage, selectedCategory);
     const element = document.getElementById('presmalib');
     if (element) {
       element.scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -465,7 +301,7 @@ export default function PresmaLibSection() {
     setCategorySearch('');
     setCurrentPage(1);
     setSelectedBook(null);
-    fetchBooks(appliedSearch, 1, catName);
+    fetchBooks(searchQuery, 1, catName);
     const element = document.getElementById('presmalib');
     if (element) {
       element.scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -473,9 +309,9 @@ export default function PresmaLibSection() {
   };
 
   // Handle "Eksplorasi" button: Reset all filters & back to initial catalog state
-  const handleResetExploration = useCallback(() => {
+  const handleResetExploration = () => {
+    setSearchInput('');
     setSearchQuery('');
-    setAppliedSearch('');
     setSelectedCategory(null);
     setSelectedBook(null);
     setCurrentPage(1);
@@ -485,71 +321,14 @@ export default function PresmaLibSection() {
     if (element) {
       element.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
-  }, [fetchBooks]);
+  };
 
-  // Handle search: ONLY trigger on Enter key press
-  const handleSearchSubmit = useCallback(() => {
-    const trimmed = searchQuery.trim();
-    if (trimmed === appliedSearch) return; // No change, skip
-    setAppliedSearch(trimmed);
-    setCurrentPage(1);
-    setSelectedBook(null);
-    setLoading(true);
-    fetchBooks(trimmed, 1, selectedCategory);
-    const element = document.getElementById('presmalib');
-    if (element) {
-      element.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    }
-  }, [searchQuery, appliedSearch, selectedCategory, fetchBooks]);
-
-  // Handle clearing search from filter chip
-  const handleClearSearch = useCallback(() => {
-    setSearchQuery('');
-    setAppliedSearch('');
-    setCurrentPage(1);
-    fetchBooks('', 1, selectedCategory);
-  }, [selectedCategory, fetchBooks]);
-
-  // Initial fetch on mount (no debounce, no search effect)
+  // Handle applied search
   useEffect(() => {
-    fetchBooks('', 1, null);
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  // =====================================================================
-  // 🚀 ADVANCED ALGORITHM: PREDICTIVE SEARCH PREFETCHING
-  // =====================================================================
-  // Research-backed optimization: Menghilangkan persepsi loading pada pencarian
-  // dengan melakukan fetching diam-diam (silent prefetch) di background saat user 
-  // masih mengetik. Saat user akhirnya menekan "Enter", data 99% sudah ada 
-  // di dalam memory cache dan akan dirender dalam 0 milidetik.
-  useEffect(() => {
-    // Jangan prefetch jika input kosong atau belum ditekan enter tapi sama dengan yang aktif
-    const trimmed = searchQuery.trim();
-    if (!trimmed || trimmed === appliedSearch) return;
-
-    const delayDebounceFn = setTimeout(() => {
-      const cacheKey = getCacheKey(1, trimmed, selectedCategory);
-      // Hanya fetch jika belum ada di cache
-      if (!pageCache.has(cacheKey)) {
-        fetch(`${API_URL}/buku?page=1&search=${encodeURIComponent(trimmed)}${selectedCategory ? `&category=${encodeURIComponent(selectedCategory)}` : ''}`)
-          .then(r => r.json())
-          .then(json => {
-            const nextBooks = json.data || [];
-            pageCache.set(cacheKey, {
-              books: nextBooks,
-              meta: { current_page: json.meta?.current_page || 1, last_page: json.meta?.last_page || 1, total: json.meta?.total || 0 },
-              timestamp: Date.now(),
-            });
-            // Eagerly preload cover images too!
-            preloadBookImages(nextBooks);
-          })
-          .catch(() => {}); // Silent fail, if it fails, it will retry normally on Enter
-      }
-    }, 400); // 400ms typing debounce
-
-    return () => clearTimeout(delayDebounceFn);
-  }, [searchQuery, appliedSearch, selectedCategory, API_URL]);
+    // Only fetch if not already in initial mount phase where categories aren't even loaded
+    setCurrentPage(1);
+    fetchBooks(searchQuery, 1, selectedCategory);
+  }, [searchQuery]);
 
   // When searching, flatten all children and filter by query
   const searchLower = categorySearch.toLowerCase();
@@ -765,7 +544,7 @@ export default function PresmaLibSection() {
             </div>
           </div>
 
-          {/* Search Bar — triggers on Enter only */}
+          {/* Search Bar */}
           <div className="relative w-full md:w-[280px]">
             <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
               <svg className="h-5 w-5 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -774,35 +553,22 @@ export default function PresmaLibSection() {
             </div>
             <input
               type="text"
-              placeholder="Cari judul atau pengarang... (Enter)"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder="Ketik & tekan Enter..."
+              value={searchInput}
+              onChange={(e) => setSearchInput(e.target.value)}
               onKeyDown={(e) => {
                 if (e.key === 'Enter') {
-                  e.preventDefault();
-                  handleSearchSubmit();
+                  setSearchQuery(searchInput);
                 }
               }}
-              className="block w-full pl-10 pr-10 py-2.5 border border-slate-200 rounded-lg leading-5 bg-slate-100 placeholder-slate-400 focus:outline-none focus:bg-white focus:ring-1 focus:ring-orange-500 focus:border-orange-500 sm:text-sm transition-colors"
+              className="block w-full pl-10 pr-3 py-2.5 border border-slate-200 rounded-lg leading-5 bg-slate-100 placeholder-slate-400 focus:outline-none focus:bg-white focus:ring-1 focus:ring-orange-500 focus:border-orange-500 sm:text-sm transition-colors"
             />
-            {/* Search submit button inside input */}
-            {searchQuery.trim() && searchQuery.trim() !== appliedSearch && (
-              <button
-                onClick={handleSearchSubmit}
-                className="absolute inset-y-0 right-0 pr-3 flex items-center text-orange-500 hover:text-orange-600 transition-colors"
-                title="Tekan Enter untuk mencari"
-              >
-                <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M13 7l5 5m0 0l-5 5m5-5H6" />
-                </svg>
-              </button>
-            )}
           </div>
 
         </div>
 
         {/* Active Filter Chips Bar */}
-        {(selectedCategory || appliedSearch) && (
+        {(selectedCategory || searchQuery) && (
           <div className="flex items-center gap-2 flex-wrap -mt-4 pb-2">
             <span className="text-xs text-slate-400 font-semibold">Filter:</span>
             {selectedCategory && (
@@ -817,11 +583,14 @@ export default function PresmaLibSection() {
                 </button>
               </span>
             )}
-            {appliedSearch && (
+            {searchQuery && (
               <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-slate-100 text-slate-700 text-xs font-semibold rounded-full border border-slate-200">
-                Pencarian: &quot;{appliedSearch}&quot;
+                Pencarian: &quot;{searchQuery}&quot;
                 <button
-                  onClick={handleClearSearch}
+                  onClick={() => {
+                    setSearchInput('');
+                    setSearchQuery('');
+                  }}
                   className="w-4 h-4 rounded-full bg-slate-200 hover:bg-slate-300 text-slate-700 flex items-center justify-center text-xs transition-colors"
                   title="Hapus kata kunci"
                 >
@@ -842,13 +611,13 @@ export default function PresmaLibSection() {
         {!selectedBook ? (
           <div>
             {loading ? (
-              /* SKELETON GRID for search/filter/pagination loading */
-              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-9 gap-4 gap-y-8">
-                {Array.from({ length: 18 }).map((_, i) => (
-                  <div key={i} className="flex flex-col items-center animate-pulse">
-                    <div className="w-full aspect-[2/3] bg-slate-200 rounded-lg mb-3" />
-                    <div className="w-3/4 h-2.5 bg-slate-200 rounded mb-1.5" />
-                    <div className="w-[90%] h-6 bg-slate-200 rounded-full" />
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-9 gap-4 gap-y-8 animate-pulse">
+                {Array.from({ length: 18 }).map((_, idx) => (
+                  <div key={idx} className="flex flex-col items-center">
+                    <div className="w-full aspect-[2/3] bg-slate-200/60 rounded-lg mb-3 border border-slate-100"></div>
+                    <div className="w-3/4 h-3 bg-slate-200/60 rounded-full mb-2"></div>
+                    <div className="w-1/2 h-3 bg-slate-200/60 rounded-full mb-3"></div>
+                    <div className="w-[90%] h-6 bg-slate-200/60 rounded-full"></div>
                   </div>
                 ))}
               </div>
@@ -856,7 +625,7 @@ export default function PresmaLibSection() {
               <>
                 <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-9 gap-4 gap-y-8">
                   {books.map((book) => (
-                    <div key={book.id} onMouseEnter={() => handleHoverBook(book)} onClick={() => handleSelectBook(book)} className="flex flex-col items-center group cursor-pointer">
+                    <div key={book.id} onClick={() => handleSelectBook(book)} className="flex flex-col items-center group cursor-pointer">
                       {/* Book Cover Container with Shadow & Hover Animation */}
                       <div className="w-full aspect-[2/3] bg-slate-900 rounded-lg border border-slate-200 shadow-md relative overflow-hidden mb-3 group-hover:-translate-y-1.5 group-hover:shadow-xl transition-all duration-300">
                         <BookCover book={book} size="sm" />
@@ -991,46 +760,56 @@ export default function PresmaLibSection() {
 
             {/* Right Column: Book Details & Actions */}
             <div className="w-full md:w-[70%] bg-slate-100/90 backdrop-blur-md rounded-3xl p-8 md:p-12 shadow-sm border border-white mt-4 md:mt-0">
-               <h3 className="text-2xl sm:text-3xl font-black text-slate-900 mb-2 uppercase tracking-tight">{selectedBook.judul}</h3>
-               {selectedBook.pengarang && (
-                 <p className="text-orange-500 font-bold mb-6">{selectedBook.pengarang}</p>
-               )}
-               
-               <div className="flex flex-wrap gap-4 mb-6">
-                 {selectedBook.penerbit && (
-                   <span className="text-xs bg-white px-3 py-1 rounded-full text-slate-600 border border-slate-200">
-                     Penerbit: {selectedBook.penerbit}
-                   </span>
-                 )}
-                 {selectedBook.tahun_terbit && (
-                   <span className="text-xs bg-white px-3 py-1 rounded-full text-slate-600 border border-slate-200">
-                     Tahun: {selectedBook.tahun_terbit}
-                   </span>
-                 )}
-                 {selectedBook.isbn_issn && (
-                   <span className="text-xs bg-white px-3 py-1 rounded-full text-slate-600 border border-slate-200">
-                     ISBN: {selectedBook.isbn_issn}
-                   </span>
-                 )}
-               </div>
-
-               <div className="text-slate-800 leading-relaxed mb-10 text-justify sm:text-base whitespace-pre-line">
-                 {detailLoading ? (
-                   /* SKELETON for description — smooth pulse animation */
-                   <div className="animate-pulse space-y-3">
-                     <div className="h-4 bg-slate-200 rounded-full w-full" />
-                     <div className="h-4 bg-slate-200 rounded-full w-full" />
-                     <div className="h-4 bg-slate-200 rounded-full w-[95%]" />
-                     <div className="h-4 bg-slate-200 rounded-full w-full" />
-                     <div className="h-4 bg-slate-200 rounded-full w-[88%]" />
-                     <div className="h-4 bg-slate-200 rounded-full w-[70%]" />
+               {loadingDetail ? (
+                 <div className="animate-pulse">
+                   <div className="h-8 bg-slate-200/80 rounded-full w-3/4 mb-4"></div>
+                   <div className="h-5 bg-slate-200/80 rounded-full w-1/3 mb-8"></div>
+                   <div className="flex gap-4 mb-8">
+                     <div className="h-6 bg-slate-200/80 rounded-full w-24"></div>
+                     <div className="h-6 bg-slate-200/80 rounded-full w-24"></div>
+                     <div className="h-6 bg-slate-200/80 rounded-full w-24"></div>
                    </div>
-                 ) : selectedBook.deskripsi_abstrak ? (
-                   <p>{selectedBook.deskripsi_abstrak}</p>
-                 ) : (
-                   <p className="italic text-slate-500">Tidak ada deskripsi tersedia untuk buku ini.</p>
-                 )}
-               </div>
+                   <div className="space-y-3 mb-10">
+                     <div className="h-4 bg-slate-200/80 rounded-full w-full"></div>
+                     <div className="h-4 bg-slate-200/80 rounded-full w-full"></div>
+                     <div className="h-4 bg-slate-200/80 rounded-full w-5/6"></div>
+                     <div className="h-4 bg-slate-200/80 rounded-full w-4/6"></div>
+                   </div>
+                 </div>
+               ) : (
+                 <>
+                   <h3 className="text-2xl sm:text-3xl font-black text-slate-900 mb-2 uppercase tracking-tight">{selectedBook.judul}</h3>
+                   {selectedBook.pengarang && (
+                     <p className="text-orange-500 font-bold mb-6">{selectedBook.pengarang}</p>
+                   )}
+                   
+                   <div className="flex flex-wrap gap-4 mb-6">
+                     {selectedBook.penerbit && (
+                       <span className="text-xs bg-white px-3 py-1 rounded-full text-slate-600 border border-slate-200">
+                         Penerbit: {selectedBook.penerbit}
+                       </span>
+                     )}
+                     {selectedBook.tahun_terbit && (
+                       <span className="text-xs bg-white px-3 py-1 rounded-full text-slate-600 border border-slate-200">
+                         Tahun: {selectedBook.tahun_terbit}
+                       </span>
+                     )}
+                     {selectedBook.isbn_issn && (
+                       <span className="text-xs bg-white px-3 py-1 rounded-full text-slate-600 border border-slate-200">
+                         ISBN: {selectedBook.isbn_issn}
+                       </span>
+                     )}
+                   </div>
+
+                   <div className="text-slate-800 leading-relaxed mb-10 text-justify sm:text-base whitespace-pre-line">
+                     {selectedBook.deskripsi_abstrak ? (
+                       <p>{selectedBook.deskripsi_abstrak}</p>
+                     ) : (
+                       <p className="italic text-slate-500">Tidak ada deskripsi tersedia untuk buku ini.</p>
+                     )}
+                   </div>
+                 </>
+               )}
                
                <div className="flex flex-col sm:flex-row items-center gap-4 justify-center md:justify-start">
                   {(() => {
