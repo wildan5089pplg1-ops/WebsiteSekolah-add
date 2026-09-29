@@ -16,22 +16,6 @@ interface Course {
 // The COURSES_DATA is now fetched from the API
 
 // =====================================================================
-// CACHE & PREFETCH ALGORITHM (ZERO-LATENCY SEARCH)
-// =====================================================================
-interface CacheItem {
-  courses: Course[];
-  timestamp: number;
-  serverPage: number;
-  hasMoreServerData: boolean;
-}
-const CACHE_TTL = 5 * 60 * 1000; // 5 menit
-const pageCache = new Map<string, CacheItem>();
-
-function getCacheKey(search: string, category: string | null): string {
-  return `s${search}_c${category || 'all'}`;
-}
-
-// =====================================================================
 // DATA KUESIONER TES 1: MINAT & BAKAT (Exact 12 Questions from User)
 // =====================================================================
 type MajorKey = 'pplg' | 'tjkt' | 'bcf' | 'dkv';
@@ -328,20 +312,12 @@ interface CareerResultData {
 // =====================================================================
 export default function PresmaCareerSection({ initialTab = 'dashboard' }: { initialTab?: TabType }) {
   const [activeTab, setActiveTab] = useState<TabType>(initialTab);
+  const [searchInput, setSearchInput] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
-  const [appliedSearch, setAppliedSearch] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string>('Semua');
-  const [coursePage, setCoursePage] = useState(1);
-  const COURSES_PER_PAGE = 20;
 
   const [courses, setCourses] = useState<Course[]>([]);
   const [isLoadingCourses, setIsLoadingCourses] = useState(false);
-  const [initialLoaded, setInitialLoaded] = useState(false);
-  
-  // Server-side pagination & prefetch state
-  const [serverPage, setServerPage] = useState(1);
-  const [hasMoreServerData, setHasMoreServerData] = useState(false);
-  const [isPrefetching, setIsPrefetching] = useState(false);
 
   // Completed Test Results (Stored in localStorage)
   const [minatResult, setMinatResult] = useState<MinatResultData | null>(null);
@@ -362,124 +338,33 @@ export default function PresmaCareerSection({ initialTab = 'dashboard' }: { init
   const [careerIdx, setCareerIdx] = useState(0);
   const [careerAnswers, setCareerAnswers] = useState<number[]>([]);
 
-  // =====================================================================
-  // FETCH LOGIC DENGAN CACHING
-  // =====================================================================
-  const fetchCourses = async (query: string = '', category: string | null = null) => {
-    const cacheKey = getCacheKey(query, category);
-    
-    // Cek cache
-    if (pageCache.has(cacheKey)) {
-      const cached = pageCache.get(cacheKey)!;
-      if (Date.now() - cached.timestamp < CACHE_TTL) {
-        setCourses(cached.courses);
-        setServerPage(cached.serverPage);
-        setHasMoreServerData(cached.hasMoreServerData);
-        setIsLoadingCourses(false);
-        setInitialLoaded(true);
-        return; // instan!
-      } else {
-        pageCache.delete(cacheKey);
-      }
-    }
-
-    setIsLoadingCourses(true);
-    try {
-      const catParam = category && category !== 'Semua' ? `&tipe=${encodeURIComponent(category)}` : '';
-      const searchParam = query ? `&search=${encodeURIComponent(query)}` : '';
-      const response = await fetch(`http://127.0.0.1:8000/api/v1/kelas-pelatihan?per_page=100${searchParam}${catParam}`);
-      const data = await response.json();
-      if (data.success) {
-        const mappedCourses: Course[] = data.data.map((c: any) => ({
-          id: c.id,
-          title: c.judul,
-          category: c.tipe,
-          desc: c.deskripsi,
-          link: c.link,
-          biaya: c.biaya,
-        }));
-        
-        const currentServerPage = data.meta?.current_page || 1;
-        const moreData = data.meta ? data.meta.current_page < data.meta.last_page : false;
-
-        // Simpan ke cache
-        pageCache.set(cacheKey, {
-          courses: mappedCourses,
-          timestamp: Date.now(),
-          serverPage: currentServerPage,
-          hasMoreServerData: moreData
-        });
-        
-        setCourses(mappedCourses);
-        setServerPage(currentServerPage);
-        setHasMoreServerData(moreData);
-      }
-    } catch (err) {
-      console.error('Failed to fetch courses:', err);
-    } finally {
-      setIsLoadingCourses(false);
-      setInitialLoaded(true);
-    }
-  };
-
-  // =====================================================================
-  // BACKGROUND PREFETCHING (ZERO-LATENCY LOOKAHEAD)
-  // =====================================================================
-  useEffect(() => {
-    const localPagesCount = Math.ceil(courses.length / COURSES_PER_PAGE);
-    // Jika user sudah berada di 2 halaman terakhir dari data yang ada di memory, dan masih ada data di server
-    if (coursePage >= localPagesCount - 1 && hasMoreServerData && !isPrefetching) {
-      prefetchNextServerPage();
-    }
-  }, [coursePage, courses.length, hasMoreServerData, isPrefetching]);
-
-  const prefetchNextServerPage = async () => {
-    setIsPrefetching(true);
-    const nextPage = serverPage + 1;
-    try {
-      const catParam = selectedCategory && selectedCategory !== 'Semua' ? `&tipe=${encodeURIComponent(selectedCategory)}` : '';
-      const searchParam = appliedSearch ? `&search=${encodeURIComponent(appliedSearch)}` : '';
-      const response = await fetch(`http://127.0.0.1:8000/api/v1/kelas-pelatihan?per_page=100&page=${nextPage}${searchParam}${catParam}`);
-      const data = await response.json();
-      if (data.success) {
-        const mappedCourses: Course[] = data.data.map((c: any) => ({
-          id: c.id,
-          title: c.judul,
-          category: c.tipe,
-          desc: c.deskripsi,
-          link: c.link,
-          biaya: c.biaya,
-        }));
-        
-        const moreData = data.meta ? data.meta.current_page < data.meta.last_page : false;
-        
-        setCourses(prev => [...prev, ...mappedCourses]);
-        setServerPage(nextPage);
-        setHasMoreServerData(moreData);
-        
-        // Update the cache so if they navigate away and back, it retains the larger list
-        const cacheKey = getCacheKey(appliedSearch, selectedCategory);
-        if (pageCache.has(cacheKey)) {
-          const cached = pageCache.get(cacheKey)!;
-          pageCache.set(cacheKey, {
-            ...cached,
-            courses: [...cached.courses, ...mappedCourses],
-            serverPage: nextPage,
-            hasMoreServerData: moreData,
-            timestamp: Date.now(), // refresh ttl
-          });
-        }
-      }
-    } catch (err) {
-      console.error('Prefetch error:', err);
-    } finally {
-      setIsPrefetching(false);
-    }
-  };
-
   // Load saved results and fetch courses on mount
   useEffect(() => {
-    fetchCourses('', 'Semua');
+    const fetchCourses = async () => {
+      setIsLoadingCourses(true);
+      try {
+        const response = await fetch('http://127.0.0.1:8000/api/v1/kelas-pelatihan');
+        const data = await response.json();
+        if (data.success) {
+          // Map backend fields to frontend interface
+          const mappedCourses: Course[] = data.data.map((c: any) => ({
+            id: c.id,
+            title: c.judul,
+            category: c.tipe,
+            desc: c.deskripsi,
+            link: c.link,
+            biaya: c.biaya,
+          }));
+          setCourses(mappedCourses);
+        }
+      } catch (err) {
+        console.error('Failed to fetch courses:', err);
+      } finally {
+        setIsLoadingCourses(false);
+      }
+    };
+
+    fetchCourses();
     if (typeof window !== 'undefined') {
       try {
         const savedMinat = localStorage.getItem('presma_carasa_minat_result');
@@ -651,50 +536,14 @@ export default function PresmaCareerSection({ initialTab = 'dashboard' }: { init
     setIsCareerQuizOpen(true);
   };
 
-  // =====================================================================
-  // 🚀 ADVANCED ALGORITHM: PREDICTIVE SEARCH PREFETCHING
-  // =====================================================================
-  useEffect(() => {
-    const trimmed = searchQuery.trim();
-    if (!trimmed || trimmed === appliedSearch) return;
-
-    const delayDebounceFn = setTimeout(() => {
-      const cacheKey = getCacheKey(trimmed, selectedCategory);
-      if (!pageCache.has(cacheKey)) {
-        const catParam = selectedCategory && selectedCategory !== 'Semua' ? `&tipe=${encodeURIComponent(selectedCategory)}` : '';
-        fetch(`http://127.0.0.1:8000/api/v1/kelas-pelatihan?per_page=100&search=${encodeURIComponent(trimmed)}${catParam}`)
-          .then(r => r.json())
-          .then(data => {
-            if (data.success) {
-              const mappedCourses: Course[] = data.data.map((c: any) => ({
-                id: c.id, title: c.judul, category: c.tipe, desc: c.deskripsi, link: c.link, biaya: c.biaya,
-              }));
-              pageCache.set(cacheKey, { courses: mappedCourses, timestamp: Date.now(), serverPage: 1, hasMoreServerData: false });
-            }
-          })
-          .catch(() => {});
-      }
-    }, 400);
-
-    return () => clearTimeout(delayDebounceFn);
-  }, [searchQuery, appliedSearch, selectedCategory]);
-
-  const handleSearchSubmit = () => {
-    const trimmed = searchQuery.trim();
-    if (trimmed === appliedSearch) return;
-    setCoursePage(1);
-    setAppliedSearch(trimmed);
-    fetchCourses(trimmed, selectedCategory);
-  };
-
-  const handleCategorySelect = (cat: string) => {
-    setCoursePage(1);
-    setSelectedCategory(cat);
-    fetchCourses(appliedSearch, cat);
-  };
-
-  // We no longer filter client-side! `courses` state ALREADY contains the correctly filtered list from API/Cache.
-  const filteredCourses = courses;
+  // Filter courses for tab 3
+  const filteredCourses = courses.filter((course) => {
+    const matchesSearch =
+      course.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      course.desc.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesCategory = selectedCategory === 'Semua' || course.category === selectedCategory;
+    return matchesSearch && matchesCategory;
+  });
 
   return (
     <section className="relative w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 mb-20 font-sans">
@@ -1241,43 +1090,30 @@ export default function PresmaCareerSection({ initialTab = 'dashboard' }: { init
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                     </svg>
                   </div>
-                    <input
-                      type="text"
-                      placeholder="Cari pelatihan / kelas... (Enter)"
-                      value={searchQuery}
-                      onChange={(e) => setSearchQuery(e.target.value)}
-                      onKeyDown={(e) => {
-                        if (e.key === 'Enter') {
-                          e.preventDefault();
-                          handleSearchSubmit();
-                        }
+                  <input
+                    type="text"
+                    placeholder="Ketik & tekan Enter..."
+                    value={searchInput}
+                    onChange={(e) => setSearchInput(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') {
+                        setSearchQuery(searchInput);
+                      }
+                    }}
+                    className="block w-full pl-10 pr-4 py-2 border border-slate-300 dark:border-slate-700 rounded-xl text-xs sm:text-sm bg-slate-100 dark:bg-slate-800 placeholder-slate-400 text-slate-900 dark:text-white focus:outline-none focus:bg-white dark:focus:bg-slate-900 focus:ring-2 focus:ring-orange-500 transition-all"
+                  />
+                  {searchInput && (
+                    <button
+                      onClick={() => {
+                        setSearchInput('');
+                        setSearchQuery('');
                       }}
-                      className="block w-full pl-10 pr-10 py-2 border border-slate-300 dark:border-slate-700 rounded-xl text-xs sm:text-sm bg-slate-100 dark:bg-slate-800 placeholder-slate-400 text-slate-900 dark:text-white focus:outline-none focus:bg-white dark:focus:bg-slate-900 focus:ring-2 focus:ring-orange-500 transition-all"
-                    />
-                    {searchQuery.trim() && searchQuery.trim() !== appliedSearch && (
-                      <button
-                        onClick={handleSearchSubmit}
-                        className="absolute inset-y-0 right-0 pr-3 flex items-center text-orange-500 hover:text-orange-600 transition-colors"
-                        title="Tekan Enter untuk mencari"
-                      >
-                        <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M13 7l5 5m0 0l-5 5m5-5H6" />
-                        </svg>
-                      </button>
-                    )}
-                    {searchQuery.trim() && searchQuery.trim() === appliedSearch && (
-                      <button
-                        onClick={() => {
-                          setSearchQuery('');
-                          setAppliedSearch('');
-                          fetchCourses('', selectedCategory);
-                        }}
-                        className="absolute inset-y-0 right-0 pr-3 flex items-center text-xs text-slate-400 hover:text-slate-600"
-                      >
-                        ✕
-                      </button>
-                    )}
-                  </div>
+                      className="absolute inset-y-0 right-0 pr-3 flex items-center text-xs text-slate-400 hover:text-slate-600"
+                    >
+                      ✕
+                    </button>
+                  )}
+                </div>
               </div>
 
               {/* Category Filter Chips */}
@@ -1285,7 +1121,7 @@ export default function PresmaCareerSection({ initialTab = 'dashboard' }: { init
                 {['Semua', 'PPLG', 'TJKT', 'DKV', 'BCF', 'Karir'].map((cat) => (
                   <button
                     key={cat}
-                    onClick={() => handleCategorySelect(cat)}
+                    onClick={() => setSelectedCategory(cat)}
                     className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-colors shrink-0 ${
                       selectedCategory === cat
                         ? 'bg-orange-500 text-white shadow-sm'
@@ -1298,23 +1134,32 @@ export default function PresmaCareerSection({ initialTab = 'dashboard' }: { init
               </div>
 
               {/* Grid of Class Cards (Row layout matching screenshot 0: Left box + Right info) */}
-              <div className="space-y-4 relative min-h-[300px]">
-                {isLoadingCourses && initialLoaded ? (
-                  /* Skeleton loading during search/filter */
-                  <div className="absolute inset-0 bg-white/50 dark:bg-slate-900/50 backdrop-blur-sm z-10 flex flex-col items-center justify-center rounded-2xl">
-                    <div className="animate-pulse flex space-x-2">
-                      <div className="w-3 h-3 bg-orange-500 rounded-full"></div>
-                      <div className="w-3 h-3 bg-orange-500 rounded-full"></div>
-                      <div className="w-3 h-3 bg-orange-500 rounded-full"></div>
-                    </div>
-                  </div>
-                ) : null}
-                
-                {isLoadingCourses && !initialLoaded ? (
-                  <div className="text-center py-16 bg-slate-50 dark:bg-slate-800/50 rounded-2xl border border-dashed border-slate-300 dark:border-slate-700">
-                    <p className="text-sm font-bold text-slate-600 dark:text-slate-300 animate-pulse">
-                      Memuat kelas & pelatihan...
-                    </p>
+              <div className="space-y-4">
+                {isLoadingCourses ? (
+                  <div className="space-y-4 animate-pulse">
+                    {Array.from({ length: 4 }).map((_, idx) => (
+                      <div
+                        key={idx}
+                        className="bg-white dark:bg-slate-800/90 rounded-2xl p-4 sm:p-5 border border-slate-200 dark:border-slate-700/80 flex flex-col md:flex-row items-start md:items-center justify-between gap-5 shadow-sm"
+                      >
+                        <div className="flex items-start gap-4 flex-1 w-full">
+                          <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-xl bg-slate-200 dark:bg-slate-700 shrink-0"></div>
+                          <div className="flex-1 w-full">
+                            <div className="flex items-center gap-2 mb-2">
+                              <div className="w-16 h-4 bg-slate-200 dark:bg-slate-700 rounded"></div>
+                              <div className="w-16 h-4 bg-slate-200 dark:bg-slate-700 rounded"></div>
+                            </div>
+                            <div className="w-3/4 h-5 bg-slate-200 dark:bg-slate-700 rounded mb-2"></div>
+                            <div className="w-full h-3 bg-slate-200 dark:bg-slate-700 rounded mb-1 hidden sm:block"></div>
+                            <div className="w-5/6 h-3 bg-slate-200 dark:bg-slate-700 rounded hidden sm:block"></div>
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-3 w-full md:w-auto justify-end pt-2 md:pt-0 border-t md:border-t-0 border-slate-100 dark:border-slate-700/60 mt-4 md:mt-0">
+                          <div className="w-24 h-8 rounded-xl bg-slate-200 dark:bg-slate-700"></div>
+                          <div className="w-24 h-8 rounded-xl bg-slate-200 dark:bg-slate-700"></div>
+                        </div>
+                      </div>
+                    ))}
                   </div>
                 ) : filteredCourses.length === 0 ? (
                   <div className="flex flex-col items-center justify-center text-center py-20 bg-gradient-to-b from-slate-50 to-white dark:from-slate-900/50 dark:to-slate-900 rounded-3xl border border-dashed border-slate-300 dark:border-slate-700 relative overflow-hidden group">
@@ -1328,15 +1173,14 @@ export default function PresmaCareerSection({ initialTab = 'dashboard' }: { init
                     
                     <h3 className="text-xl font-black text-slate-800 dark:text-white mb-2 relative z-10 tracking-tight">Oops! Kelas Belum Tersedia</h3>
                     <p className="text-sm font-medium text-slate-500 dark:text-slate-400 mb-6 max-w-md relative z-10 leading-relaxed">
-                      Waduh, sepertinya tidak ada kelas yang cocok dengan kata kunci <strong className="text-slate-700 dark:text-slate-200">"{appliedSearch}"</strong> di kategori <strong className="text-slate-700 dark:text-slate-200">{selectedCategory}</strong>. Coba kata kunci lain yuk!
+                      Waduh, sepertinya tidak ada kelas yang cocok dengan kata kunci <strong className="text-slate-700 dark:text-slate-200">"{searchQuery}"</strong> di kategori <strong className="text-slate-700 dark:text-slate-200">{selectedCategory}</strong>. Coba kata kunci lain yuk!
                     </p>
                     
                     <button
                       onClick={() => {
+                        setSearchInput('');
                         setSearchQuery('');
-                        setAppliedSearch('');
-                        setCoursePage(1);
-                        handleCategorySelect('Semua');
+                        setSelectedCategory('Semua');
                       }}
                       className="relative z-10 px-6 py-3 rounded-xl bg-slate-900 dark:bg-white text-white dark:text-slate-900 text-sm font-bold hover:bg-orange-500 dark:hover:bg-orange-500 hover:text-white hover:-translate-y-1 transition-all duration-300 flex items-center gap-2 shadow-lg hover:shadow-orange-500/30"
                     >
@@ -1345,8 +1189,7 @@ export default function PresmaCareerSection({ initialTab = 'dashboard' }: { init
                     </button>
                   </div>
                 ) : (
-                  <>
-                  {filteredCourses.slice((coursePage - 1) * COURSES_PER_PAGE, coursePage * COURSES_PER_PAGE).map((course) => (
+                  filteredCourses.map((course) => (
                     <div
                       key={course.id}
                       className="bg-white dark:bg-slate-800/90 rounded-2xl p-4 sm:p-5 border border-slate-200 dark:border-slate-700/80 hover:border-orange-400 dark:hover:border-orange-500 transition-all flex flex-col md:flex-row items-start md:items-center justify-between gap-5 shadow-sm group"
@@ -1399,33 +1242,7 @@ export default function PresmaCareerSection({ initialTab = 'dashboard' }: { init
                         </button>
                       </div>
                     </div>
-                  ))}
-                  
-                  {/* Client-Side Pagination Controls */}
-                  {filteredCourses.length > COURSES_PER_PAGE && (
-                    <div className="flex flex-col sm:flex-row items-center justify-between gap-4 mt-8 bg-slate-50 dark:bg-slate-800/50 p-4 rounded-2xl border border-slate-200 dark:border-slate-700/50">
-                      <span className="text-sm font-medium text-slate-500 dark:text-slate-400">
-                        Menampilkan {(coursePage - 1) * COURSES_PER_PAGE + 1} - {Math.min(coursePage * COURSES_PER_PAGE, filteredCourses.length)} dari {filteredCourses.length} kelas
-                      </span>
-                      <div className="flex gap-2">
-                        <button
-                          disabled={coursePage === 1}
-                          onClick={() => setCoursePage(p => p - 1)}
-                          className="px-4 py-2 rounded-xl bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 text-sm font-bold text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-600 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-sm"
-                        >
-                          &larr; Prev
-                        </button>
-                        <button
-                          disabled={coursePage >= Math.ceil(filteredCourses.length / COURSES_PER_PAGE)}
-                          onClick={() => setCoursePage(p => p + 1)}
-                          className="px-4 py-2 rounded-xl bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 text-sm font-bold text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-600 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-sm"
-                        >
-                          Next &rarr;
-                        </button>
-                      </div>
-                    </div>
-                  )}
-                  </>
+                  ))
                 )}
               </div>
 
