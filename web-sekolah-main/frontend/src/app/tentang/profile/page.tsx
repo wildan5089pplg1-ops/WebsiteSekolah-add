@@ -1,1 +1,1 @@
-export { default } from '@/app/profile/page';
+export { default, metadata } from "@/app/tentang/profile-sekolah/page";

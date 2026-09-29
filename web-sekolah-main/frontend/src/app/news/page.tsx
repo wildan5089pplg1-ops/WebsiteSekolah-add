@@ -58,7 +58,6 @@ export default async function NewsPage() {
           </article>
         ))}
       </div>
-
     </div>
   );
 }

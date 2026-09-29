@@ -2,8 +2,9 @@ import { getNewsItem } from '@/lib/api';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 
-export default async function NewsDetailPage({ params }: { params: { id: string } }) {
-  const newsItem = await getNewsItem(params.id);
+export default async function NewsDetailPage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
+  const newsItem = await getNewsItem(id);
 
   if (!newsItem) {
     notFound();

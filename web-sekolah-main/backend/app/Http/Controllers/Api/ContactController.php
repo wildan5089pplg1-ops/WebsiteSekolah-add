@@ -36,6 +36,9 @@ class ContactController extends Controller
         return $this->successResponse(null, 'Pesan berhasil dihapus');
     }
 
+    /**
+     * Menyimpan data pesan kontak yang dikirim oleh pengguna umum.
+     */
     public function store(Request $request)
     {
         $validator = Validator::make($request->all(), [

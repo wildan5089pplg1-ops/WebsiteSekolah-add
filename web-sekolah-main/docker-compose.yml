@@ -1,0 +1,43 @@
+version: '3.8'
+
+services:
+
+
+  # 2. Service Backend Laravel
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: sekolah-backend
+    restart: unless-stopped
+    volumes:
+      - ./backend:/var/www
+    ports:
+      - "8000:8000"
+    # Menjalankan local server Laravel agar bisa diakses eksternal oleh frontend
+    command: php artisan serve --host=0.0.0.0 --port=8000
+
+    networks:
+      - sekolah-network
+
+  # 3. Service Frontend
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: sekolah-frontend
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    depends_on:
+      - backend
+    networks:
+      - sekolah-network
+
+networks:
+  sekolah-network:
+    driver: bridge
+

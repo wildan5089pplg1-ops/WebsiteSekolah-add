@@ -12,5 +12,9 @@ body {
 }
 
 /* Hack to hide stale watermark cached by Next.js */
-.text-\[25vw\] { display: none !important; color: transparent !important; opacity: 0 !important; visibility: hidden !important; }
-
+.text-\[25vw\] {
+  display: none !important;
+  color: transparent !important;
+  opacity: 0 !important;
+  visibility: hidden !important;
+}
