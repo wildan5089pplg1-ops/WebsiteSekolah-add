@@ -6,10 +6,25 @@ const sponsors = [
   { id: 1, name: 'Prambors', category: 'Media Partner', image: '/images/prambos.webp', acronym: 'PRM', color: 'from-yellow-400 to-amber-500' }
 ];
 
-
+const industri = [
+  { id: 1, name: 'Penerbit Erlangga', acronym: 'ERL', color: 'from-blue-600 to-indigo-800', desc: 'Kolaborasi penyediaan literatur digital dan kurikulum industri modern.' },
+  { id: 2, name: 'WIKA', acronym: 'WIKA', color: 'from-sky-500 to-cyan-700', desc: 'Program magang teknologi infrastruktur berskala nasional.' },
+  { id: 3, name: 'Telkom Indonesia', acronym: 'TLKM', color: 'from-red-600 to-rose-800', desc: 'Inkubasi startup siswa & sertifikasi jaringan telekomunikasi.' },
+  { id: 4, name: 'KOMATSU', acronym: 'KMT', color: 'from-indigo-600 to-blue-900', desc: 'Pelatihan sistem mekanik industri presisi tinggi.' },
+  { id: 5, name: 'KemenkopUKM', acronym: 'UKM', color: 'from-emerald-500 to-teal-700', desc: 'Akselerasi wirausaha dan bisnis digital lulusan vokasi.' },
+  { id: 6, name: 'Jatelindo', acronym: 'JTL', color: 'from-blue-500 to-blue-700', desc: 'Pengembangan sistem pembayaran digital (payment gateway).' },
+];
 
 export default function MitraSection() {
+  const [activeIndex, setActiveIndex] = useState(0);
 
+  // Auto-play the accordion
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setActiveIndex((current) => (current + 1) % industri.length);
+    }, 4000);
+    return () => clearInterval(interval);
+  }, []);
 
   return (
     <section className="relative w-full py-24 overflow-hidden bg-white dark:bg-slate-950 transition-colors duration-300">
@@ -102,18 +117,121 @@ export default function MitraSection() {
 
         {/* KERJA SAMA INDUSTRI SECTION */}
         <div className="text-center mb-12">
-          <h2 className="text-3xl md:text-4xl font-black text-orange-500 uppercase tracking-tight drop-shadow-sm mb-12">
+          <h2 className="text-3xl md:text-4xl font-black text-transparent bg-clip-text bg-gradient-to-r from-orange-500 to-orange-600 uppercase tracking-tight drop-shadow-sm mb-6">
             Kerja Sama Industri
           </h2>
+          <p className="text-sm md:text-base text-slate-600 dark:text-slate-400 max-w-2xl mx-auto leading-relaxed font-medium">
+            Membangun ekosistem pendidikan yang relevan dengan masa depan. Jelajahi kolaborasi strategis kami bersama para pemimpin industri.
+          </p>
+        </div>
+
+        {/* COVERFLOW CAROUSEL (INDUSTRY STANDARD & LOGO-READY) */}
+        <div className="relative w-full mt-10 mb-8 flex flex-col items-center">
           
-          {/* LOGOS CONTAINER */}
-          <div className="w-full flex justify-center items-center py-8">
-            <img 
-              src="/images/support-logos.png" 
-              alt="Mitra Industri" 
-              className="w-full max-w-6xl h-auto object-contain hover:scale-105 transition-transform duration-500"
-            />
+          {/* The 3D Carousel Area */}
+          <div className="relative w-full h-[200px] md:h-[280px] flex items-center justify-center perspective-[1200px] overflow-hidden md:overflow-visible">
+            {industri.map((mitra, index) => {
+              const offset = (index - activeIndex + industri.length) % industri.length;
+              let normalizedOffset = offset;
+              if (normalizedOffset === 4) normalizedOffset = -2;
+              if (normalizedOffset === 5) normalizedOffset = -1;
+              if (normalizedOffset === 3) normalizedOffset = 3; // The furthest back
+
+              const isActive = normalizedOffset === 0;
+
+              // Calculate pseudo-3D transforms
+              let transform = '';
+              let opacity = 0;
+              let zIndex = 0;
+              let filter = '';
+
+              if (normalizedOffset === 0) {
+                // Center
+                transform = 'translateX(0px) scale(1) translateZ(0px)';
+                opacity = 1;
+                zIndex = 30;
+                filter = 'blur(0px)';
+              } else if (normalizedOffset === 1) {
+                // Right 1 (Wider spread)
+                transform = 'translateX(100%) scale(0.85) translateZ(-50px) rotateY(-15deg)';
+                opacity = 0.7;
+                zIndex = 20;
+                filter = 'blur(1px)';
+              } else if (normalizedOffset === -1) {
+                // Left 1 (Wider spread)
+                transform = 'translateX(-100%) scale(0.85) translateZ(-50px) rotateY(15deg)';
+                opacity = 0.7;
+                zIndex = 20;
+                filter = 'blur(1px)';
+              } else if (normalizedOffset === 2) {
+                // Right 2 (Wider spread)
+                transform = 'translateX(180%) scale(0.7) translateZ(-100px) rotateY(-25deg)';
+                opacity = 0.4;
+                zIndex = 10;
+                filter = 'blur(2px)';
+              } else if (normalizedOffset === -2) {
+                // Left 2 (Wider spread)
+                transform = 'translateX(-180%) scale(0.7) translateZ(-100px) rotateY(25deg)';
+                opacity = 0.4;
+                zIndex = 10;
+                filter = 'blur(2px)';
+              } else {
+                // Hidden back
+                transform = 'translateX(0px) scale(0.5) translateZ(-200px)';
+                opacity = 0;
+                zIndex = 0;
+                filter = 'blur(4px)';
+              }
+
+              // Adjust translation values for larger screens using standard CSS media queries or tailwind trickery.
+              // Since inline styles override Tailwind transforms, we handle responsiveness within the style by using % or vw, 
+              // but % translates relative to the element's own width, which scales nicely!
+
+              return (
+                <div
+                  key={mitra.id}
+                  onClick={() => setActiveIndex(index)}
+                  className={`absolute w-[180px] h-[100px] md:w-[280px] md:h-[160px] rounded-2xl bg-white dark:bg-slate-800 border-2 cursor-pointer flex flex-col items-center justify-center p-2 md:p-4 transition-all duration-[800ms] ease-[cubic-bezier(0.25,1,0.5,1)] ${isActive ? 'border-orange-500 shadow-[0_10px_40px_-10px_rgba(249,115,22,0.5)]' : 'border-slate-200 dark:border-slate-700 shadow-xl hover:border-slate-300'}`}
+                  style={{ 
+                    transform, 
+                    opacity, 
+                    zIndex, 
+                    filter,
+                    transformStyle: 'preserve-3d'
+                  }}
+                >
+                  {/* Card Inner Background Effect (Glow when active) */}
+                  <div className={`absolute inset-0 bg-gradient-to-br ${mitra.color} opacity-0 transition-opacity duration-700 rounded-xl ${isActive ? 'opacity-5' : 'group-hover:opacity-[0.02]'}`}></div>
+                  
+                  {/* Logo Placeholder / Container */}
+                  <div className="relative w-full h-full flex items-center justify-center bg-slate-50 dark:bg-slate-900/50 rounded-xl overflow-hidden group-hover:bg-slate-100 transition-colors">
+                    {/* IN THE FUTURE: Replace this span with an <img src="logo.png" className="w-full h-full object-contain" /> */}
+                    <span className={`text-2xl md:text-4xl font-black text-transparent bg-clip-text bg-gradient-to-br ${mitra.color} drop-shadow-sm`}>
+                      {mitra.acronym}
+                    </span>
+                  </div>
+                </div>
+              );
+            })}
           </div>
+
+          {/* Dynamic Active Description Area */}
+          <div className="mt-8 md:mt-12 h-28 flex flex-col items-center justify-start text-center px-4">
+            {industri.map((mitra, index) => (
+              <div 
+                key={`desc-${mitra.id}`} 
+                className={`absolute transition-all duration-500 transform ${index === activeIndex ? 'opacity-100 translate-y-0 relative' : 'opacity-0 translate-y-4 absolute pointer-events-none'}`}
+              >
+                <h3 className="text-2xl md:text-3xl font-black text-slate-900 dark:text-white mb-2 tracking-tight">
+                  {mitra.name}
+                </h3>
+                <p className="text-sm md:text-base font-medium text-slate-500 dark:text-slate-400 max-w-xl mx-auto leading-relaxed">
+                  {mitra.desc}
+                </p>
+              </div>
+            ))}
+          </div>
+
         </div>
 
         {/* View More Button */}
