@@ -18,13 +18,16 @@ export interface SchoolInfo {
 }
 
 export interface NewsItem {
-  id: number | string;
+  id: number;
   title: string;
+  slug?: string;
   category: string;
   date: string;
   summary: string;
   content: string;
   image: string;
+  author?: string;
+  views_count?: number;
 }
 
 export interface FacilityItem {
@@ -65,19 +68,13 @@ export async function getNewsList(): Promise<NewsItem[]> {
   try {
     const res = await fetch(`${API_BASE_URL}/news`, { cache: 'no-store' });
     if (!res.ok) throw new Error('Failed to fetch news');
-    const data = await res.json();
-    return data.data;
+    const resJson = await res.json();
+    const result = resJson.data;
+    if (Array.isArray(result)) return result;
+    if (result && Array.isArray(result.data)) return result.data;
+    return [];
   } catch (error) {
     return [
-      {
-        id: 'pengumuman',
-        title: 'Ultras Presma Raih Juara 1 Most Favorite Supporter DBL 2025',
-        category: 'Pengumuman Resmi',
-        date: '20 September 2026',
-        summary: 'Kreativitas tanpa batas, Ultras Presma berhasil memenangkan gelar 1st Place Best Supporter pada ajang Honda DBL 2025 East Jakarta.',
-        content: 'Kabar membanggakan datang dari barisan suporter setia SMK Prestasi Prima, Ultras Presma! Pada ajang basket pelajar terbesar di Indonesia, Honda DBL 2025 seri Jakarta Timur, Ultras Presma berhasil menyabet gelar "1st Place Best Supporter". Kekompakan, kreativitas koreografi raksasa, serta sorakan semangat yang tak henti-hentinya menggema di arena menjadi kunci kemenangan ini.\n\nKeberhasilan ini membuktikan bahwa siswa SMK Prestasi Prima tidak hanya unggul dalam bidang akademik dan teknologi, namun juga memiliki solidaritas, kreativitas, dan jiwa korsa yang tinggi di luar ruang kelas. Seluruh civitas akademika mengucapkan selamat untuk Ultras Presma! Teruslah mendukung dengan sportif dan satu hati.',
-        image: '/images/supporter.jpg'
-      },
       {
         id: 1,
         title: 'Tim Robotik SMA 1 Meraih Medali Emas Olimpiade Sains Nasional 2026',
