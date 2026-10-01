@@ -16,7 +16,7 @@ return new class extends Migration
             $table->string('judul');
             $table->text('deskripsi');
             $table->enum('tipe', ['PPLG', 'TJKT', 'DKV', 'BCF', 'Karir']);
-            $table->string('link');
+            $table->text('link');
             $table->timestamps();
         });
     }

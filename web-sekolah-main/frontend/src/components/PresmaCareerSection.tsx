@@ -313,6 +313,7 @@ interface CareerResultData {
 // =====================================================================
 export default function PresmaCareerSection({ initialTab = 'dashboard' }: { initialTab?: TabType }) {
   const [activeTab, setActiveTab] = useState<TabType>(initialTab);
+  const [searchInput, setSearchInput] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string>('Semua');
 
@@ -1098,14 +1099,22 @@ export default function PresmaCareerSection({ initialTab = 'dashboard' }: { init
                   </div>
                   <input
                     type="text"
-                    placeholder="Cari pelatihan / kelas..."
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
+                    placeholder="Ketik & tekan Enter..."
+                    value={searchInput}
+                    onChange={(e) => setSearchInput(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') {
+                        setSearchQuery(searchInput);
+                      }
+                    }}
                     className="block w-full pl-10 pr-4 py-2 border border-slate-300 dark:border-slate-700 rounded-xl text-xs sm:text-sm bg-slate-100 dark:bg-slate-800 placeholder-slate-400 text-slate-900 dark:text-white focus:outline-none focus:bg-white dark:focus:bg-slate-900 focus:ring-2 focus:ring-orange-500 transition-all"
                   />
-                  {searchQuery && (
+                  {searchInput && (
                     <button
-                      onClick={() => setSearchQuery('')}
+                      onClick={() => {
+                        setSearchInput('');
+                        setSearchQuery('');
+                      }}
                       className="absolute inset-y-0 right-0 pr-3 flex items-center text-xs text-slate-400 hover:text-slate-600"
                     >
                       ✕
@@ -1141,10 +1150,30 @@ export default function PresmaCareerSection({ initialTab = 'dashboard' }: { init
               {/* Grid of Class Cards (Row layout matching screenshot 0: Left box + Right info) */}
               <div className="space-y-4">
                 {isLoadingCourses ? (
-                  <div className="text-center py-16 bg-slate-50 dark:bg-slate-800/50 rounded-2xl border border-dashed border-slate-300 dark:border-slate-700">
-                    <p className="text-sm font-bold text-slate-600 dark:text-slate-300">
-                      Memuat kelas & pelatihan...
-                    </p>
+                  <div className="space-y-4 animate-pulse">
+                    {Array.from({ length: 4 }).map((_, idx) => (
+                      <div
+                        key={idx}
+                        className="bg-white dark:bg-slate-800/90 rounded-2xl p-4 sm:p-5 border border-slate-200 dark:border-slate-700/80 flex flex-col md:flex-row items-start md:items-center justify-between gap-5 shadow-sm"
+                      >
+                        <div className="flex items-start gap-4 flex-1 w-full">
+                          <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-xl bg-slate-200 dark:bg-slate-700 shrink-0"></div>
+                          <div className="flex-1 w-full">
+                            <div className="flex items-center gap-2 mb-2">
+                              <div className="w-16 h-4 bg-slate-200 dark:bg-slate-700 rounded"></div>
+                              <div className="w-16 h-4 bg-slate-200 dark:bg-slate-700 rounded"></div>
+                            </div>
+                            <div className="w-3/4 h-5 bg-slate-200 dark:bg-slate-700 rounded mb-2"></div>
+                            <div className="w-full h-3 bg-slate-200 dark:bg-slate-700 rounded mb-1 hidden sm:block"></div>
+                            <div className="w-5/6 h-3 bg-slate-200 dark:bg-slate-700 rounded hidden sm:block"></div>
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-3 w-full md:w-auto justify-end pt-2 md:pt-0 border-t md:border-t-0 border-slate-100 dark:border-slate-700/60 mt-4 md:mt-0">
+                          <div className="w-24 h-8 rounded-xl bg-slate-200 dark:bg-slate-700"></div>
+                          <div className="w-24 h-8 rounded-xl bg-slate-200 dark:bg-slate-700"></div>
+                        </div>
+                      </div>
+                    ))}
                   </div>
                 ) : filteredCourses.length === 0 ? (
                   <div className="flex flex-col items-center justify-center text-center py-20 bg-gradient-to-b from-slate-50 to-white dark:from-slate-900/50 dark:to-slate-900 rounded-3xl border border-dashed border-slate-300 dark:border-slate-700 relative overflow-hidden group">
@@ -1163,6 +1192,7 @@ export default function PresmaCareerSection({ initialTab = 'dashboard' }: { init
                     
                     <button
                       onClick={() => {
+                        setSearchInput('');
                         setSearchQuery('');
                         setSelectedCategory('Semua');
                       }}

@@ -17,27 +17,38 @@ class KelasPelatihanController extends Controller
      */
     public function index(Request $request)
     {
+        $request->validate([
+            'per_page' => 'sometimes|integer|min:1|max:100',
+            'page'     => 'sometimes|integer|min:1'
+        ]);
+
         $tipe    = $request->input('tipe', 'Semua');
         $search  = $request->input('search', '');
-        $page    = $request->input('page', 1);
+        $page    = (int) $request->input('page', 1);
         $perPage = (int) $request->input('per_page', 50);
 
-        $version = Cache::get('kelas_pelatihan_version', 1);
-        $cacheKey = "kelas_pel_v{$version}_{$tipe}_" . md5($search) . "_page_{$page}";
-
-        $kelas = Cache::remember($cacheKey, now()->addMinutes(60), function () use ($tipe, $search, $perPage) {
+        // Pisahkan logika pencarian dari Cache untuk menghindari Cache DoS (OOM)
+        if (!empty($search)) {
             $query = KelasPelatihan::select('id', 'judul', 'deskripsi', 'tipe', 'link', 'biaya');
-
+            
             if ($tipe !== 'Semua') {
                 $query->where('tipe', $tipe);
             }
+            
+            $query->whereFullText(['judul', 'deskripsi'], $search);
+            $kelas = $query->orderBy('id', 'asc')->paginate($perPage);
+        } else {
+            $version = Cache::get('kelas_pelatihan_version', 1);
+            $cacheKey = "kelas_pel_v{$version}_{$tipe}_page_{$page}_limit_{$perPage}";
 
-            if (!empty($search)) {
-                $query->whereFullText(['judul', 'deskripsi'], $search);
-            }
-
-            return $query->orderBy('id', 'asc')->paginate($perPage);
-        });
+            $kelas = Cache::remember($cacheKey, now()->addMinutes(60), function () use ($tipe, $perPage) {
+                $query = KelasPelatihan::select('id', 'judul', 'deskripsi', 'tipe', 'link', 'biaya');
+                if ($tipe !== 'Semua') {
+                    $query->where('tipe', $tipe);
+                }
+                return $query->orderBy('id', 'asc')->paginate($perPage);
+            });
+        }
 
         return response()->json([
             'success' => true,
