@@ -1,0 +1,752 @@
+﻿<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+return new class extends Migration
+{
+    /**
+     * Run the migrations.
+     */
+    public function up(): void
+    {
+        Schema::create('users', function (Blueprint $table) {
+            $table->id();
+            $table->string('name');
+            $table->string('email')->unique();
+            $table->timestamp('email_verified_at')->nullable();
+            $table->string('password');
+            $table->rememberToken();
+            $table->timestamps();
+        });
+
+        Schema::create('password_reset_tokens', function (Blueprint $table) {
+            $table->string('email')->primary();
+            $table->string('token');
+            $table->timestamp('created_at')->nullable();
+        });
+
+        Schema::create('sessions', function (Blueprint $table) {
+            $table->string('id')->primary();
+            $table->foreignId('user_id')->nullable()->index();
+            $table->string('ip_address', 45)->nullable();
+            $table->text('user_agent')->nullable();
+            $table->longText('payload');
+            $table->integer('last_activity')->index();
+        });
+    }
+
+    /**
+     * Reverse the migrations.
+     */
+    public function down(): void
+    {
+        Schema::dropIfExists('users');
+        Schema::dropIfExists('password_reset_tokens');
+        Schema::dropIfExists('sessions');
+    }
+};
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+return new class extends Migration
+{
+    /**
+     * Run the migrations.
+     */
+    public function up(): void
+    {
+        Schema::create('cache', function (Blueprint $table) {
+            $table->string('key')->primary();
+            $table->mediumText('value');
+            $table->bigInteger('expiration')->index();
+        });
+
+        Schema::create('cache_locks', function (Blueprint $table) {
+            $table->string('key')->primary();
+            $table->string('owner');
+            $table->bigInteger('expiration')->index();
+        });
+    }
+
+    /**
+     * Reverse the migrations.
+     */
+    public function down(): void
+    {
+        Schema::dropIfExists('cache');
+        Schema::dropIfExists('cache_locks');
+    }
+};
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+return new class extends Migration
+{
+    /**
+     * Run the migrations.
+     */
+    public function up(): void
+    {
+        Schema::create('jobs', function (Blueprint $table) {
+            $table->id();
+            $table->string('queue')->index();
+            $table->longText('payload');
+            $table->unsignedSmallInteger('attempts');
+            $table->unsignedInteger('reserved_at')->nullable();
+            $table->unsignedInteger('available_at');
+            $table->unsignedInteger('created_at');
+        });
+
+        Schema::create('job_batches', function (Blueprint $table) {
+            $table->string('id')->primary();
+            $table->string('name');
+            $table->integer('total_jobs');
+            $table->integer('pending_jobs');
+            $table->integer('failed_jobs');
+            $table->longText('failed_job_ids');
+            $table->mediumText('options')->nullable();
+            $table->integer('cancelled_at')->nullable();
+            $table->integer('created_at');
+            $table->integer('finished_at')->nullable();
+        });
+
+        Schema::create('failed_jobs', function (Blueprint $table) {
+            $table->id();
+            $table->string('uuid')->unique();
+            $table->string('connection');
+            $table->string('queue');
+            $table->longText('payload');
+            $table->longText('exception');
+            $table->timestamp('failed_at')->useCurrent();
+
+            $table->index(['connection', 'queue', 'failed_at']);
+        });
+    }
+
+    /**
+     * Reverse the migrations.
+     */
+    public function down(): void
+    {
+        Schema::dropIfExists('jobs');
+        Schema::dropIfExists('job_batches');
+        Schema::dropIfExists('failed_jobs');
+    }
+};
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+return new class extends Migration
+{
+    /**
+     * Run the migrations.
+     */
+    public function up(): void
+    {
+        Schema::create('news', function (Blueprint $table) {
+            $table->id();
+            $table->string('title');
+            $table->string('category');
+            $table->date('date');
+            $table->text('summary');
+            $table->longText('content');
+            $table->string('image');
+            $table->timestamps();
+        });
+    }
+
+    /**
+     * Reverse the migrations.
+     */
+    public function down(): void
+    {
+        Schema::dropIfExists('news');
+    }
+};
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+return new class extends Migration
+{
+    /**
+     * Run the migrations.
+     */
+    public function up(): void
+    {
+        Schema::create('facilities', function (Blueprint $table) {
+            $table->id();
+            $table->string('title');
+            $table->text('description');
+            $table->string('icon');
+            $table->timestamps();
+        });
+    }
+
+    /**
+     * Reverse the migrations.
+     */
+    public function down(): void
+    {
+        Schema::dropIfExists('facilities');
+    }
+};
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+return new class extends Migration
+{
+    /**
+     * Run the migrations.
+     */
+    public function up(): void
+    {
+        Schema::create('contact_messages', function (Blueprint $table) {
+            $table->id();
+            $table->string('name');
+            $table->string('email_or_phone');
+            $table->string('category');
+            $table->text('message');
+            $table->timestamps();
+        });
+    }
+
+    /**
+     * Reverse the migrations.
+     */
+    public function down(): void
+    {
+        Schema::dropIfExists('contact_messages');
+    }
+};
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+return new class extends Migration
+{
+    /**
+     * Run the migrations.
+     */
+    public function up(): void
+    {
+        Schema::create('ppdb_registrations', function (Blueprint $table) {
+            $table->id();
+            $table->string('registration_number', 30)->unique();
+            $table->string('full_name');
+            $table->string('nisn', 15)->nullable();
+            $table->enum('gender', ['L', 'P']);
+            $table->string('birth_place');
+            $table->date('birth_date');
+            $table->string('religion');
+            $table->string('previous_school');
+            $table->string('major');
+            $table->enum('path', ['Prestasi', 'Zonasi', 'Afirmasi']);
+            $table->string('parent_name');
+            $table->string('phone', 20);
+            $table->string('email')->nullable();
+            $table->text('address');
+            $table->enum('status', ['pending', 'diterima', 'cadangan', 'ditolak'])->default('pending');
+            $table->timestamps();
+        });
+    }
+
+    /**
+     * Reverse the migrations.
+     */
+    public function down(): void
+    {
+        Schema::dropIfExists('ppdb_registrations');
+    }
+};
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Facades\DB;
+
+return new class extends Migration
+{
+    /**
+     * Tambahkan indeks kinerja ke tabel buku_slims:
+     *
+     * 1. idx_judul          - mempercepat WHERE, ORDER BY, dan GROUP BY pada kolom judul
+     * 2. idx_pengarang      - mempercepat WHERE pada kolom pengarang
+     * 3. idx_subjek_kategori - mempercepat WHERE LIKE pada kolom kategori
+     * 4. ft_judul_pengarang - FULLTEXT index untuk pencarian teks bebas
+     *                         menggantikan LIKE '%...%' yang tidak bisa pakai indeks B-Tree
+     */
+    public function up(): void
+    {
+        Schema::table('buku_slims', function (Blueprint $table) {
+            // B-Tree indexes untuk filter & sort exact/prefix
+            $table->index('judul', 'idx_judul');
+            $table->index('pengarang', 'idx_pengarang');
+            $table->index('subjek_kategori', 'idx_subjek_kategori');
+        });
+
+        // FULLTEXT harus ditambahkan via raw SQL karena Blueprint::fullText()
+        // membutuhkan engine MyISAM di beberapa versi Laravel lama.
+        // MySQL 8.x InnoDB sudah mendukung FULLTEXT natively.
+        DB::statement('ALTER TABLE buku_slims ADD FULLTEXT INDEX ft_judul_pengarang (judul, pengarang)');
+    }
+
+    /**
+     * Kembalikan tabel ke kondisi semula.
+     */
+    public function down(): void
+    {
+        DB::statement('ALTER TABLE buku_slims DROP INDEX ft_judul_pengarang');
+
+        Schema::table('buku_slims', function (Blueprint $table) {
+            $table->dropIndex('idx_judul');
+            $table->dropIndex('idx_pengarang');
+            $table->dropIndex('idx_subjek_kategori');
+        });
+    }
+};
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+/**
+ * PERBAIKAN ESENSIAL #1: Migrasi Formal CREATE TABLE buku_slims
+ *
+ * Masalah sebelumnya: tabel buku_slims tidak memiliki file migrasi Laravel.
+ * Tabel dibuat manual atau diimpor dari SLiMS sehingga tidak bisa di-reproduce
+ * di environment baru hanya dengan `php artisan migrate`.
+ *
+ * Solusi: Migrasi ini mendokumentasikan skema resmi di Laravel.
+ * Guard `hasTable()` memastikan migrasi aman dijalankan di server yang
+ * sudah memiliki tabel (tidak akan gagal/overwrite data).
+ */
+return new class extends Migration
+{
+    public function up(): void
+    {
+        // Guard: jika tabel sudah ada (server production/dev yang sudah import SLiMS),
+        // lewati pembuatan â€” tabel sudah terdokumentasi di migrasi ini.
+        if (Schema::hasTable('buku_slims')) {
+            return;
+        }
+
+        Schema::create('buku_slims', function (Blueprint $table) {
+            // Primary key â€” auto increment dari SLiMS
+            $table->id();
+
+            // === IDENTITAS BUKU ===
+            $table->string('judul', 255)->nullable()->comment('Judul lengkap buku');
+            $table->string('pengarang', 255)->nullable()->comment('Nama pengarang/penulis');
+            $table->string('isbn_issn', 100)->nullable()->comment('Kode ISBN atau ISSN');
+            $table->string('penerbit', 255)->nullable()->comment('Nama penerbit');
+            $table->smallInteger('tahun_terbit')->nullable()->unsigned()->comment('Tahun terbit (SMALLINT setelah migrasi fix)');
+            $table->string('edisi', 100)->nullable()->comment('Edisi/cetakan buku');
+
+            // === KLASIFIKASI & KATALOG ===
+            $table->string('gmd', 100)->nullable()->comment('General Material Designation (jenis media)');
+            $table->string('no_panggil', 100)->nullable()->comment('Nomor panggil perpustakaan (call number)');
+            $table->string('klasifikasi', 100)->nullable()->comment('Kode klasifikasi DDC/UDC');
+            $table->string('bahasa', 100)->nullable()->comment('Bahasa buku');
+            $table->string('tempat_terbit', 255)->nullable()->comment('Kota tempat terbit');
+            $table->string('judul_seri', 255)->nullable()->comment('Judul seri jika buku berseri');
+            // Format: <Tag1><Tag2><Tag3> (format SLiMS) â€” kandidat normalisasi di masa depan
+            $table->string('subjek_kategori', 255)->nullable()->comment('Kategori dalam format XML-tag SLiMS');
+
+            // === DESKRIPSI FISIK & DIGITAL ===
+            $table->string('deskripsi_fisik', 255)->nullable()->comment('Deskripsi fisik buku (tebal, ukuran, dll)');
+            $table->text('deskripsi_abstrak')->nullable()->comment('Sinopsis atau abstrak buku');
+            $table->string('nama_file_cover', 255)->nullable()->comment('Nama file gambar sampul buku');
+
+            // === INVENTARIS ===
+            $table->string('barcode_item', 100)->nullable()->comment('Barcode eksemplar fisik buku');
+
+            // Tidak ada timestamps â€” SLiMS tidak menggunakan created_at/updated_at
+        });
+    }
+
+    public function down(): void
+    {
+        Schema::dropIfExists('buku_slims');
+    }
+};
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Facades\DB;
+
+/**
+ * PERBAIKAN ESENSIAL #2: Fix Tipe Data & Kualitas Data
+ *
+ * Masalah yang diperbaiki:
+ *
+ * A) tahun_terbit: VARCHAR(50) â†’ SMALLINT UNSIGNED NULL
+ *    - VARCHAR tidak bisa digunakan untuk filter rentang tahun (BETWEEN)
+ *    - Dua baris berisi nilai non-numerik ('New Leaf Literary') â†’ diset NULL
+ *    - 22 baris sudah NULL, sisanya berisi tahun valid (1800â€“2100)
+ *    - SMALLINT UNSIGNED (0â€“65535) cukup untuk semua tahun terbit buku
+ *
+ * B) isbn_issn: Bersihkan nilai placeholder '-' â†’ NULL
+ *    - 4 baris berisi '-' yang bukan ISBN valid â†’ lebih jujur sebagai NULL
+ *    - Mencegah confusion saat fitur OpenLibrary cover lookup menggunakan ISBN
+ */
+return new class extends Migration
+{
+    public function up(): void
+    {
+        // === A: Bersihkan tahun_terbit yang tidak valid ===
+        // Nilai non-numerik atau di luar range wajar â†’ NULL
+        DB::statement("
+            UPDATE buku_slims
+            SET tahun_terbit = NULL
+            WHERE tahun_terbit IS NOT NULL
+              AND (
+                tahun_terbit NOT REGEXP '^[0-9]{4}$'
+                OR CAST(tahun_terbit AS UNSIGNED) < 1800
+                OR CAST(tahun_terbit AS UNSIGNED) > 2100
+              )
+        ");
+
+        // Ubah tipe kolom: VARCHAR(50) â†’ SMALLINT UNSIGNED NULL
+        // Gunakan raw SQL karena Blueprint::smallInteger() bisa membutuhkan
+        // konversi data eksplisit pada beberapa versi MySQL
+        DB::statement("
+            ALTER TABLE buku_slims
+            MODIFY COLUMN tahun_terbit SMALLINT UNSIGNED NULL
+            COMMENT 'Tahun terbit buku (1800-2100)'
+        ");
+
+        // === B: Bersihkan ISBN placeholder ===
+        // Nilai '-', '0', 'N/A' tidak memiliki makna ISBN â†’ jadikan NULL
+        DB::statement("
+            UPDATE buku_slims
+            SET isbn_issn = NULL
+            WHERE isbn_issn IN ('-', '0', 'N/A', 'n/a', 'null', 'NULL', '00')
+        ");
+    }
+
+    public function down(): void
+    {
+        // Kembalikan tahun_terbit ke VARCHAR(50)
+        DB::statement("
+            ALTER TABLE buku_slims
+            MODIFY COLUMN tahun_terbit VARCHAR(50) NULL
+            COMMENT ''
+        ");
+        // Catatan: data yang sudah di-clean (nilai non-numerik â†’ NULL) tidak
+        // bisa dikembalikan ke nilai asal karena tidak disimpan.
+    }
+};
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+return new class extends Migration
+{
+    /**
+     * Run the migrations.
+     */
+    public function up(): void
+    {
+        Schema::create('kelas_pelatihan', function (Blueprint $table) {
+            $table->id();
+            $table->string('judul');
+            $table->text('deskripsi');
+            $table->enum('tipe', ['PPLG', 'TJKT', 'DKV', 'BCF', 'Karir']);
+            $table->string('link');
+            $table->timestamps();
+        });
+    }
+
+    /**
+     * Reverse the migrations.
+     */
+    public function down(): void
+    {
+        Schema::dropIfExists('kelas_pelatihan');
+    }
+};
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+return new class extends Migration
+{
+    /**
+     * Run the migrations.
+     */
+    public function up(): void
+    {
+        Schema::table('kelas_pelatihan', function (Blueprint $table) {
+            $table->index('tipe');
+            $table->fullText(['judul', 'deskripsi']);
+        });
+    }
+
+    /**
+     * Reverse the migrations.
+     */
+    public function down(): void
+    {
+        Schema::table('kelas_pelatihan', function (Blueprint $table) {
+            $table->dropIndex(['tipe']);
+            $table->dropFullText(['judul', 'deskripsi']);
+        });
+    }
+};
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+return new class extends Migration
+{
+    /**
+     * Run the migrations.
+     */
+    public function up(): void
+    {
+        Schema::table('kelas_pelatihan', function (Blueprint $table) {
+            $table->enum('biaya', ['Gratis', 'Biaya tertera'])->default('Gratis')->after('tipe');
+        });
+    }
+
+    /**
+     * Reverse the migrations.
+     */
+    public function down(): void
+    {
+        Schema::table('kelas_pelatihan', function (Blueprint $table) {
+            $table->dropColumn('biaya');
+        });
+    }
+};
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+return new class extends Migration
+{
+    /**
+     * Run the migrations.
+     */
+    public function up(): void
+    {
+        Schema::table('users', function (Blueprint $table) {
+            $table->index('remember_token');
+        });
+    }
+
+    /**
+     * Reverse the migrations.
+     */
+    public function down(): void
+    {
+        Schema::table('users', function (Blueprint $table) {
+            $table->dropIndex(['remember_token']);
+        });
+    }
+};
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+return new class extends Migration
+{
+    /**
+     * Run the migrations.
+     */
+    public function up(): void
+    {
+        Schema::table('ppdb_registrations', function (Blueprint $table) {
+            $table->index('nisn');
+            $table->index('status');
+        });
+    }
+
+    /**
+     * Reverse the migrations.
+     */
+    public function down(): void
+    {
+        Schema::table('ppdb_registrations', function (Blueprint $table) {
+            $table->dropIndex(['nisn']);
+            $table->dropIndex(['status']);
+        });
+    }
+};
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+return new class extends Migration
+{
+    /**
+     * Run the migrations.
+     */
+    public function up(): void
+    {
+        Schema::table('news', function (Blueprint $table) {
+            // FIX [LOW]: Tambahkan index pada kolom 'date' karena digunakan
+            // sebagai ORDER BY di NewsController. Tanpa ini, MySQL melakukan
+            // full filesort yang lambat ketika berita semakin banyak.
+            $table->index('date');
+        });
+    }
+
+    /**
+     * Reverse the migrations.
+     */
+    public function down(): void
+    {
+        Schema::table('news', function (Blueprint $table) {
+            $table->dropIndex(['date']);
+        });
+    }
+};
+<?php
+
+namespace Database\Seeders;
+
+use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\Hash;
+use App\Models\User;
+
+class AdminUserSeeder extends Seeder
+{
+    /**
+     * Run the database seeds.
+     */
+    public function run(): void
+    {
+        // FIX [CRITICAL]: Ganti updateOrCreate menjadi firstOrCreate 
+        // agar tidak mereset paksa password admin yang sudah diubah di production.
+        User::firstOrCreate(
+            ['email' => 'admin@sman1antigravity.sch.id'],
+            [
+                'name'     => 'Administrator',
+                // FIX [CRITICAL]: Ambil password dari .env agar tidak hardcoded. 
+                // Anda bisa menambahkan ADMIN_PASSWORD=rahasia123 di file .env server Anda.
+                'password' => Hash::make(env('ADMIN_PASSWORD', 'admin12345')),
+            ]
+        );
+    }
+}
+<?php
+
+namespace Database\Seeders;
+
+use App\Models\User;
+use App\Models\News;
+use App\Models\Facility;
+// use Illuminate\Database\Console\Seeds\WithoutModelEvents;
+use Illuminate\Database\Seeder;
+
+class DatabaseSeeder extends Seeder
+{
+    /**
+     * Seed the application's database.
+     */
+    public function run(): void
+    {
+        // FIX [CRITICAL]: Hapus akun backdoor admin@example.com
+        // Panggil AdminUserSeeder yang aman (firstOrCreate + env password)
+        $this->call(AdminUserSeeder::class);
+
+        News::create([
+            'title' => 'Tim Robotik SMA 1 Meraih Medali Emas Olimpiade Sains Nasional 2026',
+            'category' => 'Prestasi',
+            'date' => '2026-08-05',
+            'summary' => 'Tim robotik siswa SMA Negeri 1 berhasil membawa pulang trofi juara pertama dalam kompetisi OSN bidang Teknologi.',
+            'content' => 'Kabar membanggakan datang dari ajang Olimpiade Sains Nasional (OSN) 2026. Tim robotik SMA 1 berhasil mengalahkan puluhan sekolah pesaing dengan inovasi robot pemilah sampah otomatis berbasis AI.',
+            'image' => 'https://images.unsplash.com/photo-1581092160607-ee22621dd758?auto=format&fit=crop&q=80&w=800'
+        ]);
+
+        News::create([
+            'title' => 'Pelaksanaan Penerimaan Peserta Didik Baru (PPDB) Tahun Ajaran 2026/2027',
+            'category' => 'Pengumuman',
+            'date' => '2026-08-01',
+            'summary' => 'Informasi lengkap mengenai jadwal, jalur pendaftaran, dan persyaratan berkas untuk calon siswa baru.',
+            'content' => 'Pendaftaran PPDB SMA 1 Antigravity telah dibuka secara online. Terdapat 3 jalur pendaftaran yaitu Jalur Prestasi, Jalur Zonasi, dan Jalur Afirmasi.',
+            'image' => 'https://images.unsplash.com/photo-1523240795612-9a054b0db644?auto=format&fit=crop&q=80&w=800'
+        ]);
+
+        News::create([
+            'title' => 'Workshop Digital Literacy dan Etika Media Sosial bagi Siswa Kelas X',
+            'category' => 'Kegiatan',
+            'date' => '2026-07-28',
+            'summary' => 'Meningkatkan kesadaran digital dan literasi informasi di era AI bagi generasi muda.',
+            'content' => 'Sekolah menyelenggarakan workshop literasi digital yang menghadirkan pakar cybersecurity dan komunikasi digital untuk membekali siswa dalam menyaring informasi hoax.',
+            'image' => 'https://images.unsplash.com/photo-1531482615713-2afd69097998?auto=format&fit=crop&q=80&w=800'
+        ]);
+
+        Facility::create([
+            'title' => 'Laboratorium Komputer & AI Lab',
+            'description' => 'Dilengkapi 40 unit PC spesifikasi tinggi dan koneksi fiber optik 1 Gbps.',
+            'icon' => 'ðŸ’»'
+        ]);
+
+        Facility::create([
+            'title' => 'Perpustakaan Digital (E-Library)',
+            'description' => 'Koleksi ribuan buku fisik dan akses gratis ke jurnal ilmiah serta ebook internasional.',
+            'icon' => 'ðŸ“š'
+        ]);
+
+        Facility::create([
+            'title' => 'Laboratorium IPA Terpadu',
+            'description' => 'Fasilitas praktikum Fisika, Kimia, dan Biologi lengkap bersertifikasi standar laboratorium.',
+            'icon' => 'ðŸ”¬'
+        ]);
+
+        Facility::create([
+            'title' => 'Lap. Olahraga Multiguna & GOR Indoor',
+            'description' => 'Lapangan basket, futsal, bulutangkis, dan sarana kebugaran siswa.',
+            'icon' => 'ðŸ€'
+        ]);
+
+        Facility::create([
+            'title' => 'Aula Utama & Auditorium Cyber',
+            'description' => 'Kapasitas 1.000 penonton dengan sistem sound & LED display modern.',
+            'icon' => 'ðŸ›ï¸'
+        ]);
+
+        Facility::create([
+            'title' => 'Kantin Sehat & Green Garden',
+            'description' => 'Area kuliner higienis terverifikasi Dinkes dengan ruang terbuka hijau yang asri.',
+            'icon' => 'ðŸƒ'
+        ]);
+    }
+}

@@ -9,5 +9,10 @@ class News extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['title', 'category', 'date', 'summary', 'content', 'image'];
+    protected $fillable = ['title', 'slug', 'category', 'date', 'summary', 'content', 'image', 'author_id', 'status', 'views_count'];
+
+    public function author()
+    {
+        return $this->belongsTo(User::class, 'author_id');
+    }
 }
