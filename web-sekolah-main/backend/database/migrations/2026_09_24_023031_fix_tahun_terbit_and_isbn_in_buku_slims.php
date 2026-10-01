@@ -24,46 +24,50 @@ return new class extends Migration
 {
     public function up(): void
     {
-        // === A: Bersihkan tahun_terbit yang tidak valid ===
-        // Nilai non-numerik atau di luar range wajar → NULL
-        DB::statement("
-            UPDATE buku_slims
-            SET tahun_terbit = NULL
-            WHERE tahun_terbit IS NOT NULL
-              AND (
-                tahun_terbit NOT REGEXP '^[0-9]{4}$'
-                OR CAST(tahun_terbit AS UNSIGNED) < 1800
-                OR CAST(tahun_terbit AS UNSIGNED) > 2100
-              )
-        ");
+        if (DB::connection()->getDriverName() !== 'sqlite') {
+            // === A: Bersihkan tahun_terbit yang tidak valid ===
+            // Nilai non-numerik atau di luar range wajar → NULL
+            DB::statement("
+                UPDATE buku_slims
+                SET tahun_terbit = NULL
+                WHERE tahun_terbit IS NOT NULL
+                  AND (
+                    tahun_terbit NOT REGEXP '^[0-9]{4}$'
+                    OR CAST(tahun_terbit AS UNSIGNED) < 1800
+                    OR CAST(tahun_terbit AS UNSIGNED) > 2100
+                  )
+            ");
 
-        // Ubah tipe kolom: VARCHAR(50) → SMALLINT UNSIGNED NULL
-        // Gunakan raw SQL karena Blueprint::smallInteger() bisa membutuhkan
-        // konversi data eksplisit pada beberapa versi MySQL
-        DB::statement("
-            ALTER TABLE buku_slims
-            MODIFY COLUMN tahun_terbit SMALLINT UNSIGNED NULL
-            COMMENT 'Tahun terbit buku (1800-2100)'
-        ");
+            // Ubah tipe kolom: VARCHAR(50) → SMALLINT UNSIGNED NULL
+            // Gunakan raw SQL karena Blueprint::smallInteger() bisa membutuhkan
+            // konversi data eksplisit pada beberapa versi MySQL
+            DB::statement("
+                ALTER TABLE buku_slims
+                MODIFY COLUMN tahun_terbit SMALLINT UNSIGNED NULL
+                COMMENT 'Tahun terbit buku (1800-2100)'
+            ");
 
-        // === B: Bersihkan ISBN placeholder ===
-        // Nilai '-', '0', 'N/A' tidak memiliki makna ISBN → jadikan NULL
-        DB::statement("
-            UPDATE buku_slims
-            SET isbn_issn = NULL
-            WHERE isbn_issn IN ('-', '0', 'N/A', 'n/a', 'null', 'NULL', '00')
-        ");
+            // === B: Bersihkan ISBN placeholder ===
+            // Nilai '-', '0', 'N/A' tidak memiliki makna ISBN → jadikan NULL
+            DB::statement("
+                UPDATE buku_slims
+                SET isbn_issn = NULL
+                WHERE isbn_issn IN ('-', '0', 'N/A', 'n/a', 'null', 'NULL', '00')
+            ");
+        }
     }
 
     public function down(): void
     {
-        // Kembalikan tahun_terbit ke VARCHAR(50)
-        DB::statement("
-            ALTER TABLE buku_slims
-            MODIFY COLUMN tahun_terbit VARCHAR(50) NULL
-            COMMENT ''
-        ");
-        // Catatan: data yang sudah di-clean (nilai non-numerik → NULL) tidak
-        // bisa dikembalikan ke nilai asal karena tidak disimpan.
+        if (DB::connection()->getDriverName() !== 'sqlite') {
+            // Kembalikan tahun_terbit ke VARCHAR(50)
+            DB::statement("
+                ALTER TABLE buku_slims
+                MODIFY COLUMN tahun_terbit VARCHAR(50) NULL
+                COMMENT ''
+            ");
+            // Catatan: data yang sudah di-clean (nilai non-numerik → NULL) tidak
+            // bisa dikembalikan ke nilai asal karena tidak disimpan.
+        }
     }
 };

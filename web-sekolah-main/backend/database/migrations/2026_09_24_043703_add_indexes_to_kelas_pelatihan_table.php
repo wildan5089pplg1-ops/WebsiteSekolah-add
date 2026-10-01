@@ -13,7 +13,9 @@ return new class extends Migration
     {
         Schema::table('kelas_pelatihan', function (Blueprint $table) {
             $table->index('tipe');
-            $table->fullText(['judul', 'deskripsi']);
+            if (\Illuminate\Support\Facades\DB::connection()->getDriverName() !== 'sqlite') {
+                $table->fullText(['judul', 'deskripsi']);
+            }
         });
     }
 
@@ -24,7 +26,9 @@ return new class extends Migration
     {
         Schema::table('kelas_pelatihan', function (Blueprint $table) {
             $table->dropIndex(['tipe']);
-            $table->dropFullText(['judul', 'deskripsi']);
+            if (\Illuminate\Support\Facades\DB::connection()->getDriverName() !== 'sqlite') {
+                $table->dropFullText(['judul', 'deskripsi']);
+            }
         });
     }
 };

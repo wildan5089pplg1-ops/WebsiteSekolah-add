@@ -25,10 +25,12 @@ return new class extends Migration
             $table->index('subjek_kategori', 'idx_subjek_kategori');
         });
 
-        // FULLTEXT harus ditambahkan via raw SQL karena Blueprint::fullText()
-        // membutuhkan engine MyISAM di beberapa versi Laravel lama.
-        // MySQL 8.x InnoDB sudah mendukung FULLTEXT natively.
-        DB::statement('ALTER TABLE buku_slims ADD FULLTEXT INDEX ft_judul_pengarang (judul, pengarang)');
+        if (DB::connection()->getDriverName() !== 'sqlite') {
+            // FULLTEXT harus ditambahkan via raw SQL karena Blueprint::fullText()
+            // membutuhkan engine MyISAM di beberapa versi Laravel lama.
+            // MySQL 8.x InnoDB sudah mendukung FULLTEXT natively.
+            DB::statement('ALTER TABLE buku_slims ADD FULLTEXT INDEX ft_judul_pengarang (judul, pengarang)');
+        }
     }
 
     /**
@@ -36,7 +38,9 @@ return new class extends Migration
      */
     public function down(): void
     {
-        DB::statement('ALTER TABLE buku_slims DROP INDEX ft_judul_pengarang');
+        if (DB::connection()->getDriverName() !== 'sqlite') {
+            DB::statement('ALTER TABLE buku_slims DROP INDEX ft_judul_pengarang');
+        }
 
         Schema::table('buku_slims', function (Blueprint $table) {
             $table->dropIndex('idx_judul');
