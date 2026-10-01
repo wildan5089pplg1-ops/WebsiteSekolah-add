@@ -1,7 +1,4 @@
 import React from 'react';
-import Navbar from '@/components/Navbar_old';
-import Footer from '@/components/Footer';
-
 const alumniData = [
   {
     name: 'Haikal Idris',
@@ -88,7 +85,6 @@ export default function AlumniPTNPage() {
         </div>
       </div>
 
-      <Footer />
     </div>
   );
 }

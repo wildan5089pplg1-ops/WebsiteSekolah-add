@@ -11,6 +11,49 @@
   position: relative;
   width: 100%;
   background-color: #050505;
+  outline: none;
+}
+
+@media (min-width: 1024px) {
+  .fullscreen-hero-container {
+    height: 100vh;
+    min-height: 720px;
+    overflow: hidden;
+  }
+}
+
+@media (max-width: 1023px) {
+  .fullscreen-hero-container {
+    height: auto;
+    overflow-x: hidden;
+  }
+}
+
+/* =========================================================
+   HORIZONTAL SLIDER TRACK (DESKTOP) / VERTICAL (MOBILE)
+   ========================================================= */
+
+.hero-slider-track {
+  display: flex;
+  width: 100%;
+}
+
+@media (min-width: 1024px) {
+  .hero-slider-track {
+    flex-direction: row;
+    height: 100%;
+    will-change: transform;
+    transition: transform 750ms cubic-bezier(0.16, 1, 0.3, 1);
+  }
+}
+
+@media (max-width: 1023px) {
+  .hero-slider-track {
+    flex-direction: column;
+    height: auto;
+    transform: none !important;
+    transition: none !important;
+  }
 }
 
 /* =========================================================
@@ -19,13 +62,27 @@
 
 .fullscreen-hero-section {
   position: relative;
-  width: 100vw;
-  height: 100vh;
-  min-height: 720px;
   display: flex;
   align-items: center;
   overflow: hidden;
   box-sizing: border-box;
+}
+
+@media (min-width: 1024px) {
+  .fullscreen-hero-section {
+    flex: 0 0 100%;
+    width: 100vw;
+    height: 100vh;
+    min-height: 720px;
+  }
+}
+
+@media (max-width: 1023px) {
+  .fullscreen-hero-section {
+    width: 100%;
+    height: 100vh;
+    min-height: 640px;
+  }
 }
 
 /* =========================================================
@@ -170,6 +227,40 @@
   text-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
 }
 
+/* =========================================================
+   HEADMASTER INFO (HIERARCHY FIX)
+   - Name + title: Primary text
+   - Kepala Sekolah: Smaller secondary text underneath
+   ========================================================= */
+
+.headmaster-info {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  margin-top: 16px;
+}
+
+.headmaster-name {
+  display: block;
+  font-size: clamp(1.15rem, 1.7vw, 1.5rem);
+  font-weight: 800;
+  color: #FFFFFF;
+  letter-spacing: 0.02em;
+  line-height: 1.3;
+  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.6);
+}
+
+.headmaster-role {
+  display: block;
+  font-size: clamp(0.85rem, 1.1vw, 1rem);
+  font-weight: 700;
+  color: #F96501;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  line-height: 1.2;
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
+}
+
 /* Sub-headline / Program Tagline */
 .section-tagline {
   margin-top: 6px;
@@ -220,7 +311,7 @@
   color: #FFFFFF;
   background: rgba(5, 5, 5, 0.45);
   border: 1px solid rgba(255, 255, 255, 0.32);
-  border-radius: 8px; /* Slightly rounded, NOT excessive pill */
+  border-radius: 8px;
 
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
@@ -250,7 +341,7 @@
   border-color: #F96501;
   color: #F96501;
   box-shadow: 0 10px 30px rgba(249, 101, 1, 0.25);
-  transform: translateX(3px); /* Text shifts approx 2-4px */
+  transform: translateX(3px);
 }
 
 .section-nav-btn .nav-btn-arrow {
@@ -261,36 +352,99 @@
 }
 
 .section-nav-btn:hover .nav-btn-arrow {
-  transform: translateX(6px); /* Arrow moves slightly to the right */
+  transform: translateX(6px);
 }
 
 /* =========================================================
-   BOTTOM RIGHT COUNTER ([01 / 06] - [06 / 06])
-   Aligned consistently near bottom right: bottom: 56px
+   BOTTOM RIGHT STORYTELLING CONTROLS (PREVIOUS  01 / 06  NEXT)
+   Position: bottom: 56px, right: 56px
    ========================================================= */
 
-.section-counter {
+.hero-nav-controls {
   position: absolute;
   bottom: 56px;
   right: 56px;
-  z-index: 30;
+  z-index: 35;
 
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 14px;
 
-  font-size: 13px;
-  font-weight: 800;
-  letter-spacing: 0.24em;
-  color: rgba(255, 255, 255, 0.45);
-  font-variant-numeric: tabular-nums;
+  padding: 8px 18px;
+  background: rgba(5, 5, 5, 0.52);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 9999px;
 
-  pointer-events: none;
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.45);
   user-select: none;
 }
 
-.section-counter span.current {
+.hero-nav-arrow-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+
+  background: transparent;
+  border: none;
+  color: rgba(255, 255, 255, 0.75);
+
+  font-family: inherit;
+  font-size: 11.5px;
+  font-weight: 700;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+
+  cursor: pointer;
+  padding: 4px 6px;
+  border-radius: 4px;
+  outline: none;
+
+  transition: color 200ms ease, opacity 200ms ease;
+}
+
+.hero-nav-arrow-btn:hover:not(:disabled) {
   color: #F96501;
+}
+
+.hero-nav-arrow-btn:disabled {
+  opacity: 0.25;
+  cursor: not-allowed;
+}
+
+.hero-nav-arrow-icon {
+  font-size: 14px;
+  line-height: 1;
+  transition: transform 200ms ease;
+}
+
+.hero-nav-arrow-btn:hover:not(:disabled) .hero-nav-arrow-icon {
+  transform: scale(1.15);
+}
+
+.hero-nav-controls .section-counter {
+  position: static;
+  padding: 0 4px;
+  margin: 0;
+  pointer-events: auto;
+  font-size: 13px;
+  font-weight: 800;
+  letter-spacing: 0.2em;
+  color: rgba(255, 255, 255, 0.5);
+  font-variant-numeric: tabular-nums;
+  display: flex;
+  align-items: center;
+}
+
+.hero-nav-controls .section-counter span.current {
+  color: #F96501;
+}
+
+.counter-sep {
+  margin: 0 5px;
+  opacity: 0.5;
 }
 
 /* =========================================================
@@ -298,7 +452,7 @@
    ========================================================= */
 
 .section-progress-nav {
-  position: fixed;
+  position: absolute;
   right: 32px;
   top: 50%;
   transform: translateY(-50%);
@@ -394,9 +548,23 @@
     gap: 10px;
   }
 
-  .section-counter {
+  .hero-nav-controls {
     bottom: 38px;
     right: 24px;
+    gap: 10px;
+    padding: 6px 12px;
+  }
+
+  .hero-nav-arrow-btn {
+    font-size: 10px;
+    padding: 3px 6px;
+  }
+
+  .hero-nav-arrow-label {
+    display: none;
+  }
+
+  .hero-nav-controls .section-counter {
     font-size: 11px;
   }
 }
@@ -418,9 +586,35 @@
     letter-spacing: 0.12em;
   }
 
-  .section-counter {
+  .hero-nav-controls {
     bottom: 32px;
     right: 18px;
+    gap: 8px;
+    padding: 5px 10px;
+  }
+
+  .hero-nav-controls .section-counter {
     font-size: 10px;
+  }
+}
+
+/* =========================================================
+   ACCESSIBILITY: PREFERS-REDUCED-MOTION
+   ========================================================= */
+
+@media (prefers-reduced-motion: reduce) {
+  .hero-slider-track {
+    transition: none !important;
+  }
+
+  .section-media-asset {
+    transition: none !important;
+    transform: none !important;
+  }
+
+  .section-nav-btn,
+  .hero-nav-arrow-btn,
+  .section-progress-line {
+    transition: none !important;
   }
 }

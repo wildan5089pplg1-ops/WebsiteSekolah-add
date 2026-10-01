@@ -27,6 +27,9 @@ class PpdbController extends Controller
         ]);
     }
 
+    /**
+     * Menerima pendaftaran calon siswa baru dari form pengguna umum.
+     */
     public function store(Request $request)
     {
         $validator = Validator::make($request->all(), [

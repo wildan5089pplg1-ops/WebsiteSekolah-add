@@ -11,6 +11,10 @@ export interface NavSection {
   subLinks?: SubLink[];
 }
 
+/**
+ * Centralized navigation configuration for SMK Prestasi Prima.
+ * Consumed by both desktop and mobile navigation.
+ */
 export const navigation: NavSection[] = [
   {
     name: "Beranda",
@@ -18,13 +22,13 @@ export const navigation: NavSection[] = [
     description: "Halaman utama website SMK Prestasi Prima.",
   },
   {
-    name: "Tentang Kami",
-    href: "/tentang/profile",
+    name: "Profil",
+    href: "/tentang/profile-sekolah",
     description: "Mengenal visi, kepemimpinan, dan sarana SMK Prestasi Prima.",
     subLinks: [
       {
         name: "Profil Sekolah",
-        href: "/tentang/profile",
+        href: "/tentang/profile-sekolah",
         desc: "Sejarah, visi, misi, dan identitas keunggulan sekolah.",
       },
       {
@@ -41,60 +45,50 @@ export const navigation: NavSection[] = [
   },
   {
     name: "Program Keahlian",
-    href: "/#program",
+    href: "/program",
     description: "Kompetensi keahlian unggulan berbasis industri masa depan.",
     subLinks: [
       {
-        name: "BCF (Broadcasting & Perfilman)",
-        href: "/#program",
-        desc: "Kreativitas produksi siaran, sinematografi, dan konten digital.",
+        name: "PPLG",
+        href: "/program/pplg",
+        desc: "Software engineering, web development, dan mobile apps.",
       },
       {
-        name: "DKV (Desain Komunikasi Visual)",
-        href: "/#program",
-        desc: "Eksplorasi grafis, animasi, UI/UX, dan komunikasi visual.",
-      },
-      {
-        name: "TJKT (Teknik Jaringan Komputer)",
-        href: "/#program",
+        name: "TJKT",
+        href: "/program/tjkt",
         desc: "Infrastruktur jaringan canggih, server, dan cybersecurity.",
       },
       {
-        name: "PPLG (Pengembangan Perangkat Lunak)",
-        href: "/#program",
-        desc: "Software engineering, web development, dan mobile apps.",
+        name: "BCF",
+        href: "/program/bcf",
+        desc: "Kreativitas produksi siaran, sinematografi, dan konten digital.",
+      },
+      {
+        name: "DKV",
+        href: "/program/dkv",
+        desc: "Eksplorasi grafis, animasi, UI/UX, dan komunikasi visual.",
       },
     ],
   },
   {
-    name: "Presma",
+    name: "PRESMA",
     href: "/program/presmacareer",
     description: "Ekosistem pengembangan karier, riset literasi, dan asesmen bakat.",
     subLinks: [
       {
-        name: "Presma Lib",
+        name: "PRESMA LIB",
         href: "/program/presmalib",
         desc: "Perpustakaan digital dan pusat referensi ilmiah modern.",
       },
       {
-        name: "Presma Career",
+        name: "PRESMA CAREER",
         href: "/program/presmacareer",
         desc: "Jembatan karir siswa menuju dunia usaha & dunia industri.",
       },
       {
-        name: "Carasa",
-        href: "/program/presmacareer/carasa",
-        desc: "Career & Study Assessment untuk pemetaan potensi siswa.",
-      },
-      {
-        name: "Kelas Industri",
-        href: "/program/presmacareer/kelas",
-        desc: "Pembelajaran intensif kurikulum mitra industri ternama.",
-      },
-      {
-        name: "Dashboard Siswa",
-        href: "/program/presmacareer/dashboard",
-        desc: "Portal monitoring portofolio dan progres kesiapan karier.",
+        name: "PRESMA TOUR",
+        href: "/virtual-tour",
+        desc: "Jelajahi seluruh fasilitas sekolah secara interaktif 360°.",
       },
     ],
   },
@@ -104,9 +98,9 @@ export const navigation: NavSection[] = [
     description: "Rekam jejak, prestasi nasional, dan portofolio kebanggaan.",
     subLinks: [
       {
-        name: "Prestasi Siswa",
-        href: "/#prestasi",
-        desc: "Raihan medali dan penghargaan di tingkat regional & nasional.",
+        name: "Ekstrakurikuler",
+        href: "/program/ekskul",
+        desc: "Wadah eksplorasi minat, bakat, dan komunitas siswa.",
       },
       {
         name: "Bintang Lulusan PTN",
@@ -114,16 +108,16 @@ export const navigation: NavSection[] = [
         desc: "Daftar alumni berprestasi yang menembus PTN ternama.",
       },
       {
-        name: "Jejak Aktivitas & Perjalanan",
-        href: "/#our-journey-section",
-        desc: "Dokumentasi kegiatan akademik, ekstrakurikuler, dan komunitas.",
+        name: "Prestasi Siswa",
+        href: "/#prestasi",
+        desc: "Raihan medali dan penghargaan di tingkat regional & nasional.",
+      },
+      {
+        name: "Berita & Artikel",
+        href: "/news",
+        desc: "Kabar terbaru, agenda kegiatan, dan artikel edukasi terkini.",
       },
     ],
-  },
-  {
-    name: "Berita",
-    href: "/news",
-    description: "Kabar terbaru, agenda kegiatan, dan artikel edukasi terkini.",
   },
   {
     name: "Pendaftaran",
@@ -136,9 +130,9 @@ export const navigation: NavSection[] = [
         desc: "Pendaftaran siswa baru dan informasi gelombang masuk.",
       },
       {
-        name: "Kontak & Layanan",
+        name: "Kontak",
         href: "/contact",
-        desc: "Informasi narahubung, konsultasi pendaftaran, dan lokasi sekolah.",
+        desc: "Hubungi kami dan informasi narahubung sekolah.",
       },
     ],
   },

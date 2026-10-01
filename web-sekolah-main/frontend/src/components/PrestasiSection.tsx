@@ -5,11 +5,11 @@ import React, { useState } from 'react';
 const achievements = [
   {
     id: 1,
-    title: 'Juara 1 Lomba Web Design',
-    event: 'Olimpiade IT Nasional 2025',
-    student: 'Ahmad & Tim',
-    image: 'https://images.unsplash.com/photo-1517245386807-bb43f82c33c4?q=80&w=800&auto=format&fit=crop',
-    color: 'from-blue-600 to-cyan-500'
+    title: 'Juara 1 Lomba Voli',
+    event: 'Voli Putra Satvikara',
+    student: 'Tim Voli Putra',
+    image: '/images/prestasi-voli.jpg',
+    color: 'from-orange-500 to-amber-500'
   },
   {
     id: 2,
@@ -29,11 +29,11 @@ const achievements = [
   },
   {
     id: 4,
-    title: 'Best System Administrator',
-    event: 'LKS SMK Tingkat Nasional',
-    student: 'Dimas Anggara',
-    image: 'https://images.unsplash.com/photo-1550751827-4bd374c3f58b?q=80&w=800&auto=format&fit=crop',
-    color: 'from-emerald-500 to-teal-500'
+    title: 'Juara 1 Lomba Web Design',
+    event: 'Olimpiade IT Nasional 2025',
+    student: 'Ahmad & Tim',
+    image: 'https://images.unsplash.com/photo-1517245386807-bb43f82c33c4?q=80&w=800&auto=format&fit=crop',
+    color: 'from-blue-600 to-cyan-500'
   },
   {
     id: 5,
@@ -42,6 +42,14 @@ const achievements = [
     student: 'Tim Basket',
     image: '/images/prestasi-basket.jpeg',
     color: 'from-yellow-500 to-orange-500'
+  },
+  {
+    id: 6,
+    title: 'Juara 3 Piala Suratin U15 2025',
+    event: 'Asprov PSSI DKI Jakarta',
+    student: 'Fattah Fadhlurrohman Hermawan',
+    image: '/images/prestasi-sepakbola.jpeg',
+    color: 'from-orange-500 to-red-500'
   }
 ];
 
@@ -50,25 +58,25 @@ export default function PrestasiSection() {
 
   return (
     <section className="relative w-full py-24 overflow-hidden bg-[#fafafa] dark:bg-slate-950 transition-colors duration-300">
-      
+
       {/* Decorative Background Elements */}
       <div className="absolute top-0 left-0 w-full h-full overflow-hidden pointer-events-none z-0">
-         <div className="absolute top-[-10%] left-[-5%] w-[40%] h-[40%] bg-orange-400/10 dark:bg-orange-500/5 blur-[100px] rounded-full"></div>
-         <div className="absolute bottom-[-10%] right-[-5%] w-[40%] h-[40%] bg-red-400/10 dark:bg-red-500/5 blur-[100px] rounded-full"></div>
+        <div className="absolute top-[-10%] left-[-5%] w-[40%] h-[40%] bg-orange-400/10 dark:bg-orange-500/5 blur-[100px] rounded-full"></div>
+        <div className="absolute bottom-[-10%] right-[-5%] w-[40%] h-[40%] bg-red-400/10 dark:bg-red-500/5 blur-[100px] rounded-full"></div>
       </div>
 
       <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        
+
         {/* Header Section */}
         <div className="text-center max-w-3xl mx-auto mb-16">
           <div className="inline-flex items-center justify-center mb-6">
             <div className="w-16 h-16 rounded-full bg-white dark:bg-slate-800 shadow-md flex items-center justify-center border border-slate-100 dark:border-slate-700">
-               <img src="/images/logo-smk.png" alt="Logo SMK" className="h-10 w-auto object-contain" />
+              <img src="/images/logo-smk.png" alt="Logo SMK" className="h-10 w-auto object-contain" />
             </div>
           </div>
           <h2 className="text-sm font-black text-slate-800 dark:text-slate-300 uppercase tracking-widest mb-3">Prestasi Kami</h2>
           <h3 className="text-2xl md:text-4xl font-extrabold text-slate-900 dark:text-white leading-snug">
-            Mengabadikan momen berharga di balik setiap <br className="hidden md:block" /> 
+            Mengabadikan momen berharga di balik setiap <br className="hidden md:block" />
             <span className="text-orange-500">kemenangan</span>
           </h3>
         </div>
@@ -81,7 +89,7 @@ export default function PrestasiSection() {
             const isCenter = offset === 0;
 
             return (
-              <div 
+              <div
                 key={item.id}
                 onClick={() => setActiveIndex(index)}
                 className="absolute transition-all duration-700 cursor-pointer ease-[cubic-bezier(0.2,0.8,0.2,1)]"
@@ -99,7 +107,7 @@ export default function PrestasiSection() {
                 } as React.CSSProperties}
               >
                 {/* The Card */}
-                <div 
+                <div
                   className={`
                     w-[220px] sm:w-[280px] md:w-[320px] lg:w-[380px] 
                     aspect-[3/4] rounded-2xl md:rounded-[2rem] overflow-hidden 
@@ -109,7 +117,7 @@ export default function PrestasiSection() {
                   `}
                 >
                   <img src={item.image} alt={item.title} className="w-full h-full object-cover" />
-                  
+
                   {/* Subtle overlay for text readability (in case images aren't pure posters) */}
                   <div className={`absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-transparent flex flex-col justify-end p-5 sm:p-8 transition-opacity duration-500 ${isCenter ? 'opacity-100' : 'opacity-100 sm:opacity-80'}`}>
                     <div className="transform transition-transform duration-500 translate-y-2 group-hover:translate-y-0">
@@ -124,7 +132,7 @@ export default function PrestasiSection() {
                       </p>
                     </div>
                   </div>
-                  
+
                   {/* Glass highlight on center card */}
                   {isCenter && (
                     <div className="absolute inset-0 bg-gradient-to-tr from-white/0 via-white/10 to-white/0 pointer-events-none"></div>
@@ -134,7 +142,7 @@ export default function PrestasiSection() {
             );
           })}
         </div>
-        
+
         {/* Navigation Indicator */}
         <div className="flex justify-center items-center gap-3 mt-12">
           {achievements.map((_, idx) => (

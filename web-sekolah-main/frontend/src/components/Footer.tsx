@@ -2,9 +2,15 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 
 export default function Footer() {
+  const pathname = usePathname();
   const [supportImgError, setSupportImgError] = useState(false);
+
+  if (pathname?.startsWith('/virtual-tour')) {
+    return null;
+  }
 
   return (
     <footer className="relative w-full bg-[#0a0f1c] pt-24 pb-8 overflow-hidden font-sans border-t border-slate-800/80">
