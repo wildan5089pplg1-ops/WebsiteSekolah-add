@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\RateLimiter;
 use App\Http\Traits\ApiResponseTrait;
 
 class AuthController extends Controller
@@ -14,46 +15,53 @@ class AuthController extends Controller
     public function login(Request $request)
     {
         $request->validate([
-            'email' => 'required|email',
+            'email'    => 'required|email',
             'password' => 'required',
         ]);
 
-        if (Auth::attempt($request->only('email', 'password'))) {
-            $user = Auth::user();
-            $token = bin2hex(random_bytes(40));
-            $user->remember_token = $token;
-            $user->save();
+        // CRITICAL FIX 1: Implementasi Anti Brute-force (Maks 5 percobaan per menit per IP)
+        $throttleKey = 'login_attempts:' . $request->ip();
 
-            return response()->json([
-                'success' => true,
-                'message' => 'Login berhasil',
-                'data' => [
-                    'user' => $user,
-                    'token' => $token,
-                ]
-            ]);
+        if (RateLimiter::tooManyAttempts($throttleKey, 5)) {
+            $seconds = RateLimiter::availableIn($throttleKey);
+            return $this->errorResponse("Terlalu banyak percobaan login. Silakan coba lagi dalam {$seconds} detik.", 429);
         }
 
-        return response()->json([
-            'success' => false,
-            'message' => 'Email atau password salah',
-        ], 401);
+        if (Auth::attempt($request->only('email', 'password'))) {
+            RateLimiter::clear($throttleKey); // Reset percobaan jika berhasil
+
+            $user = Auth::user();
+            $token = bin2hex(random_bytes(40));
+            
+            // Note: Masih menggunakan pendekatan Single-Session untuk kompatibilitas DB saat ini
+            $user->remember_token = hash('sha256', $token);
+            $user->save();
+
+            return $this->successResponse([
+                'user'  => $user,
+                'token' => $token,
+            ], 'Login berhasil');
+        }
+
+        // Catat kegagalan untuk membatasi Brute-Force
+        RateLimiter::hit($throttleKey, 60);
+
+        return $this->errorResponse('Email atau password salah', 401);
     }
 
     public function logout(Request $request)
     {
-        $token = str_replace('Bearer ', '', $request->header('Authorization'));
+        // MEDIUM FIX: Manfaatkan request bearerToken alih-alih hardcode parsing string
+        $token = $request->bearerToken();
+        
         if ($token) {
-            $user = \App\Models\User::where('remember_token', $token)->first();
-            if ($user) {
-                $user->remember_token = null;
-                $user->save();
-            }
+            // Karena ini Bearer token stateless manual, kita harus menghapusnya dari database.
+            // Metode standar Laravel yang efisien tanpa narik object ke memory.
+            \App\Models\User::where('remember_token', hash('sha256', $token))->update([
+                'remember_token' => null
+            ]);
         }
         
-        return response()->json([
-            'success' => true,
-            'message' => 'Logout berhasil',
-        ]);
+        return $this->successResponse(null, 'Logout berhasil');
     }
 }

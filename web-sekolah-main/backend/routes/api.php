@@ -15,8 +15,8 @@ Route::prefix('v1')->group(function () {
     // =====================================================================
     // Public Routes (Tanpa Autentikasi)
     // =====================================================================
+    // Login sudah memiliki RateLimiter internal di Controller-nya.
     Route::post('/login', [AuthController::class, 'login']);
-    Route::post('/logout', [AuthController::class, 'logout']);
 
     Route::get('/health', function () {
         return response()->json([
@@ -53,10 +53,6 @@ Route::prefix('v1')->group(function () {
 
     Route::get('/facilities', [FacilityController::class, 'index']);
 
-    Route::post('/contact', [ContactController::class, 'store']);
-
-    Route::post('/ppdb', [PpdbController::class, 'store']);
-
     Route::get('/buku', [BukuController::class, 'index']);
     Route::get('/buku/kategori', [BukuController::class, 'categories']);
     Route::get('/buku/{id}', [BukuController::class, 'show']);
@@ -64,9 +60,21 @@ Route::prefix('v1')->group(function () {
     Route::get('/kelas-pelatihan', [KelasPelatihanController::class, 'index']);
 
     // =====================================================================
+    // Rate-Limited Public Routes (Mencegah Spam/DDoS Database)
+    // =====================================================================
+    // FIX [HIGH]: Maksimal 10 request per menit per alamat IP untuk mencegah SPAM/Bot
+    Route::middleware('throttle:10,1')->group(function () {
+        Route::post('/contact', [ContactController::class, 'store']);
+        Route::post('/ppdb', [PpdbController::class, 'store']);
+    });
+
+    // =====================================================================
     // Protected Admin Routes (Token via 'admin.token' Middleware)
     // =====================================================================
     Route::middleware('admin.token')->group(function () {
+        // FIX [MEDIUM]: Pindahkan Logout ke zona Admin (Harus Punya Token Valid)
+        Route::post('/logout', [AuthController::class, 'logout']);
+
         // Presma Career (Kelas)
         Route::post('/kelas-pelatihan', [KelasPelatihanController::class, 'store']);
         Route::put('/kelas-pelatihan/{id}', [KelasPelatihanController::class, 'update']);

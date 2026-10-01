@@ -65,8 +65,11 @@ export async function getNewsList(): Promise<NewsItem[]> {
   try {
     const res = await fetch(`${API_BASE_URL}/news`, { cache: 'no-store' });
     if (!res.ok) throw new Error('Failed to fetch news');
-    const data = await res.json();
-    return data.data;
+    const resJson = await res.json();
+    const result = resJson.data;
+    if (Array.isArray(result)) return result;
+    if (result && Array.isArray(result.data)) return result.data;
+    return [];
   } catch (error) {
     return [
       {

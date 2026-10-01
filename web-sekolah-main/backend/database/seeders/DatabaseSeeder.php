@@ -15,12 +15,9 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        // User::factory(10)->create();
-
-        User::factory()->create([
-            'name' => 'Admin',
-            'email' => 'admin@example.com',
-        ]);
+        // FIX [CRITICAL]: Hapus akun backdoor admin@example.com
+        // Panggil AdminUserSeeder yang aman (firstOrCreate + env password)
+        $this->call(AdminUserSeeder::class);
 
         News::create([
             'title' => 'Tim Robotik SMA 1 Meraih Medali Emas Olimpiade Sains Nasional 2026',
