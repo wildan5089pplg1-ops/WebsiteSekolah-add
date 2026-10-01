@@ -61,31 +61,49 @@ return [
     */
     'category_groups' => [
         'Fiksi & Novel' => [
-            'novel', 'fiksi', 'sastra', 'detektif', 'cerpen', 'prosa',
-            'dikta', 'kepada gema', 'unfamiliar', 'pangeran cilik', 'petit prince',
+            'novel', 'fiksi', 'sastra', 'cerpen', 'prosa', 'dikta', 'kepada gema', 
+            'unfamiliar', 'pangeran cilik', 'petit prince', 'romance', 'love', 'puisi',
+            'kumpulan cerita', 'folklore'
         ],
-        'Pengembangan Diri' => [
+        'Misteri, Fantasi & Sci-Fi' => [
+            'detektif', 'misteri', 'fantasi', 'teka-teki', 'thriller', 'konspirasi',
+            'sci-fi', 'kiamat', 'akhir zaman'
+        ],
+        'Pengembangan Diri (Self-Help)' => [
             'self improvement', 'motivasi', 'pengembangan diri', 'habits', 'habit',
             'sukses', 'karier', 'menata karier', 'becoming', 'star', 'personality',
             'value', 'filosofi', 'seni menghargai', 'hidup', 'redraw',
             'membangun kebiasaan', 'kebiasaan buruk', 'memikat', 'mario teguh',
+            'inspiratif', 'kisah inspiratif'
         ],
-        'Kesehatan Mental' => [
+        'Psikologi & Kesehatan Mental' => [
             'psikoterapi', 'anxiety', 'loneliness', 'love self', 'sayangi diri',
             'mengatasi kekecewaan', 'luka', 'galau', 'hold on', 'hurts',
-            'jiemi', 'kesehatan mental',
+            'jiemi', 'kesehatan mental', 'psikologi'
         ],
-        'Pengetahuan & Geografi' => [
+        'Sains, Pengetahuan & Geografi' => [
             'atlas', 'provinsi', 'peta', 'geografi', 'pengetahuan umum',
-            'dunia', 'global', 'indeks', 'keajaiban', 'hutan', 'jenis hutan',
+            'dunia', 'global', 'indeks', 'keajaiban', 'hutan', 'jenis hutan', 'sains',
+            'statistik', 'matematika', 'teknologi', 'ilmu'
         ],
-        'Sejarah & Kebangsaan' => [
+        'Sejarah & Biografi' => [
             'sejarah', 'pahlawan', 'perjuangan', 'bangsa', 'nusantara',
             'kebangsaan', 'kisah pahlawan', 'pertemuan antar tokoh', 'perang',
+            'biografi', 'tokoh', 'kerajaan', 'dinasti', 'muhammad al-fatih',
+            'konstatinopel', 'singhasari', 'qatar'
         ],
-        'Sosial & Keluarga' => [
+        'Sosial, Budaya & Keluarga' => [
             'keluarga', 'friendship', 'relationship', 'remaja', 'perempuan',
-            'perbedaan agama', 'negara', 'kehidupan', 'sosial',
+            'perbedaan agama', 'negara', 'kehidupan', 'sosial', 'budaya', 'hukum',
+            'masyarakat', 'komunikasi'
+        ],
+        'Agama & Spiritual' => [
+            'agama', 'spiritual', 'islami', 'masjid', 'umat', 'ibadah', 'keyakinan',
+            'kristiani', 'tuhan', 'doa'
+        ],
+        'Seni, Desain & Hiburan' => [
+            'seni', 'desain', 'art', 'hiburan', 'musik', 'olahraga', 'exhibition',
+            'defacement'
         ],
     ],
 

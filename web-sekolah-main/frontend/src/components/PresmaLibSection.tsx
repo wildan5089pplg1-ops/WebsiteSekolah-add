@@ -85,108 +85,112 @@ function getPaginationRange(currentPage: number, totalPages: number): (number | 
 
 // Hybrid Book Cover Component (Backend Upload -> OpenLibrary ISBN -> Stylized Digital Cover)
 function BookCover({ book, size = 'sm' }: { book: Book; size?: 'sm' | 'lg' }) {
-  const [imgSrc, setImgSrc] = useState<string | null>(null);
-  const [hasFailed, setHasFailed] = useState(false);
+  // 1. Tentukan sumber gambar secara langsung (synchronous) agar langsung dirender di pass pertama
+  const initialImgSrc = book.nama_file_cover 
+    ? `http://localhost:8000/images/docs/${book.nama_file_cover}`
+    : (book.isbn_issn && book.isbn_issn.replace(/[^0-9X]/gi, '').length >= 9)
+      ? `https://covers.openlibrary.org/b/isbn/${book.isbn_issn.replace(/[^0-9X]/gi, '')}-${size === 'lg' ? 'L' : 'M'}.jpg`
+      : null;
 
+  const [imgSrc, setImgSrc] = useState<string | null>(initialImgSrc);
+  const [hasFailed, setHasFailed] = useState(false);
+  const [isLoaded, setIsLoaded] = useState(false);
+
+  // Jika prop book berubah (misal pindah buku di modal), reset semua state
   useEffect(() => {
+    setImgSrc(initialImgSrc);
     setHasFailed(false);
-    if (book.nama_file_cover) {
-      setImgSrc(`http://localhost:8000/images/docs/${book.nama_file_cover}`);
-    } else if (book.isbn_issn) {
-      const cleanIsbn = book.isbn_issn.replace(/[^0-9X]/gi, '');
-      if (cleanIsbn.length >= 9) {
-        setImgSrc(`https://covers.openlibrary.org/b/isbn/${cleanIsbn}-${size === 'lg' ? 'L' : 'M'}.jpg`);
-      } else {
-        setImgSrc(null);
-      }
-    } else {
-      setImgSrc(null);
-    }
-  }, [book.id, book.nama_file_cover, book.isbn_issn, size]);
+    setIsLoaded(false);
+  }, [book.id, initialImgSrc]);
 
   const style = getCoverStyle(book.id, book.judul);
 
-  // If there's an image source and it hasn't failed, show the <img>
-  if (imgSrc && !hasFailed) {
-    return (
-      <div className="relative w-full h-full">
-        <img
-          src={imgSrc}
-          alt={book.judul}
-          className="w-full h-full object-cover absolute inset-0 transition-transform duration-300"
-          onLoad={(e) => {
-            // OpenLibrary returns 1x1 blank gif when ISBN has no cover
-            if ((e.target as HTMLImageElement).naturalWidth <= 1) {
-              setHasFailed(true);
-            }
-          }}
-          onError={() => {
-            // If primary was backend upload and failed, try ISBN if available
-            if (book.nama_file_cover && book.isbn_issn && !imgSrc.includes('openlibrary.org')) {
-              const cleanIsbn = book.isbn_issn.replace(/[^0-9X]/gi, '');
-              if (cleanIsbn.length >= 9) {
-                setImgSrc(`https://covers.openlibrary.org/b/isbn/${cleanIsbn}-${size === 'lg' ? 'L' : 'M'}.jpg`);
-                return;
-              }
-            }
-            setHasFailed(true);
-          }}
-        />
-        {/* Subtle realistic book spine shadow along the left edge */}
-        <div className="absolute left-0 inset-y-0 w-2.5 bg-gradient-to-r from-black/40 via-black/10 to-transparent pointer-events-none" />
-      </div>
-    );
-  }
-
-  // Fallback: Dynamic Stylized Digital Book Cover
   return (
-    <div className={`relative w-full h-full bg-gradient-to-br ${style.bg} ${size === 'lg' ? 'p-6' : 'p-3'} flex flex-col justify-between overflow-hidden select-none`}>
-      {/* 3D Book Spine Effect */}
-      <div className="absolute left-0 inset-y-0 w-3 bg-gradient-to-r from-black/50 via-black/20 to-transparent pointer-events-none" />
-      <div className="absolute left-3 inset-y-0 w-[1px] bg-white/15 pointer-events-none" />
+    <div className="relative w-full h-full bg-slate-900 overflow-hidden">
+      
+      {/* LAYER 1: Fallback Stylized Cover (Selalu di-render di bawah sebagai placeholder/skeleton) */}
+      <div className={`absolute inset-0 w-full h-full bg-gradient-to-br ${style.bg} ${size === 'lg' ? 'p-6' : 'p-3'} flex flex-col justify-between overflow-hidden select-none`}>
+        {/* 3D Book Spine Effect */}
+        <div className="absolute left-0 inset-y-0 w-3 bg-gradient-to-r from-black/50 via-black/20 to-transparent pointer-events-none" />
+        <div className="absolute left-3 inset-y-0 w-[1px] bg-white/15 pointer-events-none" />
 
-      {/* Decorative Geometric Patterns */}
-      <div className="absolute -right-6 -bottom-6 w-24 h-24 rounded-full bg-white/5 pointer-events-none" />
-      <div className="absolute -right-2 -top-2 w-16 h-16 rounded-full bg-white/5 pointer-events-none" />
+        {/* Decorative Geometric Patterns */}
+        <div className="absolute -right-6 -bottom-6 w-24 h-24 rounded-full bg-white/5 pointer-events-none" />
+        <div className="absolute -right-2 -top-2 w-16 h-16 rounded-full bg-white/5 pointer-events-none" />
 
-      {/* Top Header Badge */}
-      <div className="relative z-10 flex items-center justify-between">
-        <span className={`${size === 'lg' ? 'text-xs tracking-widest' : 'text-[8px] tracking-wider'} font-black uppercase text-white/80`}>
-          PRESMALIB
-        </span>
-        <div className={`${size === 'lg' ? 'w-3 h-3' : 'w-2 h-2'} rounded-full ${style.accent} shadow-sm`} />
+        {/* Top Header Badge */}
+        <div className="relative z-10 flex items-center justify-between">
+          <span className={`${size === 'lg' ? 'text-xs tracking-widest' : 'text-[8px] tracking-wider'} font-black uppercase text-white/80`}>
+            PRESMALIB
+          </span>
+          <div className={`${size === 'lg' ? 'w-3 h-3' : 'w-2 h-2'} rounded-full ${style.accent} shadow-sm`} />
+        </div>
+
+        {/* Center Title & Author */}
+        <div className="relative z-10 my-auto py-2">
+          <h4 className={`${size === 'lg' ? 'text-xl sm:text-2xl line-clamp-4' : 'text-[11px] sm:text-xs line-clamp-3'} font-black text-white leading-tight drop-shadow-sm`}>
+            {book.judul}
+          </h4>
+          {book.pengarang && (
+            <p className={`${size === 'lg' ? 'text-xs sm:text-sm mt-3' : 'text-[9px] mt-1'} text-white/75 font-medium line-clamp-1`}>
+              {book.pengarang}
+            </p>
+          )}
+        </div>
+
+        {/* Bottom Footer Info */}
+        <div className="relative z-10 pt-2 border-t border-white/10 flex items-center justify-between">
+          <span className={`${size === 'lg' ? 'text-[10px]' : 'text-[7px] sm:text-[8px]'} text-white/60 font-semibold tracking-wider uppercase`}>
+            {book.tahun_terbit ? `${book.tahun_terbit}` : 'E-LIBRARY'}
+          </span>
+          <span className={`${size === 'lg' ? 'text-[10px]' : 'text-[7px] sm:text-[8px]'} text-white/40 font-mono`}>
+            {book.isbn_issn ? 'ISBN' : 'SMK'}
+          </span>
+        </div>
       </div>
 
-      {/* Center Title & Author */}
-      <div className="relative z-10 my-auto py-2">
-        <h4 className={`${size === 'lg' ? 'text-xl sm:text-2xl line-clamp-4' : 'text-[11px] sm:text-xs line-clamp-3'} font-black text-white leading-tight drop-shadow-sm`}>
-          {book.judul}
-        </h4>
-        {book.pengarang && (
-          <p className={`${size === 'lg' ? 'text-xs sm:text-sm mt-3' : 'text-[9px] mt-1'} text-white/75 font-medium line-clamp-1`}>
-            {book.pengarang}
-          </p>
-        )}
-      </div>
-
-      {/* Bottom Footer Info */}
-      <div className="relative z-10 pt-2 border-t border-white/10 flex items-center justify-between">
-        <span className={`${size === 'lg' ? 'text-[10px]' : 'text-[7px] sm:text-[8px]'} text-white/60 font-semibold tracking-wider uppercase`}>
-          {book.tahun_terbit ? `${book.tahun_terbit}` : 'E-LIBRARY'}
-        </span>
-        <span className={`${size === 'lg' ? 'text-[10px]' : 'text-[7px] sm:text-[8px]'} text-white/40 font-mono`}>
-          {book.isbn_issn ? 'ISBN' : 'SMK'}
-        </span>
-      </div>
+      {/* LAYER 2: Gambar Cover Asli (Berada di atas, muncul secara perlahan (fade-in) setelah selesai didownload) */}
+      {imgSrc && !hasFailed && (
+        <div className={`absolute inset-0 w-full h-full transition-opacity duration-700 ease-out z-20 ${isLoaded ? 'opacity-100' : 'opacity-0'}`}>
+          <img
+            src={imgSrc}
+            alt={book.judul}
+            className="w-full h-full object-cover absolute inset-0"
+            onLoad={(e) => {
+              // OpenLibrary returns 1x1 blank gif when ISBN has no cover
+              if ((e.target as HTMLImageElement).naturalWidth <= 1) {
+                setHasFailed(true);
+              } else {
+                setIsLoaded(true);
+              }
+            }}
+            onError={() => {
+              // Jika gagal memuat gambar lokal, coba beralih ke ISBN
+              if (book.nama_file_cover && book.isbn_issn && !imgSrc.includes('openlibrary.org')) {
+                const cleanIsbn = book.isbn_issn.replace(/[^0-9X]/gi, '');
+                if (cleanIsbn.length >= 9) {
+                  setImgSrc(`https://covers.openlibrary.org/b/isbn/${cleanIsbn}-${size === 'lg' ? 'L' : 'M'}.jpg`);
+                  return;
+                }
+              }
+              setHasFailed(true);
+            }}
+          />
+          {/* Subtle realistic book spine shadow di atas gambar asli */}
+          <div className="absolute left-0 inset-y-0 w-2.5 bg-gradient-to-r from-black/40 via-black/10 to-transparent pointer-events-none" />
+        </div>
+      )}
     </div>
   );
 }
 
 export default function PresmaLibSection() {
+  const [searchInput, setSearchInput] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedBook, setSelectedBook] = useState<Book | null>(null);
   const [books, setBooks] = useState<Book[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadingDetail, setLoadingDetail] = useState(false);
 
   // Category states (hierarchical)
   const [categoryGroups, setCategoryGroups] = useState<CategoryGroup[]>([]);
@@ -262,6 +266,7 @@ export default function PresmaLibSection() {
   // Handle clicking book to show detail & fetch complete data
   const handleSelectBook = async (book: Book) => {
     setSelectedBook(book);
+    setLoadingDetail(true);
     try {
       const response = await fetch(`http://localhost:8000/api/v1/buku/${book.id}`);
       if (response.ok) {
@@ -272,6 +277,8 @@ export default function PresmaLibSection() {
       }
     } catch (error) {
       console.error('Error fetching book detail:', error);
+    } finally {
+      setLoadingDetail(false);
     }
   };
 
@@ -303,6 +310,7 @@ export default function PresmaLibSection() {
 
   // Handle "Eksplorasi" button: Reset all filters & back to initial catalog state
   const handleResetExploration = () => {
+    setSearchInput('');
     setSearchQuery('');
     setSelectedCategory(null);
     setSelectedBook(null);
@@ -315,14 +323,11 @@ export default function PresmaLibSection() {
     }
   };
 
-  // Handle search typing with debounce
+  // Handle applied search
   useEffect(() => {
+    // Only fetch if not already in initial mount phase where categories aren't even loaded
     setCurrentPage(1);
-    const delayDebounceFn = setTimeout(() => {
-      fetchBooks(searchQuery, 1, selectedCategory);
-    }, 500);
-
-    return () => clearTimeout(delayDebounceFn);
+    fetchBooks(searchQuery, 1, selectedCategory);
   }, [searchQuery]);
 
   // When searching, flatten all children and filter by query
@@ -548,9 +553,14 @@ export default function PresmaLibSection() {
             </div>
             <input
               type="text"
-              placeholder="Cari judul atau pengarang..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder="Ketik & tekan Enter..."
+              value={searchInput}
+              onChange={(e) => setSearchInput(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') {
+                  setSearchQuery(searchInput);
+                }
+              }}
               className="block w-full pl-10 pr-3 py-2.5 border border-slate-200 rounded-lg leading-5 bg-slate-100 placeholder-slate-400 focus:outline-none focus:bg-white focus:ring-1 focus:ring-orange-500 focus:border-orange-500 sm:text-sm transition-colors"
             />
           </div>
@@ -577,7 +587,10 @@ export default function PresmaLibSection() {
               <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-slate-100 text-slate-700 text-xs font-semibold rounded-full border border-slate-200">
                 Pencarian: &quot;{searchQuery}&quot;
                 <button
-                  onClick={() => setSearchQuery('')}
+                  onClick={() => {
+                    setSearchInput('');
+                    setSearchQuery('');
+                  }}
                   className="w-4 h-4 rounded-full bg-slate-200 hover:bg-slate-300 text-slate-700 flex items-center justify-center text-xs transition-colors"
                   title="Hapus kata kunci"
                 >
@@ -598,8 +611,15 @@ export default function PresmaLibSection() {
         {!selectedBook ? (
           <div>
             {loading ? (
-              <div className="flex justify-center items-center py-20">
-                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-500"></div>
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-9 gap-4 gap-y-8 animate-pulse">
+                {Array.from({ length: 18 }).map((_, idx) => (
+                  <div key={idx} className="flex flex-col items-center">
+                    <div className="w-full aspect-[2/3] bg-slate-200/60 rounded-lg mb-3 border border-slate-100"></div>
+                    <div className="w-3/4 h-3 bg-slate-200/60 rounded-full mb-2"></div>
+                    <div className="w-1/2 h-3 bg-slate-200/60 rounded-full mb-3"></div>
+                    <div className="w-[90%] h-6 bg-slate-200/60 rounded-full"></div>
+                  </div>
+                ))}
               </div>
             ) : books.length > 0 ? (
               <>
@@ -740,36 +760,56 @@ export default function PresmaLibSection() {
 
             {/* Right Column: Book Details & Actions */}
             <div className="w-full md:w-[70%] bg-slate-100/90 backdrop-blur-md rounded-3xl p-8 md:p-12 shadow-sm border border-white mt-4 md:mt-0">
-               <h3 className="text-2xl sm:text-3xl font-black text-slate-900 mb-2 uppercase tracking-tight">{selectedBook.judul}</h3>
-               {selectedBook.pengarang && (
-                 <p className="text-orange-500 font-bold mb-6">{selectedBook.pengarang}</p>
-               )}
-               
-               <div className="flex flex-wrap gap-4 mb-6">
-                 {selectedBook.penerbit && (
-                   <span className="text-xs bg-white px-3 py-1 rounded-full text-slate-600 border border-slate-200">
-                     Penerbit: {selectedBook.penerbit}
-                   </span>
-                 )}
-                 {selectedBook.tahun_terbit && (
-                   <span className="text-xs bg-white px-3 py-1 rounded-full text-slate-600 border border-slate-200">
-                     Tahun: {selectedBook.tahun_terbit}
-                   </span>
-                 )}
-                 {selectedBook.isbn_issn && (
-                   <span className="text-xs bg-white px-3 py-1 rounded-full text-slate-600 border border-slate-200">
-                     ISBN: {selectedBook.isbn_issn}
-                   </span>
-                 )}
-               </div>
+               {loadingDetail ? (
+                 <div className="animate-pulse">
+                   <div className="h-8 bg-slate-200/80 rounded-full w-3/4 mb-4"></div>
+                   <div className="h-5 bg-slate-200/80 rounded-full w-1/3 mb-8"></div>
+                   <div className="flex gap-4 mb-8">
+                     <div className="h-6 bg-slate-200/80 rounded-full w-24"></div>
+                     <div className="h-6 bg-slate-200/80 rounded-full w-24"></div>
+                     <div className="h-6 bg-slate-200/80 rounded-full w-24"></div>
+                   </div>
+                   <div className="space-y-3 mb-10">
+                     <div className="h-4 bg-slate-200/80 rounded-full w-full"></div>
+                     <div className="h-4 bg-slate-200/80 rounded-full w-full"></div>
+                     <div className="h-4 bg-slate-200/80 rounded-full w-5/6"></div>
+                     <div className="h-4 bg-slate-200/80 rounded-full w-4/6"></div>
+                   </div>
+                 </div>
+               ) : (
+                 <>
+                   <h3 className="text-2xl sm:text-3xl font-black text-slate-900 mb-2 uppercase tracking-tight">{selectedBook.judul}</h3>
+                   {selectedBook.pengarang && (
+                     <p className="text-orange-500 font-bold mb-6">{selectedBook.pengarang}</p>
+                   )}
+                   
+                   <div className="flex flex-wrap gap-4 mb-6">
+                     {selectedBook.penerbit && (
+                       <span className="text-xs bg-white px-3 py-1 rounded-full text-slate-600 border border-slate-200">
+                         Penerbit: {selectedBook.penerbit}
+                       </span>
+                     )}
+                     {selectedBook.tahun_terbit && (
+                       <span className="text-xs bg-white px-3 py-1 rounded-full text-slate-600 border border-slate-200">
+                         Tahun: {selectedBook.tahun_terbit}
+                       </span>
+                     )}
+                     {selectedBook.isbn_issn && (
+                       <span className="text-xs bg-white px-3 py-1 rounded-full text-slate-600 border border-slate-200">
+                         ISBN: {selectedBook.isbn_issn}
+                       </span>
+                     )}
+                   </div>
 
-               <div className="text-slate-800 leading-relaxed mb-10 text-justify sm:text-base whitespace-pre-line">
-                 {selectedBook.deskripsi_abstrak ? (
-                   <p>{selectedBook.deskripsi_abstrak}</p>
-                 ) : (
-                   <p className="italic text-slate-500">Tidak ada deskripsi tersedia untuk buku ini.</p>
-                 )}
-               </div>
+                   <div className="text-slate-800 leading-relaxed mb-10 text-justify sm:text-base whitespace-pre-line">
+                     {selectedBook.deskripsi_abstrak ? (
+                       <p>{selectedBook.deskripsi_abstrak}</p>
+                     ) : (
+                       <p className="italic text-slate-500">Tidak ada deskripsi tersedia untuk buku ini.</p>
+                     )}
+                   </div>
+                 </>
+               )}
                
                <div className="flex flex-col sm:flex-row items-center gap-4 justify-center md:justify-start">
                   {(() => {

@@ -29,10 +29,10 @@ class BukuCategoryService
      * Konfigurasi grup diambil dari config/presmalib.php agar bisa diubah
      * tanpa menyentuh kode.
      *
-     * @param string[] $rawList Array of raw subjek_kategori strings
+     * @param iterable $rawList Iterable (Array/Cursor) of raw subjek_kategori strings
      * @return array<int, array{name: string, count: int, children: array}>
      */
-    public function buildHierarchy(array $rawList): array
+    public function buildHierarchy(iterable $rawList): array
     {
         $flatCats = $this->extractFlatCategories($rawList);
         $groups   = $this->groupByConfig($flatCats);
@@ -58,10 +58,10 @@ class BukuCategoryService
      * Ekstrak semua tag individual dari array raw string dan hitung frekuensinya.
      * Format SLiMS: "<Tag1><Tag2><Tag3>"
      *
-     * @param string[] $rawList
+     * @param iterable $rawList
      * @return array<string, int>  ['Novel' => 27, 'Self Improvement' => 26, ...]
      */
-    private function extractFlatCategories(array $rawList): array
+    private function extractFlatCategories(iterable $rawList): array
     {
         $flatCats = [];
 
