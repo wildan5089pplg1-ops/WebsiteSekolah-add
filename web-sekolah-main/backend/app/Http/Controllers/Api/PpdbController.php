@@ -3,16 +3,22 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
-use App\Models\PpdbRegistration;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
+use App\Services\PpdbService;
 
 class PpdbController extends Controller
 {
+    protected $ppdbService;
+
+    public function __construct(PpdbService $ppdbService)
+    {
+        $this->ppdbService = $ppdbService;
+    }
+
     public function index()
     {
-        $registrations = PpdbRegistration::orderBy('created_at', 'desc')->get();
+        $registrations = $this->ppdbService->getAllRegistrations();
 
         return response()->json([
             'success' => true,
@@ -47,13 +53,7 @@ class PpdbController extends Controller
             ], 422);
         }
 
-        $registration = DB::transaction(function () use ($validator) {
-            $number = PpdbRegistration::lockForUpdate()->count() + 1;
-            $data = $validator->validated();
-            $data['registration_number'] = sprintf('PPDB-2026-%05d', $number);
-
-            return PpdbRegistration::create($data);
-        });
+        $registration = $this->ppdbService->createRegistration($validator->validated());
 
         return response()->json([
             'success' => true,

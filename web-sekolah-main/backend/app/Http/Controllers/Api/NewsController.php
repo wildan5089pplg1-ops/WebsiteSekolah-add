@@ -3,14 +3,21 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
-use App\Models\News;
 use Illuminate\Http\Request;
+use App\Services\NewsService;
 
 class NewsController extends Controller
 {
+    protected $newsService;
+
+    public function __construct(NewsService $newsService)
+    {
+        $this->newsService = $newsService;
+    }
+
     public function index()
     {
-        $news = News::orderBy('date', 'desc')->get();
+        $news = $this->newsService->getAllNews();
         return response()->json([
             'success' => true,
             'data' => $news
@@ -19,7 +26,7 @@ class NewsController extends Controller
 
     public function show($id)
     {
-        $news = News::find($id);
+        $news = $this->newsService->getNewsById($id);
         
         if (!$news) {
             return response()->json([
