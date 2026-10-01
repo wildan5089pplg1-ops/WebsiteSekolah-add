@@ -9,7 +9,7 @@ const sponsors = [
 const industri = [
   { id: 1, name: 'Penerbit Erlangga', acronym: 'ERL', color: 'from-blue-600 to-indigo-800', desc: 'Kolaborasi penyediaan literatur digital dan kurikulum industri modern.' },
   { id: 2, name: 'WIKA', acronym: 'WIKA', color: 'from-sky-500 to-cyan-700', desc: 'Program magang teknologi infrastruktur berskala nasional.' },
-  { id: 3, name: 'Telkom Indonesia', acronym: 'TLKM', color: 'from-red-600 to-rose-800', desc: 'Inkubasi startup siswa & sertifikasi jaringan telekomunikasi.' },
+  { id: 3, name: 'Telkom Indonesia', image: 'https://logo.clearbit.com/telkom.co.id', acronym: 'TLKM', color: 'from-red-600 to-rose-800', desc: 'Inkubasi startup siswa & sertifikasi jaringan telekomunikasi.' },
   { id: 4, name: 'KOMATSU', acronym: 'KMT', color: 'from-indigo-600 to-blue-900', desc: 'Pelatihan sistem mekanik industri presisi tinggi.' },
   { id: 5, name: 'KemenkopUKM', acronym: 'UKM', color: 'from-emerald-500 to-teal-700', desc: 'Akselerasi wirausaha dan bisnis digital lulusan vokasi.' },
   { id: 6, name: 'Jatelindo', acronym: 'JTL', color: 'from-blue-500 to-blue-700', desc: 'Pengembangan sistem pembayaran digital (payment gateway).' },
@@ -205,10 +205,13 @@ export default function MitraSection() {
                   
                   {/* Logo Placeholder / Container */}
                   <div className="relative w-full h-full flex items-center justify-center bg-slate-50 dark:bg-slate-900/50 rounded-xl overflow-hidden group-hover:bg-slate-100 transition-colors">
-                    {/* IN THE FUTURE: Replace this span with an <img src="logo.png" className="w-full h-full object-contain" /> */}
-                    <span className={`text-2xl md:text-4xl font-black text-transparent bg-clip-text bg-gradient-to-br ${mitra.color} drop-shadow-sm`}>
-                      {mitra.acronym}
-                    </span>
+                    {mitra.image ? (
+                      <img src={mitra.image} alt={mitra.name} className="w-3/4 h-3/4 object-contain relative z-10 drop-shadow-md" />
+                    ) : (
+                      <span className={`text-2xl md:text-4xl font-black text-transparent bg-clip-text bg-gradient-to-br ${mitra.color} drop-shadow-sm`}>
+                        {mitra.acronym}
+                      </span>
+                    )}
                   </div>
                 </div>
               );

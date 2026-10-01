@@ -6,26 +6,34 @@ use App\Http\Controllers\Controller;
 use App\Models\ContactMessage;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
+use App\Http\Traits\ApiResponseTrait;
 
 class ContactController extends Controller
 {
-    public function index()
+    use ApiResponseTrait;
+
+    public function index(Request $request)
     {
-        $messages = ContactMessage::orderBy('created_at', 'desc')->get();
-        return response()->json([
-            'success' => true,
-            'data' => $messages
+        $request->validate([
+            'per_page' => 'sometimes|integer|min:1|max:100'
         ]);
+
+        $perPage = (int) $request->input('per_page', 20);
+        $messages = ContactMessage::orderBy('id', 'desc')->paginate($perPage);
+        
+        // FIX [LOW]: Gunakan paginatedResponse() agar format JSON konsisten dengan endpoint lain
+        return $this->paginatedResponse($messages, 'Data pesan kontak berhasil dimuat');
     }
 
     public function destroy($id)
     {
         $message = ContactMessage::find($id);
         if (!$message) {
-            return response()->json(['success' => false, 'message' => 'Pesan tidak ditemukan'], 404);
+            return $this->errorResponse('Pesan tidak ditemukan', 404);
         }
+        
         $message->delete();
-        return response()->json(['success' => true, 'message' => 'Pesan berhasil dihapus']);
+        return $this->successResponse(null, 'Pesan berhasil dihapus');
     }
 
     /**
@@ -34,25 +42,30 @@ class ContactController extends Controller
     public function store(Request $request)
     {
         $validator = Validator::make($request->all(), [
-            'name' => 'required|string|max:255',
+            'name'           => 'required|string|max:255',
             'email_or_phone' => 'required|string|max:255',
-            'category' => 'required|string|max:255',
-            'message' => 'required|string',
+            'category'       => 'required|string|max:255',
+            // FIX [HIGH]: Batasi ukuran payload untuk mencegah Memory Exhaustion (DoS)
+            'message'        => 'required|string|max:3000',
         ]);
 
         if ($validator->fails()) {
             return response()->json([
                 'success' => false,
-                'errors' => $validator->errors()
+                'errors'  => $validator->errors()
             ], 422);
         }
 
-        $contact = ContactMessage::create($validator->validated());
+        $validatedData = $validator->validated();
 
-        return response()->json([
-            'success' => true,
-            'message' => 'Pesan berhasil dikirim',
-            'data' => $contact
-        ], 201);
+        // FIX [MEDIUM]: Sanitasi input untuk mencegah serangan Stored XSS
+        $validatedData['name'] = strip_tags($validatedData['name']);
+        $validatedData['email_or_phone'] = strip_tags($validatedData['email_or_phone']);
+        $validatedData['category'] = strip_tags($validatedData['category']);
+        $validatedData['message'] = strip_tags($validatedData['message']);
+
+        $contact = ContactMessage::create($validatedData);
+
+        return $this->successResponse($contact, 'Pesan berhasil dikirim', 201);
     }
 }
