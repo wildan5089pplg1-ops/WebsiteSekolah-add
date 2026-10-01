@@ -10,6 +10,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 
 /**
  * BukuController
@@ -74,7 +75,7 @@ class BukuController extends Controller
             'search'   => ['sometimes', 'string', 'max:100'],
             'category' => ['sometimes', 'string', 'max:150'],
             'page'     => ['sometimes', 'integer', 'min:1'],
-            'per_page' => ['sometimes', 'integer', 'min:1'],
+            'per_page' => ['sometimes', 'integer', 'min:1', 'max:100'],
             'admin'    => ['sometimes', 'boolean'],
         ]);
 
@@ -118,16 +119,16 @@ class BukuController extends Controller
         $cacheTtl = config('presmalib.cache.categories_ttl', 3600);
 
         $data = Cache::remember($cacheKey, $cacheTtl, function () {
-            $raw = DB::table('buku_slims')
+            $cursor = DB::table('buku_slims')
                 ->select('buku_slims.subjek_kategori')
                 ->joinSub($this->deduplicateJoin(), 'dedup', 'buku_slims.id', '=', 'dedup.min_id')
                 ->whereNotNull('buku_slims.subjek_kategori')
                 ->where('buku_slims.subjek_kategori', '!=', '')
-                ->pluck('buku_slims.subjek_kategori')
-                ->all();
+                ->cursor()
+                ->map(fn($row) => $row->subjek_kategori);
 
             // Delegasi ke Service — Controller tidak lagi tahu detail logika
-            return $this->categoryService->buildHierarchy($raw);
+            return $this->categoryService->buildHierarchy($cursor);
         });
 
         return $this->successResponse($data, 'OK', 200, $this->cacheHeaders(300));
@@ -196,16 +197,28 @@ class BukuController extends Controller
             'judul' => 'required|string|max:255',
             'pengarang' => 'nullable|string|max:255',
             'penerbit' => 'nullable|string|max:255',
-            'tahun_terbit' => 'nullable|string|max:4',
+            'tahun_terbit' => 'nullable|integer|min:1000|max:2100',
             'isbn_issn' => 'nullable|string|max:255',
             'deskripsi_fisik' => 'nullable|string',
+            'deskripsi_abstrak' => 'nullable|string',
             'image' => 'nullable|string',
             'kategori_1' => 'nullable|string|max:255',
             'kategori_2' => 'nullable|string|max:255',
         ]);
 
-        $buku = BukuSlims::create($validated);
-        Cache::flush();
+        $kategoriTag = '';
+        if (!empty($validated['kategori_1'])) $kategoriTag .= '<' . trim($validated['kategori_1']) . '>';
+        if (!empty($validated['kategori_2'])) $kategoriTag .= '<' . trim($validated['kategori_2']) . '>';
+
+        $dataToInsert = array_merge($validated, [
+            'nama_file_cover' => $validated['image'] ?? null,
+            'subjek_kategori' => $kategoriTag ?: null,
+        ]);
+        unset($dataToInsert['image'], $dataToInsert['kategori_1'], $dataToInsert['kategori_2']);
+
+        $buku = BukuSlims::create($dataToInsert);
+
+        Cache::forget(self::CACHE_KEY_CATEGORIES);
 
         return $this->successResponse($buku, 'Buku berhasil ditambahkan', 201);
     }
@@ -221,16 +234,37 @@ class BukuController extends Controller
             'judul' => 'sometimes|required|string|max:255',
             'pengarang' => 'nullable|string|max:255',
             'penerbit' => 'nullable|string|max:255',
-            'tahun_terbit' => 'nullable|string|max:4',
+            'tahun_terbit' => 'nullable|integer|min:1000|max:2100',
             'isbn_issn' => 'nullable|string|max:255',
             'deskripsi_fisik' => 'nullable|string',
+            'deskripsi_abstrak' => 'nullable|string',
             'image' => 'nullable|string',
             'kategori_1' => 'nullable|string|max:255',
             'kategori_2' => 'nullable|string|max:255',
         ]);
 
-        $buku->update($validated);
-        Cache::flush();
+        $dataToUpdate = $validated;
+        
+        if (array_key_exists('image', $validated)) {
+            // FIX: Hapus file lama untuk mencegah Storage Leak
+            if (!empty($buku->nama_file_cover) && $buku->nama_file_cover !== $validated['image']) {
+                Storage::disk('public')->delete('images/docs/' . $buku->nama_file_cover);
+            }
+            $dataToUpdate['nama_file_cover'] = $validated['image'];
+            unset($dataToUpdate['image']);
+        }
+        
+        if (array_key_exists('kategori_1', $validated) || array_key_exists('kategori_2', $validated)) {
+            $kategoriTag = '';
+            if (!empty($validated['kategori_1'])) $kategoriTag .= '<' . trim($validated['kategori_1']) . '>';
+            if (!empty($validated['kategori_2'])) $kategoriTag .= '<' . trim($validated['kategori_2']) . '>';
+            $dataToUpdate['subjek_kategori'] = $kategoriTag ?: null;
+            unset($dataToUpdate['kategori_1'], $dataToUpdate['kategori_2']);
+        }
+
+        $buku->update($dataToUpdate);
+
+        Cache::forget(self::CACHE_KEY_CATEGORIES);
 
         return $this->successResponse($buku, 'Buku berhasil diperbarui');
     }
@@ -243,7 +277,12 @@ class BukuController extends Controller
         }
 
         $buku->delete();
-        Cache::flush();
+
+        if (!empty($buku->nama_file_cover)) {
+            Storage::disk('public')->delete('images/docs/' . $buku->nama_file_cover);
+        }
+
+        Cache::forget(self::CACHE_KEY_CATEGORIES);
 
         return $this->successResponse(null, 'Buku berhasil dihapus');
     }

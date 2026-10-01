@@ -116,9 +116,20 @@ class BukuSlims extends Model
      */
     public function scopeSearchText(Builder $query, string $search): Builder
     {
+        $cleanSearch = preg_replace('/[+\-><\(\)~*\"@]+/', ' ', $search);
+        $cleanSearch = trim($cleanSearch);
+
+        if (empty($cleanSearch)) {
+            return $query;
+        }
+
+        // EXPLODE spasi dan tambahkan wildcard per-kata ("buku* sejarah*")
+        $words = array_filter(explode(' ', $cleanSearch));
+        $booleanSearch = implode(' ', array_map(fn($w) => "+{$w}*", $words));
+
         return $query->whereRaw(
             'MATCH(buku_slims.judul, buku_slims.pengarang) AGAINST(? IN BOOLEAN MODE)',
-            ["{$search}*"]
+            [$booleanSearch]
         );
     }
 
