@@ -7,6 +7,14 @@ export interface Course {
   biaya: 'Gratis' | 'Biaya tertera';
 }
 
+export interface Career {
+  id: number;
+  nama_pekerjaan: string;
+  deskripsi: string;
+  jurusan: 'PPLG' | 'TJKT' | 'DKV' | 'BCF' | string;
+  link: string;
+}
+
 export interface Book {
   id: number;
   judul: string;

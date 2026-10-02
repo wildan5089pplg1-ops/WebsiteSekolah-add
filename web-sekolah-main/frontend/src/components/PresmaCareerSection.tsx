@@ -2,7 +2,15 @@
 
 import React, { useState, useEffect } from 'react';
 
-type TabType = 'dashboard' | 'carasa' | 'kelas';
+type TabType = 'dashboard' | 'carasa' | 'kelas' | 'karir';
+
+interface Career {
+  id: number;
+  nama_pekerjaan: string;
+  deskripsi: string;
+  jurusan: 'PPLG' | 'TJKT' | 'DKV' | 'BCF' | string;
+  link: string;
+}
 
 interface Course {
   id: number;
@@ -319,6 +327,8 @@ export default function PresmaCareerSection({ initialTab = 'dashboard' }: { init
 
   const [courses, setCourses] = useState<Course[]>([]);
   const [isLoadingCourses, setIsLoadingCourses] = useState(false);
+  const [careers, setCareers] = useState<Career[]>([]);
+  const [isLoadingCareers, setIsLoadingCareers] = useState(false);
 
   // Completed Test Results (Stored in localStorage)
   const [minatResult, setMinatResult] = useState<MinatResultData | null>(null);
@@ -330,6 +340,7 @@ export default function PresmaCareerSection({ initialTab = 'dashboard' }: { init
   const [isCareerQuizOpen, setIsCareerQuizOpen] = useState(false);
   const [isCareerResultOpen, setIsCareerResultOpen] = useState(false);
   const [selectedCourse, setSelectedCourse] = useState<Course | null>(null);
+  const [selectedCareer, setSelectedCareer] = useState<Career | null>(null);
 
   // Minat Quiz state
   const [minatIdx, setMinatIdx] = useState(0);
@@ -365,7 +376,23 @@ export default function PresmaCareerSection({ initialTab = 'dashboard' }: { init
       }
     };
 
+    const fetchCareers = async () => {
+      setIsLoadingCareers(true);
+      try {
+        const response = await fetch('http://127.0.0.1:8000/api/v1/karir');
+        const data = await response.json();
+        if (data.status === 'success' || data.success) {
+          setCareers(data.data);
+        }
+      } catch (err) {
+        console.error('Failed to fetch careers:', err);
+      } finally {
+        setIsLoadingCareers(false);
+      }
+    };
+
     fetchCourses();
+    fetchCareers();
     if (typeof window !== 'undefined') {
       try {
         const savedMinat = localStorage.getItem('presma_carasa_minat_result');
@@ -622,6 +649,22 @@ export default function PresmaCareerSection({ initialTab = 'dashboard' }: { init
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
                 </svg>
                 <span>Kelas &amp; Pelatihan</span>
+              </button>
+
+              {/* 4. Cari Karir Tab */}
+              <button
+                type="button"
+                onClick={() => handleTabChange('karir')}
+                className={`w-full flex items-center gap-3.5 px-4 py-3 rounded-xl font-bold text-sm transition-all duration-200 text-left ${
+                  activeTab === 'karir'
+                    ? 'bg-orange-500 text-white shadow-md shadow-orange-500/25'
+                    : 'text-slate-700 dark:text-slate-300 hover:bg-slate-300/60 dark:hover:bg-slate-700/60'
+                }`}
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                </svg>
+                <span>Cari Karir</span>
               </button>
             </nav>
           </div>
@@ -1209,7 +1252,7 @@ export default function PresmaCareerSection({ initialTab = 'dashboard' }: { init
                       className="bg-white dark:bg-slate-800/90 rounded-2xl p-4 sm:p-5 border border-slate-200 dark:border-slate-700/80 hover:border-orange-400 dark:hover:border-orange-500 transition-all flex flex-col md:flex-row items-start md:items-center justify-between gap-5 shadow-sm group"
                     >
                       {/* Left: Thumbnail & Main info */}
-                      <div className="flex items-start gap-4 flex-1">
+                      <div className="flex items-start gap-4 flex-1 min-w-0">
                         {/* Course Badge / Thumbnail */}
                         <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 flex flex-col items-center justify-center p-2 shrink-0 group-hover:scale-105 transition-transform overflow-hidden shadow-sm relative">
                           {course.category !== 'Karir' ? (
@@ -1229,7 +1272,7 @@ export default function PresmaCareerSection({ initialTab = 'dashboard' }: { init
                         </div>
 
                         {/* Title and details */}
-                        <div className="flex-1">
+                        <div className="flex-1 min-w-0">
                           <div className="flex flex-wrap items-center gap-2 mb-1">
                             <span className="text-[10px] font-black uppercase px-2 py-0.5 rounded bg-orange-100 text-orange-700 dark:bg-orange-950/60 dark:text-orange-300">
                               {course.category}
@@ -1243,9 +1286,11 @@ export default function PresmaCareerSection({ initialTab = 'dashboard' }: { init
                           <h3 className="text-sm sm:text-base font-bold text-slate-900 dark:text-white group-hover:text-orange-500 transition-colors leading-snug">
                             {course.title}
                           </h3>
-                          <p className="text-xs text-slate-600 dark:text-slate-400 line-clamp-2 mt-1 hidden sm:block">
-                            {course.desc}
-                          </p>
+                          <div 
+                            className="text-xs text-slate-600 dark:text-slate-400 mt-1 hidden sm:block leading-relaxed [&>p]:mb-1 [&>ul]:list-disc [&>ul]:pl-4" 
+                            style={{ display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}
+                            dangerouslySetInnerHTML={{ __html: course.desc }}
+                          />
                         </div>
                       </div>
 
@@ -1274,7 +1319,177 @@ export default function PresmaCareerSection({ initialTab = 'dashboard' }: { init
             </div>
           )}
 
+          {/* ========================================================= */}
+          {/* TAB 4: CARI KARIR */}
+          {/* ========================================================= */}
+          {activeTab === 'karir' && (
+            <div className="relative p-6 sm:p-8 flex flex-col gap-6 animate-fadeIn">
+              
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-slate-200 dark:border-slate-800">
+                <h2 className="text-2xl font-black text-orange-500 tracking-tight">
+                  Cari Karir
+                </h2>
+                
+                <div className="relative w-full sm:w-80">
+                  <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none">
+                    <svg className="h-4 w-4 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                    </svg>
+                  </div>
+                  <input
+                    type="text"
+                    placeholder="Ketik & tekan Enter..."
+                    value={searchInput}
+                    onChange={(e) => setSearchInput(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') {
+                        setSearchQuery(searchInput);
+                      }
+                    }}
+                    className="block w-full pl-10 pr-4 py-2 border border-slate-300 dark:border-slate-700 rounded-xl text-xs sm:text-sm bg-slate-100 dark:bg-slate-800 placeholder-slate-400 text-slate-900 dark:text-white focus:outline-none focus:bg-white dark:focus:bg-slate-900 focus:ring-2 focus:ring-orange-500 transition-all"
+                  />
+                  {searchInput && (
+                    <button
+                      onClick={() => {
+                        setSearchInput('');
+                        setSearchQuery('');
+                      }}
+                      className="absolute inset-y-0 right-0 pr-3 flex items-center text-xs text-slate-400 hover:text-slate-600"
+                    >
+                      ✕
+                    </button>
+                  )}
+                </div>
+              </div>
 
+              <div className="flex items-center gap-2 overflow-x-auto pb-1 no-scrollbar">
+                {['Semua', 'PPLG', 'TJKT', 'DKV', 'BCF'].map((cat) => (
+                  <button
+                    key={cat}
+                    onClick={() => setSelectedCategory(cat)}
+                    className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-colors shrink-0 flex items-center gap-2 ${
+                      selectedCategory === cat
+                        ? 'bg-orange-500 text-white shadow-sm'
+                        : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700'
+                    }`}
+                  >
+                    {cat !== 'Semua' && (
+                      <img 
+                        src={`/images/majors/${cat.toLowerCase()}.png`}
+                        alt={`Logo ${cat}`}
+                        className={`w-4 h-4 object-contain ${selectedCategory === cat ? 'brightness-0 invert' : ''}`}
+                      />
+                    )}
+                    <span>{cat}</span>
+                  </button>
+                ))}
+              </div>
+
+              <div className="space-y-4">
+                {isLoadingCareers ? (
+                  <div className="space-y-4 animate-pulse">
+                    {Array.from({ length: 4 }).map((_, idx) => (
+                      <div key={idx} className="bg-white dark:bg-slate-800/90 rounded-2xl p-4 sm:p-5 border border-slate-200 dark:border-slate-700/80 flex flex-col md:flex-row items-start md:items-center justify-between gap-5 shadow-sm">
+                        <div className="flex items-start gap-4 flex-1 w-full">
+                          <div className="flex-1 w-full">
+                            <div className="w-3/4 h-5 bg-slate-200 dark:bg-slate-700 rounded mb-2"></div>
+                            <div className="w-full h-3 bg-slate-200 dark:bg-slate-700 rounded mb-1 hidden sm:block"></div>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : careers.filter(c => (selectedCategory === 'Semua' || c.jurusan === selectedCategory) && (c.nama_pekerjaan.toLowerCase().includes(searchQuery.toLowerCase()) || c.deskripsi.toLowerCase().includes(searchQuery.toLowerCase()))).length === 0 ? (
+                  <div className="flex flex-col items-center justify-center text-center py-20 bg-gradient-to-b from-slate-50 to-white dark:from-slate-900/50 dark:to-slate-900 rounded-3xl border border-dashed border-slate-300 dark:border-slate-700 relative overflow-hidden group">
+                    <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-orange-100/50 dark:from-orange-500/10 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700"></div>
+                    
+                    <div className="w-24 h-24 mb-6 rounded-full bg-orange-100 dark:bg-orange-500/20 flex items-center justify-center relative z-10 transform group-hover:scale-110 group-hover:-rotate-3 transition-transform duration-500 shadow-inner">
+                      <svg className="w-12 h-12 text-orange-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                      </svg>
+                    </div>
+                    
+                    <h3 className="text-xl font-black text-slate-800 dark:text-white mb-2 relative z-10 tracking-tight">Oops! Lowongan Karir Belum Tersedia</h3>
+                    <p className="text-sm font-medium text-slate-500 dark:text-slate-400 mb-6 max-w-md relative z-10 leading-relaxed">
+                      Waduh, sepertinya tidak ada pekerjaan yang cocok dengan kata kunci <strong className="text-slate-700 dark:text-slate-200">"{searchQuery}"</strong> di kategori <strong className="text-slate-700 dark:text-slate-200">{selectedCategory}</strong>. Coba kata kunci lain yuk!
+                    </p>
+                    
+                    <button
+                      onClick={() => {
+                        setSearchInput('');
+                        setSearchQuery('');
+                        setSelectedCategory('Semua');
+                      }}
+                      className="relative z-10 px-6 py-3 rounded-xl bg-slate-900 dark:bg-white text-white dark:text-slate-900 text-sm font-bold hover:bg-orange-500 dark:hover:bg-orange-500 hover:text-white hover:-translate-y-1 transition-all duration-300 flex items-center gap-2 shadow-lg hover:shadow-orange-500/30"
+                    >
+                      <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg>
+                      Reset Filter Pencarian
+                    </button>
+                  </div>
+                ) : (
+                  careers.filter(c => (selectedCategory === 'Semua' || c.jurusan === selectedCategory) && (c.nama_pekerjaan.toLowerCase().includes(searchQuery.toLowerCase()) || c.deskripsi.toLowerCase().includes(searchQuery.toLowerCase()))).map((career) => (
+                    <div
+                      key={career.id}
+                      className="bg-white dark:bg-slate-800/90 rounded-2xl p-4 sm:p-5 border border-slate-200 dark:border-slate-700/80 hover:border-orange-400 dark:hover:border-orange-500 transition-all flex flex-col md:flex-row items-start md:items-center justify-between gap-5 shadow-sm group"
+                    >
+                      <div className="flex items-start gap-4 flex-1 min-w-0">
+                        <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 flex flex-col items-center justify-center p-2 shrink-0 group-hover:scale-105 transition-transform overflow-hidden shadow-sm relative">
+                          <img 
+                            src={`/images/majors/${(career.jurusan || 'PPLG').toLowerCase()}.png`}
+                            alt={`Logo ${career.jurusan}`}
+                            className="w-8 h-8 sm:w-10 sm:h-10 object-contain mb-1 drop-shadow-sm"
+                            onError={(e) => {
+                              e.currentTarget.style.display = 'none';
+                            }}
+                          />
+                          <span className="text-[9px] font-semibold text-slate-500 dark:text-slate-400 text-center leading-none">
+                            {career.jurusan}
+                          </span>
+                        </div>
+
+                        <div className="flex-1 min-w-0">
+                          <div className="flex flex-wrap items-center gap-2 mb-1">
+                            <span className="text-[10px] font-black uppercase px-2 py-0.5 rounded bg-orange-100 text-orange-700 dark:bg-orange-950/60 dark:text-orange-300">
+                              {career.jurusan}
+                            </span>
+                          </div>
+                          <h3 className="text-sm sm:text-base font-bold text-slate-900 dark:text-white group-hover:text-orange-500 transition-colors leading-snug">
+                            {career.nama_pekerjaan}
+                          </h3>
+                          <div 
+                            className="text-xs text-slate-600 dark:text-slate-400 mt-1 hidden sm:block leading-relaxed [&>p]:mb-1 [&>ul]:list-disc [&>ul]:pl-4" 
+                            style={{ display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}
+                            dangerouslySetInnerHTML={{ __html: career.deskripsi }}
+                          />
+                        </div>
+                      </div>
+
+                      <div className="flex flex-wrap items-center gap-2 w-full md:w-auto justify-end pt-2 md:pt-0 border-t md:border-t-0 border-slate-100 dark:border-slate-700/60">
+                        <button
+                          type="button"
+                          onClick={() => setSelectedCareer(career)}
+                          className="px-4 py-2 bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 text-slate-800 dark:text-slate-200 text-xs font-bold rounded-xl transition-colors shrink-0"
+                        >
+                          Detail
+                        </button>
+                        {career.link && (
+                          <a
+                            href={career.link}
+                            target="_blank"
+                            rel="noreferrer"
+                            className="px-5 py-2 bg-orange-500 hover:bg-orange-600 text-white text-xs font-bold rounded-xl shadow-md shadow-orange-500/20 transition-all hover:scale-[1.02] shrink-0"
+                          >
+                            Lamar
+                          </a>
+                        )}
+                      </div>
+                    </div>
+                  ))
+                )}
+              </div>
+
+            </div>
+          )}
 
         </div>
       </div>
@@ -1283,7 +1498,7 @@ export default function PresmaCareerSection({ initialTab = 'dashboard' }: { init
       {/* MODAL 1: KUESIONER TES MINAT & BAKAT (12 Questions) */}
       {/* ========================================================= */}
       {isMinatQuizOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fadeIn">
+        <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fadeIn">
           <div className="bg-white dark:bg-slate-900 rounded-3xl max-w-xl w-full p-6 sm:p-8 shadow-2xl border border-slate-200 dark:border-slate-800 relative max-h-[90vh] overflow-y-auto">
             
             {/* Close Button */}
@@ -1384,7 +1599,7 @@ export default function PresmaCareerSection({ initialTab = 'dashboard' }: { init
       {/* MODAL 2: HASIL CARASA MINAT & BAKAT (Matching User Format) */}
       {/* ========================================================= */}
       {isMinatResultOpen && minatResult && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fadeIn">
+        <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fadeIn">
           <div className="bg-white dark:bg-slate-900 rounded-3xl max-w-2xl w-full p-6 sm:p-8 shadow-2xl border border-slate-200 dark:border-slate-800 relative max-h-[90vh] overflow-y-auto">
             
             {/* Close Button */}
@@ -1513,7 +1728,7 @@ export default function PresmaCareerSection({ initialTab = 'dashboard' }: { init
       {/* MODAL 3: KUESIONER TES REKOMENDASI KARIR (Distinct 8 Questions) */}
       {/* ========================================================= */}
       {isCareerQuizOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fadeIn">
+        <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fadeIn">
           <div className="bg-white dark:bg-slate-900 rounded-3xl max-w-xl w-full p-6 sm:p-8 shadow-2xl border border-slate-200 dark:border-slate-800 relative max-h-[90vh] overflow-y-auto">
             
             {/* Close Button */}
@@ -1614,7 +1829,7 @@ export default function PresmaCareerSection({ initialTab = 'dashboard' }: { init
       {/* MODAL 4: HASIL TES REKOMENDASI KARIR & INDUSTRI */}
       {/* ========================================================= */}
       {isCareerResultOpen && careerResult && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fadeIn">
+        <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fadeIn">
           <div className="bg-white dark:bg-slate-900 rounded-3xl max-w-2xl w-full p-6 sm:p-8 shadow-2xl border border-slate-200 dark:border-slate-800 relative max-h-[90vh] overflow-y-auto">
             
             {/* Close Button */}
@@ -1742,7 +1957,7 @@ export default function PresmaCareerSection({ initialTab = 'dashboard' }: { init
       {/* MODAL 5: DETAIL KELAS & DAFTAR PELATIHAN */}
       {/* ========================================================= */}
       {selectedCourse && (
-        <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 sm:p-6 bg-black/60 backdrop-blur-sm animate-fadeIn">
+        <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 sm:p-6 bg-black/60 backdrop-blur-sm animate-fadeIn">
           <div className="bg-white dark:bg-slate-900 rounded-3xl max-w-4xl w-full p-6 sm:p-10 shadow-2xl border border-slate-200 dark:border-slate-800 relative max-h-[90vh] overflow-hidden flex flex-col">
             
             <button
@@ -1775,9 +1990,10 @@ export default function PresmaCareerSection({ initialTab = 'dashboard' }: { init
                   </svg>
                   Informasi &amp; Deskripsi
                 </h4>
-                <p className="text-[15px] text-slate-600 dark:text-slate-300 leading-relaxed text-justify whitespace-pre-line">
-                  {selectedCourse.desc}
-                </p>
+                <div 
+                  className="text-[15px] text-slate-600 dark:text-slate-300 leading-relaxed text-left break-words w-full overflow-hidden [&_*]:break-words [&_*]:whitespace-normal [&>p]:mb-4 [&>ul]:list-disc [&>ul]:pl-5 [&>ul]:mb-4 [&>ol]:list-decimal [&>ol]:pl-5 [&>ol]:mb-4 [&_strong]:font-bold [&_em]:italic"
+                  dangerouslySetInnerHTML={{ __html: selectedCourse.desc }}
+                />
               </div>
             </div>
 
@@ -1799,6 +2015,62 @@ export default function PresmaCareerSection({ initialTab = 'dashboard' }: { init
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 5l7 7m0 0l-7 7m7-7H3" />
                 </svg>
               </button>
+            </div>
+
+          </div>
+        </div>
+      )}
+
+      {selectedCareer && (
+        <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 sm:p-6 bg-black/60 backdrop-blur-sm animate-fadeIn">
+          <div className="bg-white dark:bg-slate-900 rounded-3xl max-w-4xl w-full p-6 sm:p-10 shadow-2xl border border-slate-200 dark:border-slate-800 relative max-h-[90vh] overflow-hidden flex flex-col">
+            
+            <button
+              onClick={() => setSelectedCareer(null)}
+              className="absolute top-5 right-5 w-10 h-10 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-500 hover:text-slate-800 dark:hover:text-white flex items-center justify-center text-lg font-bold transition-colors z-10"
+            >
+              ✕
+            </button>
+
+            <div className="flex-1 overflow-y-auto pr-2 custom-scrollbar pb-6">
+              <div className="flex flex-wrap items-center gap-3 mb-4 mt-2">
+                <span className="px-3 py-1 rounded-lg bg-orange-100 text-orange-700 dark:bg-orange-950/60 dark:text-orange-300 text-xs font-black uppercase">
+                  {selectedCareer.jurusan}
+                </span>
+              </div>
+
+              <h3 className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-white leading-snug mb-6 pr-8">
+                {selectedCareer.nama_pekerjaan}
+              </h3>
+
+              <div className="bg-slate-50 dark:bg-slate-800/50 p-6 rounded-2xl border border-slate-100 dark:border-slate-800 mt-4">
+                <h4 className="text-base font-bold text-slate-800 dark:text-slate-200 mb-3 flex items-center gap-2">
+                  <svg className="w-5 h-5 text-orange-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                  Deskripsi Pekerjaan
+                </h4>
+                <div 
+                  className="text-[15px] text-slate-600 dark:text-slate-300 leading-relaxed text-left break-words w-full overflow-hidden [&_*]:break-words [&_*]:whitespace-normal [&>p]:mb-4 [&>ul]:list-disc [&>ul]:pl-5 [&>ul]:mb-4 [&>ol]:list-decimal [&>ol]:pl-5 [&>ol]:mb-4 [&_strong]:font-bold [&_em]:italic"
+                  dangerouslySetInnerHTML={{ __html: selectedCareer.deskripsi }}
+                />
+              </div>
+            </div>
+
+            <div className="mt-4 pt-5 border-t border-slate-200 dark:border-slate-800 flex flex-col sm:flex-row items-center justify-end gap-4 shrink-0 bg-white dark:bg-slate-900 z-10">
+              {selectedCareer.link && (
+                <button
+                  onClick={() => {
+                    window.open(selectedCareer.link, '_blank', 'noopener,noreferrer');
+                  }}
+                  className="w-full sm:w-auto px-8 py-3 bg-orange-500 hover:bg-orange-600 text-white font-bold text-sm rounded-xl shadow-lg shadow-orange-500/20 transition-all hover:scale-105 flex items-center justify-center gap-2"
+                >
+                  <span>Lamar Pekerjaan Ini</span>
+                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 5l7 7m0 0l-7 7m7-7H3" />
+                  </svg>
+                </button>
+              )}
             </div>
 
           </div>

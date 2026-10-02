@@ -8,14 +8,16 @@ use App\Http\Controllers\Api\ContactController;
 use App\Http\Controllers\Api\PpdbController;
 use App\Http\Controllers\Api\BukuController;
 use App\Http\Controllers\Api\KelasPelatihanController;
+use App\Http\Controllers\Api\KarirController;
 use App\Http\Controllers\Api\AuthController;
+use App\Http\Controllers\Api\DashboardController;
 
 Route::prefix('v1')->group(function () {
 
     // =====================================================================
     // Public Routes (Tanpa Autentikasi)
     // =====================================================================
-    Route::post('/login', [AuthController::class, 'login']);
+    Route::middleware('throttle:5,1')->post('/login', [AuthController::class, 'login']);
     Route::post('/logout', [AuthController::class, 'logout']);
 
     Route::get('/health', function () {
@@ -62,15 +64,30 @@ Route::prefix('v1')->group(function () {
     Route::get('/buku/{id}', [BukuController::class, 'show']);
 
     Route::get('/kelas-pelatihan', [KelasPelatihanController::class, 'index']);
+    Route::get('/karir', [KarirController::class, 'index']);
 
     // =====================================================================
     // Protected Admin Routes (Token via 'admin.token' Middleware)
     // =====================================================================
+    // =====================================================================
     Route::middleware('admin.token')->group(function () {
+        // Dashboard Stats
+        Route::get('/dashboard/stats', [DashboardController::class, 'stats']);
+
+        // Berita
+        Route::post('/news', [\App\Http\Controllers\Api\NewsController::class, 'store']);
+        Route::put('/news/{id}', [\App\Http\Controllers\Api\NewsController::class, 'update']);
+        Route::delete('/news/{id}', [\App\Http\Controllers\Api\NewsController::class, 'destroy']);
+
         // Presma Career (Kelas)
         Route::post('/kelas-pelatihan', [KelasPelatihanController::class, 'store']);
         Route::put('/kelas-pelatihan/{id}', [KelasPelatihanController::class, 'update']);
         Route::delete('/kelas-pelatihan/{id}', [KelasPelatihanController::class, 'destroy']);
+
+        // Presma Career (Karir)
+        Route::post('/karir', [KarirController::class, 'store']);
+        Route::put('/karir/{id}', [KarirController::class, 'update']);
+        Route::delete('/karir/{id}', [KarirController::class, 'destroy']);
 
         // Presma Lib (Buku)
         Route::post('/buku', [BukuController::class, 'store']);
@@ -83,6 +100,8 @@ Route::prefix('v1')->group(function () {
 
         // PPDB
         Route::get('/ppdb', [PpdbController::class, 'index']);
+        Route::put('/ppdb/{id}', [PpdbController::class, 'update']);
+        Route::delete('/ppdb/{id}', [PpdbController::class, 'destroy']);
     });
 
 });
