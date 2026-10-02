@@ -3,7 +3,6 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
-use App\Models\News;
 use Illuminate\Http\Request;
 use App\Http\Traits\ApiResponseTrait;
 
@@ -31,7 +30,6 @@ class NewsController extends Controller
                     'author' => $item->author ? $item->author->name : 'Admin',
                 ];
             });
-
         return response()->json([
             'success' => true,
             'data' => $news

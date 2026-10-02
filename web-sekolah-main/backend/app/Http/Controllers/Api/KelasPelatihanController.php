@@ -6,14 +6,21 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\KelasPelatihan;
 use App\Http\Traits\ApiResponseTrait;
-use Illuminate\Support\Facades\Cache;
+use App\Services\KelasPelatihanService;
 
 class KelasPelatihanController extends Controller
 {
     use ApiResponseTrait;
 
+    protected $kelasService;
+
+    public function __construct(KelasPelatihanService $kelasService)
+    {
+        $this->kelasService = $kelasService;
+    }
+
     /**
-     * GET: Ambil daftar kelas pelatihan (dengan cache & optimasi query)
+     * GET: Ambil daftar kelas pelatihan
      */
     public function index(Request $request)
     {
@@ -27,28 +34,7 @@ class KelasPelatihanController extends Controller
         $page    = (int) $request->input('page', 1);
         $perPage = (int) $request->input('per_page', 50);
 
-        // Pisahkan logika pencarian dari Cache untuk menghindari Cache DoS (OOM)
-        if (!empty($search)) {
-            $query = KelasPelatihan::select('id', 'judul', 'deskripsi', 'tipe', 'link', 'biaya');
-            
-            if ($tipe !== 'Semua') {
-                $query->where('tipe', $tipe);
-            }
-            
-            $query->whereFullText(['judul', 'deskripsi'], $search);
-            $kelas = $query->orderBy('id', 'asc')->paginate($perPage);
-        } else {
-            $version = Cache::get('kelas_pelatihan_version', 1);
-            $cacheKey = "kelas_pel_v{$version}_{$tipe}_page_{$page}_limit_{$perPage}";
-
-            $kelas = Cache::remember($cacheKey, now()->addMinutes(60), function () use ($tipe, $perPage) {
-                $query = KelasPelatihan::select('id', 'judul', 'deskripsi', 'tipe', 'link', 'biaya');
-                if ($tipe !== 'Semua') {
-                    $query->where('tipe', $tipe);
-                }
-                return $query->orderBy('id', 'asc')->paginate($perPage);
-            });
-        }
+        $kelas = $this->kelasService->getKelasList($tipe, $search, $page, $perPage);
 
         return response()->json([
             'success' => true,
@@ -76,8 +62,7 @@ class KelasPelatihanController extends Controller
             'biaya'    => 'required|in:Gratis,Biaya tertera',
         ]);
 
-        $kelas = KelasPelatihan::create($validated);
-        $this->clearKelasCache();
+        $kelas = $this->kelasService->createKelas($validated);
 
         return $this->successResponse($kelas, 'Kelas pelatihan berhasil ditambahkan', 201);
     }
@@ -100,8 +85,7 @@ class KelasPelatihanController extends Controller
             'biaya'    => 'sometimes|required|in:Gratis,Biaya tertera',
         ]);
 
-        $kelas->update($validated);
-        $this->clearKelasCache();
+        $this->kelasService->updateKelas($kelas, $validated);
 
         return $this->successResponse($kelas, 'Kelas pelatihan berhasil diperbarui');
     }
@@ -116,23 +100,8 @@ class KelasPelatihanController extends Controller
             return response()->json(['success' => false, 'message' => 'Data tidak ditemukan'], 404);
         }
 
-        $kelas->delete();
-        $this->clearKelasCache();
+        $this->kelasService->deleteKelas($kelas);
 
         return $this->successResponse(null, 'Kelas pelatihan berhasil dihapus');
-    }
-
-    /**
-     * Helper: Hapus/invalidasi hanya cache yang berkaitan dengan kelas pelatihan
-     * menggunakan teknik Cache Versioning tanpa mengganggu cache global (Cache::flush)
-     */
-    private function clearKelasCache(): void
-    {
-        // Jika belum ada di cache, kita set ke 2 karena default get adalah 1
-        if (!Cache::has('kelas_pelatihan_version')) {
-            Cache::put('kelas_pelatihan_version', 2);
-        } else {
-            Cache::increment('kelas_pelatihan_version');
-        }
     }
 }
