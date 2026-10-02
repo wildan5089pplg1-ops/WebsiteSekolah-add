@@ -3,509 +3,405 @@
 import React, { useState } from 'react';
 import Link from 'next/link';
 
-// Verified vocational laboratories and studios data
-const vocationalFacilities = [
+// SECTION B — Verified Vocational Laboratories & Studios Data
+interface VocationalFacility {
+  id: string;
+  tag: string;
+  title: string;
+  desc: string;
+  image: string;
+}
+
+const VOCATIONAL_FACILITIES: VocationalFacility[] = [
   {
     id: 'lab-pplg',
-    major: 'PPLG • SOFTWARE & GAME DEV',
-    title: 'Laboratorium Rekayasa Perangkat Lunak & Game',
-    desc: 'Workstation PC berkinerja komputasi tinggi dengan koneksi fiber optik gigabit. Dikonfigurasi untuk pengembangan fullstack web, aplikasi mobile, cloud computing, database engineering, serta logika dan grafis engine game standar studio profesional.',
-    image: '/virtual-tour/panoramas/lab-pplg.jpg',
-    specs: ['Core i7/i9 Workstations', 'Dual-Screen Ergonomic Setup', 'Local Server & Cloud CI/CD', 'Full Gigabit LAN'],
-    tourId: 'lab-pplg'
+    tag: 'PPLG • Software & Game Dev',
+    title: 'Laboratorium Rekayasa Perangkat Lunak & Gim',
+    desc: 'Workstation komputasi performa tinggi untuk pemrograman web, mobile apps, database arsitektur modern, dan game engine standar industri profesional.',
+    image: '/images/hero-pplg.jpg',
   },
   {
     id: 'lab-tjkt',
-    major: 'TJKT • MIKROTIK ACADEMY',
-    title: 'Laboratorium Jaringan Komputer & Cyber Security',
-    desc: 'Pusat pelatihan infrastruktur telekomunikasi dan keamanan siber bersertifikasi resmi MikroTik Academy. Dilengkapi rack server enterprise, switch manageable, routerboard industri, dan perangkat optical splicing presisi.',
+    tag: 'TJKT • MikroTik Academy',
+    title: 'Laboratorium Jaringan Komputer & Keamanan Siber',
+    desc: 'Pusat pelatihan infrastruktur jaringan, enterprise server rack, dan fiber optic splicing bersertifikasi resmi MikroTik Academy.',
     image: '/images/hero-tjkt.jpg',
-    specs: ['MikroTik Certified Lab', 'Enterprise Server Racks', 'Fiber Optic Fusion Splicer', 'Cisco & IoT Sandbox'],
-    tourId: 'lorong'
-  },
-  {
-    id: 'lab-dkv',
-    major: 'DKV • CREATIVE & ANIMATION',
-    title: 'Studio Desain Komunikasi Visual & Animasi',
-    desc: 'Ruang kreasi grafis modern dengan pen tablet display beresolusi tinggi, display monitor terkalibrasi warna sRGB/DCI-P3 akurat, serta lighting studio profesional untuk ilustrasi, periklanan kreatif, dan motion graphics.',
-    image: '/virtual-tour/panoramas/lab-dkv.jpeg',
-    specs: ['Digital Pen Tablet Display', 'Color-Calibrated IPS Screens', 'Professional Studio Lighting', 'Render Station Workspaces'],
-    tourId: 'lab-dkv'
   },
   {
     id: 'studio-bcf',
-    major: 'BCF • BROADCASTING & CINEMA',
+    tag: 'BCF • Broadcasting & Cinema',
     title: 'Studio Broadcasting & Produksi Multimedia',
-    desc: 'Studio penyiaran dan produksi film berstandar pertelevisian profesional. Dilengkapi acoustic treatment soundproof, switcher multi-kamera live production, prompter, mikrofon audio broadcast, dan bilik dubbing kedap suara.',
+    desc: 'Studio penyiaran standar industri pertelevisian dengan sistem multi-kamera live production, ruang kedap suara akustik, dan bilik rekaman audio.',
     image: '/images/hero-bcf.jpg',
-    specs: ['Soundproof Acoustic Studio', 'Multi-Cam Live Switcher', 'Podcast & Voice-Over Booth', 'Chroma Key Green Screen'],
-    tourId: 'aula-mora'
-  }
+  },
+  {
+    id: 'studio-dkv',
+    tag: 'DKV • Creative & Animation',
+    title: 'Studio Desain Komunikasi Visual & Animasi',
+    desc: 'Ruang kreasi grafis dengan pen tablet display digital, layar terkalibrasi warna sRGB akurat, dan studio lighting fotografi.',
+    image: '/images/hero-dkv.png',
+  },
 ];
 
-// Verified general / penunjang facilities
-const generalFacilities = [
-  {
-    id: 'aula-mora',
-    category: 'Akademik & Literasi',
-    tag: 'MULTIFUNCTION HALL',
-    title: 'Auditorium & Aula Mora',
-    desc: 'Gedung serbaguna berkapasitas lebih dari 1.000 peserta dengan sistem audio visual modern, panggung pertunjukan akustik, dan pencahayaan pementasan untuk wisuda, seminar nasional, serta perhelatan akbar sekolah.',
-    image: '/virtual-tour/panoramas/aula-mora.jpeg',
-    capacity: '1.000+ Orang',
-    badge: 'Auditorium Utama'
-  },
+// SECTION C — Verified Penunjang Facilities Data
+interface PenunjangFacility {
+  id: string;
+  tag: string;
+  title: string;
+  desc: string;
+  image: string;
+}
+
+const AKADEMIK_FACILITIES: PenunjangFacility[] = [
   {
     id: 'perpustakaan',
-    category: 'Akademik & Literasi',
-    tag: 'DIGITAL LIBRARY',
+    tag: 'Literasi Digital',
     title: 'Perpustakaan Presma Digital',
-    desc: 'Pusat literasi terpadu memadukan ribuan koleksi buku fisik dan terminal komputer e-library. Menyediakan akses ke jurnal ilmiah, ruang baca hening ber-AC, dan area riset kolaboratif yang kondusif.',
+    desc: 'Pusat literasi terpadu memadukan ribuan koleksi buku fisik dan terminal e-library dalam ruang baca ber-AC yang tenang dan kondusif.',
     image: '/virtual-tour/panoramas/perpustakaan.jpeg',
-    capacity: 'Koleksi Digital & Fisik',
-    badge: 'E-Library Hub'
   },
   {
-    id: 'smart-class',
-    category: 'Akademik & Literasi',
-    tag: 'SMART CLASSROOM',
-    title: 'Ruang Kelas Bilingual & Interaktif',
-    desc: 'Ruang pembelajaran berpendingin udara (full AC) yang dirancang ergonomis dengan proyektor multimedia, pencahayaan alami optimal, dan tata letak modular untuk metode belajar kolaboratif modern.',
+    id: 'kelas-interaktif',
+    tag: 'Ruang Kelas',
+    title: 'Ruang Kelas Interaktif Modern',
+    desc: 'Ruang pembelajaran full AC ergonomis dengan proyektor multimedia interaktif dan tata ruang modular yang mendukung diskusi kolaboratif.',
     image: '/virtual-tour/panoramas/kelas-bilingual.jpeg',
-    capacity: '32 Siswa / Kelas',
-    badge: 'Full AC & Proyektor'
   },
   {
-    id: 'lapangan',
-    category: 'Komunal & Olahraga',
-    tag: 'SPORTS ARENA',
-    title: 'Lapangan Olahraga Multiguna',
-    desc: 'Sarana olahraga outdoor luas berstandar kompetisi untuk futsal, bola basket, bulutangkis, dan bola voli. Dilengkapi tribun penonton dan pencahayaan malam untuk pengembangan bakat atletik siswa.',
-    image: '/virtual-tour/panoramas/lapangan.jpeg',
-    capacity: 'Futsal • Basket • Voli',
-    badge: 'Standar Turnamen'
-  },
-  {
-    id: 'kantin',
-    category: 'Komunal & Olahraga',
-    tag: 'HEALTHY CANTEEN',
-    title: 'Kantin Sehat & Ruang Komunal',
-    desc: 'Pusat kuliner sekolah yang higienis, bersih, dan nyaman. Menyajikan hidangan bergizi dengan pengawasan standar sanitasi, terintegrasi dengan area duduk terbuka hijau yang asri dan sejuk.',
-    image: '/virtual-tour/panoramas/kantin.jpeg',
-    capacity: 'Higienis & Sehat',
-    badge: 'Area Terbuka Hijau'
-  },
-  {
-    id: 'mushola',
-    category: 'Komunal & Olahraga',
-    tag: 'WORSHIP CENTER',
-    title: 'Mushola As-Salam',
-    desc: 'Fasilitas ibadah representatif yang bersih, sejuk, dan tertata rapi. Dilengkapi area wudhu higienis terpisah putra-putri untuk membina karakter spiritual dan kenyamanan ibadah berjamaah harian.',
-    image: '/virtual-tour/panoramas/mushola.jpeg',
-    capacity: '200+ Jamaah',
-    badge: 'Spiritual Center'
-  },
-  {
-    id: 'ppdb',
-    category: 'Akademik & Literasi',
-    tag: 'STUDENT CENTER',
-    title: 'Ruang Layanan PPDB & Informasi',
-    desc: 'Pusat informasi dan konsultasi pendaftaran siswa baru yang ramah dan representatif. Menyediakan ruang tunggu nyaman ber-AC, pusat bantuan digital, serta layanan bimbingan konseling akademik.',
+    id: 'layanan-ppdb',
+    tag: 'Pusat Layanan',
+    title: 'Ruang Layanan PPDB & Konseling',
+    desc: 'Pusat informasi pendaftaran siswa baru yang representatif serta ruang konsultasi bimbingan akademik yang nyaman.',
     image: '/virtual-tour/panoramas/ppdb.jpeg',
-    capacity: 'Layanan Terpadu',
-    badge: 'Pusat Layanan'
   },
   {
     id: 'ruang-rapat',
-    category: 'Akademik & Literasi',
-    tag: 'EXECUTIVE SUITE',
+    tag: 'Ruang Rapat',
     title: 'Executive Conference Room',
-    desc: 'Ruang pertemuan manajemen sekolah dan kemitraan industri yang representatif. Dilengkapi perangkat video conference canggih, proyektor nirkabel, dan meja bundar kolaboratif.',
+    desc: 'Ruang pertemuan representatif untuk koordinasi manajemen sekolah, rapat guru, dan diskusi kemitraan industri.',
     image: '/virtual-tour/panoramas/ruang-rapat.jpeg',
-    capacity: '30 Eksekutif',
-    badge: 'Meeting Room'
-  }
+  },
 ];
 
-// MANDATORY PRESERVED DATA: Daftar Bintang Prestasi (Original student data and university names)
-const alumniData = [
+const UMUM_FACILITIES: PenunjangFacility[] = [
+  {
+    id: 'aula-mora',
+    tag: 'Aula Serbaguna',
+    title: 'Auditorium & Aula Mora',
+    desc: 'Gedung pertemuan serbaguna berkapasitas lebih dari 1.000 peserta dengan tata suara modern dan panggung pementasan agenda akbar.',
+    image: '/virtual-tour/panoramas/aula-mora.jpeg',
+  },
+  {
+    id: 'lapangan',
+    tag: 'Sarana Olahraga',
+    title: 'Lapangan Olahraga Multiguna',
+    desc: 'Sarana olahraga outdoor luas untuk futsal, bola basket, dan bola voli serta kegiatan upacara dan apel siswa.',
+    image: '/virtual-tour/panoramas/lapangan.jpeg',
+  },
+  {
+    id: 'mushola',
+    tag: 'Sarana Ibadah',
+    title: 'Mushola As-Salam',
+    desc: 'Fasilitas ibadah representatif yang bersih dan sejuk dengan tempat wudhu terpisah untuk kenyamanan ibadah berjamaah harian.',
+    image: '/virtual-tour/panoramas/mushola.jpeg',
+  },
+  {
+    id: 'kantin',
+    tag: 'Kantin Sehat',
+    title: 'Kantin Sehat & Ruang Terbuka',
+    desc: 'Sentra kuliner sekolah yang higienis dengan area makan terbuka hijau yang asri, menyajikan menu makanan sehat bergizi.',
+    image: '/virtual-tour/panoramas/kantin.jpeg',
+  },
+];
+
+// SECTION E — Mandatory Preserved Student Records
+const ALUMNI_DATA = [
   {
     name: 'Haikal Idris',
     major: 'Teknik Informatika',
     ptn: 'Politeknik Negeri Jember',
-    avatar: 'https://ui-avatars.com/api/?name=Haikal+Idris&background=f97316&color=fff&size=150'
+    avatar: 'https://ui-avatars.com/api/?name=Haikal+Idris&background=f97316&color=fff&size=150',
   },
   {
     name: 'Fariz Novalino',
     major: 'Teknologi Rekayasa Multimedia',
     ptn: 'Politeknik Negeri Media Kreatif',
-    avatar: 'https://ui-avatars.com/api/?name=Fariz+Novalino&background=f97316&color=fff&size=150'
+    avatar: 'https://ui-avatars.com/api/?name=Fariz+Novalino&background=f97316&color=fff&size=150',
   },
   {
     name: 'Kholifatulhusna Fitriana',
     major: 'Desain Grafis',
     ptn: 'Politeknik Negeri Media Kreatif',
-    avatar: 'https://ui-avatars.com/api/?name=Kholifatulhusna+Fitriana&background=f97316&color=fff&size=150'
+    avatar: 'https://ui-avatars.com/api/?name=Kholifatulhusna+Fitriana&background=f97316&color=fff&size=150',
   },
   {
     name: 'Muhammad Davi Abdullah',
     major: 'Teknologi Rekayasa Perangkat Lunak',
     ptn: 'Politeknik Negeri Cilacap',
-    avatar: 'https://ui-avatars.com/api/?name=Muhammad+Davi&background=f97316&color=fff&size=150'
+    avatar: 'https://ui-avatars.com/api/?name=Muhammad+Davi&background=f97316&color=fff&size=150',
   },
   {
     name: 'Ade Rayhan',
     major: 'Teknik Informatika',
     ptn: 'Universitas Khairun',
-    avatar: 'https://ui-avatars.com/api/?name=Ade+Rayhan&background=f97316&color=fff&size=150'
-  }
+    avatar: 'https://ui-avatars.com/api/?name=Ade+Rayhan&background=f97316&color=fff&size=150',
+  },
 ];
 
 export default function FasilitasPage() {
-  const [activeCategory, setActiveCategory] = useState<string>('Semua');
-  const [selectedPhoto, setSelectedPhoto] = useState<{ title: string; image: string; desc: string; tag: string } | null>(null);
+  const [penunjangTab, setPenunjangTab] = useState<'akademik' | 'umum'>('akademik');
+  const [selectedPhoto, setSelectedPhoto] = useState<{
+    title: string;
+    image: string;
+    desc: string;
+    tag: string;
+  } | null>(null);
 
-  const categories = ['Semua', 'Akademik & Literasi', 'Komunal & Olahraga'];
+  const activePenunjangList = penunjangTab === 'akademik' ? AKADEMIK_FACILITIES : UMUM_FACILITIES;
+  const featuredPenunjang = activePenunjangList[0];
+  const supportingPenunjang = activePenunjangList.slice(1);
 
-  const filteredFacilities = activeCategory === 'Semua'
-    ? generalFacilities
-    : generalFacilities.filter(item => item.category === activeCategory);
+  const featuredVocational = VOCATIONAL_FACILITIES[0];
+  const supportingVocational = VOCATIONAL_FACILITIES.slice(1);
 
   return (
-    <div className="min-h-screen bg-white dark:bg-slate-950 text-slate-800 dark:text-slate-100 flex flex-col transition-colors duration-300 relative overflow-x-hidden">
-      
-      {/* Inline styles for Marquee and Editorial Typography */}
-      <style jsx>{`
-        @keyframes marquee {
-          0% { transform: translateX(0%); }
-          100% { transform: translateX(-50%); }
-        }
-        .animate-marquee-slow {
-          display: flex;
-          width: max-content;
-          animation: marquee 30s linear infinite;
-        }
-        .animate-marquee-slow:hover {
-          animation-play-state: paused;
-        }
-        .text-mask-hero {
-          font-weight: 900;
-          line-height: 0.92;
-          letter-spacing: -0.04em;
-          text-transform: uppercase;
-        }
-      `}</style>
+    <div className="min-h-screen bg-white text-slate-900 flex flex-col selection:bg-orange-500 selection:text-white">
 
       {/* =========================================================================
-          1. HERO SECTION: Strong editorial hero with genuine school photograph
+          SECTION A — HERO
+          Editorial two-column hero with authentic school photograph & compact height
          ========================================================================= */}
-      <section className="pt-28 pb-16 md:pt-36 md:pb-24 px-4 sm:px-6 lg:px-8 relative overflow-hidden bg-gradient-to-b from-orange-50/50 via-white to-white dark:from-slate-900 dark:via-slate-950 dark:to-slate-950 border-b border-slate-100 dark:border-slate-800/60">
-        
-        {/* Subtle Ghost Outline Background Text (Inspired by reference page) */}
-        <div 
-          aria-hidden="true" 
-          className="absolute top-12 left-1/2 -translate-x-1/2 select-none pointer-events-none font-black text-6xl sm:text-8xl md:text-9xl lg:text-[13rem] tracking-widest text-orange-600/[0.03] dark:text-orange-500/[0.04] uppercase whitespace-nowrap z-0"
-        >
-          FACILITIES
-        </div>
+      <section className="pt-28 pb-12 md:pt-32 md:pb-16 px-4 sm:px-6 lg:px-8 bg-gradient-to-b from-slate-50/80 via-white to-white border-b border-slate-100">
+        <div className="max-w-7xl mx-auto">
 
-        <div className="max-w-7xl mx-auto relative z-10">
-          
-          {/* Category Pill with Pulsing Dot */}
-          <div className="flex flex-col items-start gap-4 mb-6">
-            <div className="inline-flex items-center gap-2.5 px-4 py-2 rounded-full bg-orange-100/80 dark:bg-orange-950/60 border border-orange-200 dark:border-orange-500/30 backdrop-blur-sm">
-              <span className="relative flex h-2.5 w-2.5">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-orange-400 opacity-75"></span>
-                <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-orange-600 dark:bg-orange-500"></span>
-              </span>
-              <span className="text-[10px] sm:text-xs font-black uppercase tracking-[0.2em] text-orange-600 dark:text-orange-400">
-                Sarana & Lingkungan Kampus Modern
-              </span>
-            </div>
-          </div>
+          {/* Breadcrumb Navigation */}
+          <nav aria-label="Breadcrumb" className="flex items-center gap-2 text-xs sm:text-sm text-slate-500 mb-5 font-medium">
+            <Link href="/" className="hover:text-[#F97316] transition-colors">
+              Beranda
+            </Link>
+            <span className="text-slate-300">/</span>
+            <Link href="/tentang/profile-sekolah" className="hover:text-[#F97316] transition-colors">
+              Tentang Kami
+            </Link>
+            <span className="text-slate-300">/</span>
+            <span className="text-slate-900 font-semibold" aria-current="page">
+              Fasilitas
+            </span>
+          </nav>
 
-          {/* Editorial Headline */}
-          <div className="grid lg:grid-cols-12 gap-8 items-end mb-8">
-            <div className="lg:col-span-12">
-              <h1 className="text-mask-hero text-3xl sm:text-5xl md:text-6xl lg:text-7xl xl:text-8xl text-slate-900 dark:text-white">
-                Ruang Belajar Modern, <br className="hidden sm:inline" />
-                <span className="bg-gradient-to-r from-orange-600 via-orange-500 to-amber-500 bg-clip-text text-transparent">
-                  Inspirasi Masa Depan.
-                </span>
-              </h1>
-            </div>
-          </div>
-
-          {/* Subtitle & Editorial Narrative */}
-          <div className="grid lg:grid-cols-12 gap-8 items-end mb-12">
-            <div className="lg:col-span-8">
-              <p className="text-slate-600 dark:text-slate-300 text-base sm:text-xl lg:text-2xl font-normal leading-relaxed tracking-tight">
-                SMK Prestasi Prima menghadirkan ekosistem pembelajaran berstandar industri dengan fasilitas vokasi mutakhir, koneksi internet gigabit terpadu, dan ruang kolaborasi inspiratif demi mencetak generasi emas berdaya saing global.
-              </p>
-            </div>
-            <div className="lg:col-span-4 flex flex-wrap sm:flex-nowrap items-center gap-3 lg:justify-end">
-              <Link 
-                href="/virtual-tour" 
-                className="inline-flex items-center gap-2 px-5 py-3 rounded-xl bg-orange-600 hover:bg-orange-500 text-white font-bold text-sm tracking-wide shadow-lg shadow-orange-600/25 transition-all duration-300 hover:-translate-y-0.5"
-              >
-                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
-                </svg>
-                Virtual Tour 360°
-              </Link>
-              <a 
-                href="#laboratorium" 
-                className="inline-flex items-center gap-2 px-5 py-3 rounded-xl bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-200 border border-slate-200 dark:border-slate-700 font-bold text-sm hover:border-orange-500 hover:text-orange-600 transition-all duration-300"
-              >
-                Lihat Sarana
-                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
-                </svg>
-              </a>
-            </div>
-          </div>
-
-          {/* Genuine School Photograph Feature Banner */}
-          <div className="relative rounded-[2rem] sm:rounded-[2.5rem] overflow-hidden shadow-2xl border-4 sm:border-8 border-white dark:border-slate-800 bg-slate-900 group">
-            <div className="aspect-[16/9] sm:aspect-[21/9] w-full overflow-hidden relative">
-              <img 
-                src="/images/gedung.png" 
-                alt="Gedung Kampus SMK Prestasi Prima" 
-                className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-slate-950/80 via-slate-950/20 to-transparent"></div>
+          {/* Refined Two-Column Composition */}
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-center">
+            
+            {/* Left Column: Editorial Content */}
+            <div className="lg:col-span-6 flex flex-col items-start">
               
-              {/* Overlay Badges */}
-              <div className="absolute bottom-4 left-4 right-4 sm:bottom-8 sm:left-8 sm:right-8 flex flex-col sm:flex-row sm:items-end justify-between gap-4">
-                <div>
-                  <span className="px-3 py-1 rounded-full bg-orange-500 text-white font-black text-xs uppercase tracking-wider mb-2 inline-block shadow-md">
-                    Kampus Utama
-                  </span>
-                  <h2 className="text-white font-black text-xl sm:text-2xl md:text-3xl drop-shadow-md">
-                    SMK Prestasi Prima Jakarta
-                  </h2>
-                  <p className="text-slate-200 text-xs sm:text-sm max-w-xl line-clamp-2 drop-shadow">
-                    Jl. Hankam Raya No. 89, Cilangkap, Cipayung, Jakarta Timur — Kampus berakreditasi 'A' dengan standar sarana teknologi terintegrasi.
-                  </p>
-                </div>
+              {/* Eyebrow Label */}
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-orange-50 border border-orange-200/60 text-[#F97316] text-xs font-bold tracking-wider uppercase mb-3.5">
+                <span className="w-1.5 h-1.5 rounded-full bg-[#F97316]" />
+                FASILITAS SEKOLAH
+              </div>
 
-                <div className="flex items-center gap-3">
-                  <div className="px-4 py-2 rounded-2xl bg-white/10 backdrop-blur-md border border-white/20 text-white text-center">
-                    <p className="text-xs text-orange-300 font-bold uppercase tracking-wider">Akreditasi</p>
-                    <p className="text-lg font-black leading-tight">Unggul 'A'</p>
-                  </div>
-                  <div className="px-4 py-2 rounded-2xl bg-white/10 backdrop-blur-md border border-white/20 text-white text-center">
-                    <p className="text-xs text-orange-300 font-bold uppercase tracking-wider">Konektivitas</p>
-                    <p className="text-lg font-black leading-tight">1 Gbps Fiber</p>
+              {/* Exact Heading */}
+              <h1 className="text-3xl sm:text-4xl lg:text-5xl font-black text-slate-900 tracking-tight leading-[1.18] mb-4">
+                Ruang untuk Belajar, <br className="hidden sm:inline" />
+                <span className="text-[#F97316]">Berkarya, dan Bertumbuh.</span>
+              </h1>
+
+              {/* Supporting Text */}
+              <p className="text-slate-600 text-base sm:text-lg leading-relaxed mb-6 max-w-xl">
+                Kenali lingkungan belajar dan fasilitas SMK Prestasi Prima yang mendukung kegiatan akademik, praktik kejuruan, dan pengembangan diri siswa.
+              </p>
+
+              {/* Actions */}
+              <div className="flex flex-wrap items-center gap-3.5 mb-8">
+                <Link
+                  href="/virtual-tour"
+                  className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-[#F97316] hover:bg-orange-600 text-white font-bold text-sm tracking-wide shadow-md shadow-orange-600/20 transition-all duration-200 hover:-translate-y-0.5 cursor-pointer"
+                >
+                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <circle cx="12" cy="12" r="9" strokeWidth="2" />
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3.6 9h16.8M3.6 15h16.8M12 3a14.4 14.4 0 010 18M12 3a14.4 14.4 0 000 18" />
+                  </svg>
+                  Jelajahi PRESMA TOUR
+                </Link>
+
+                <a
+                  href="#praktik"
+                  className="inline-flex items-center gap-1.5 px-4 py-3 rounded-xl text-slate-700 hover:text-[#F97316] font-semibold text-sm transition-colors cursor-pointer"
+                >
+                  Lihat Fasilitas Praktik
+                  <svg className="w-4 h-4 text-[#F97316]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
+                  </svg>
+                </a>
+              </div>
+
+              {/* Verified Editorial Facts (Clean Line) */}
+              <div className="flex flex-wrap items-center gap-6 sm:gap-8 pt-5 border-t border-slate-200/80 w-full">
+                <div>
+                  <p className="text-xl sm:text-2xl font-black text-slate-900 leading-none">4 Lab</p>
+                  <p className="text-xs text-slate-500 font-medium mt-1">Praktik Vokasi</p>
+                </div>
+                <div className="hidden sm:block w-px h-7 bg-slate-200" />
+                <div>
+                  <p className="text-xl sm:text-2xl font-black text-slate-900 leading-none">1.000+</p>
+                  <p className="text-xs text-slate-500 font-medium mt-1">Kapasitas Aula</p>
+                </div>
+                <div className="hidden sm:block w-px h-7 bg-slate-200" />
+                <div>
+                  <p className="text-xl sm:text-2xl font-black text-[#F97316] leading-none">360°</p>
+                  <p className="text-xs text-slate-500 font-medium mt-1">Virtual Tour</p>
+                </div>
+              </div>
+
+            </div>
+
+            {/* Right Column: Large Authentic School Photograph */}
+            <div className="lg:col-span-6">
+              <div className="relative rounded-2xl overflow-hidden shadow-lg border border-slate-200/80 bg-slate-900 group">
+                <div className="aspect-[4/3] sm:aspect-[16/11] w-full overflow-hidden relative">
+                  <img
+                    src="/images/gedung.png"
+                    alt="Gedung Utama SMK Prestasi Prima"
+                    className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-slate-950/75 via-slate-950/15 to-transparent" />
+
+                  <div className="absolute bottom-4 left-4 right-4 sm:bottom-5 sm:left-5 sm:right-5 text-white flex items-end justify-between gap-3">
+                    <div>
+                      <p className="text-xs font-semibold text-orange-300 uppercase tracking-wider mb-0.5">
+                        Gedung Utama
+                      </p>
+                      <p className="text-base sm:text-lg font-bold text-white drop-shadow-sm">
+                        SMK Prestasi Prima Jakarta
+                      </p>
+                    </div>
+                    <span className="text-[11px] font-medium text-white/90 bg-white/20 backdrop-blur-md px-3 py-1 rounded-full border border-white/20 shrink-0">
+                      Akreditasi A Unggul
+                    </span>
                   </div>
                 </div>
               </div>
             </div>
-          </div>
 
-          {/* Quick Stats Grid */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-8">
-            <div className="p-4 sm:p-6 rounded-2xl bg-slate-50 dark:bg-slate-900 border border-slate-100 dark:border-slate-800/80 text-center">
-              <span className="text-2xl sm:text-3xl font-black text-orange-600 dark:text-orange-400">4 Lab</span>
-              <p className="text-xs sm:text-sm font-semibold text-slate-600 dark:text-slate-400 mt-1">Kejuruan Vokasi Terpadu</p>
-            </div>
-            <div className="p-4 sm:p-6 rounded-2xl bg-slate-50 dark:bg-slate-900 border border-slate-100 dark:border-slate-800/80 text-center">
-              <span className="text-2xl sm:text-3xl font-black text-orange-600 dark:text-orange-400">1.000+</span>
-              <p className="text-xs sm:text-sm font-semibold text-slate-600 dark:text-slate-400 mt-1">Kapasitas Aula Mora</p>
-            </div>
-            <div className="p-4 sm:p-6 rounded-2xl bg-slate-50 dark:bg-slate-900 border border-slate-100 dark:border-slate-800/80 text-center">
-              <span className="text-2xl sm:text-3xl font-black text-orange-600 dark:text-orange-400">100%</span>
-              <p className="text-xs sm:text-sm font-semibold text-slate-600 dark:text-slate-400 mt-1">Ruangan Ber-AC & Multimedia</p>
-            </div>
-            <div className="p-4 sm:p-6 rounded-2xl bg-slate-50 dark:bg-slate-900 border border-slate-100 dark:border-slate-800/80 text-center">
-              <span className="text-2xl sm:text-3xl font-black text-orange-600 dark:text-orange-400">360°</span>
-              <p className="text-xs sm:text-sm font-semibold text-slate-600 dark:text-slate-400 mt-1">Eksplorasi Virtual Tour</p>
-            </div>
           </div>
 
         </div>
       </section>
 
       {/* =========================================================================
-          2. LABORATORIUM & STUDIO: Verified vocational facilities with authentic images
+          SECTION B — BELAJAR LEWAT PENGALAMAN NYATA (Fasilitas Praktik)
+          Editorial photo layout: 1 wide featured composition + 3 varied supporting photos
          ========================================================================= */}
-      <section id="laboratorium" className="py-20 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto w-full">
+      <section id="praktik" className="py-16 md:py-20 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto w-full scroll-mt-20">
         
         {/* Section Header */}
-        <div className="flex flex-col items-start mb-12 sm:mb-16">
-          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-orange-50 dark:bg-orange-950/40 border border-orange-200/80 dark:border-orange-500/20 mb-3">
-            <span className="w-2 h-2 rounded-full bg-orange-500"></span>
-            <span className="text-[10px] sm:text-xs font-bold uppercase tracking-[0.2em] text-orange-600 dark:text-orange-400">
-              Sarana Vokasi Unggulan
-            </span>
+        <div className="max-w-2xl mb-10 md:mb-12">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-orange-50 border border-orange-200/60 text-[#F97316] text-xs font-bold tracking-wider uppercase mb-3">
+            <span className="w-1.5 h-1.5 rounded-full bg-[#F97316]" />
+            FASILITAS PRAKTIK
           </div>
-          <h2 className="text-3xl sm:text-4xl md:text-5xl font-black text-slate-900 dark:text-white tracking-tight uppercase">
-            Laboratorium & Studio Kejuruan
+          <h2 className="text-2xl sm:text-3xl lg:text-4xl font-black text-slate-900 tracking-tight mb-3">
+            Belajar Lewat Pengalaman Nyata.
           </h2>
-          <div className="w-20 h-1.5 bg-orange-500 rounded-full mt-3 mb-4"></div>
-          <p className="text-slate-600 dark:text-slate-400 text-base sm:text-lg max-w-3xl">
-            Empat pilar fasilitas praktikum berstandar industri yang dirancang menyimulasikan lingkungan kerja profesional software house, data center, studio multimedia, dan stasiun broadcast.
+          <p className="text-slate-600 text-sm sm:text-base leading-relaxed">
+            Ruang praktik menjadi bagian penting dari proses belajar siswa dalam mengembangkan keterampilan sesuai bidang keahliannya.
           </p>
         </div>
 
-        {/* Vocational Facilities Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 lg:gap-10">
-          {vocationalFacilities.map((facility) => (
-            <div 
-              key={facility.id}
-              className="group rounded-[2rem] sm:rounded-[2.5rem] bg-white dark:bg-slate-900 border border-slate-200/90 dark:border-slate-800 overflow-hidden shadow-lg hover:shadow-2xl hover:-translate-y-1.5 transition-all duration-500 flex flex-col"
-            >
-              {/* Facility Image with Visual Tag */}
-              <div className="aspect-[16/10] sm:aspect-[16/9] overflow-hidden relative bg-slate-800">
-                <img 
-                  src={facility.image} 
-                  alt={facility.title} 
-                  className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-slate-950/70 via-transparent to-transparent"></div>
-                
-                {/* Major Category Tag */}
-                <div className="absolute top-4 left-4">
-                  <span className="px-3.5 py-1.5 rounded-full bg-orange-600 text-white font-bold text-xs uppercase tracking-wider shadow-md">
-                    {facility.major}
-                  </span>
-                </div>
-
-                {/* Inspect button overlay */}
-                <button
-                  type="button"
-                  onClick={() => setSelectedPhoto({ title: facility.title, image: facility.image, desc: facility.desc, tag: facility.major })}
-                  className="absolute bottom-4 right-4 px-3.5 py-1.5 rounded-xl bg-black/60 hover:bg-orange-600 backdrop-blur-md text-white text-xs font-semibold flex items-center gap-1.5 transition-colors"
-                >
-                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v3m0 0v3m0-3h3m-3 0H7" />
-                  </svg>
-                  Perbesar Foto
-                </button>
-              </div>
-
-              {/* Facility Content & Specifications */}
-              <div className="p-6 sm:p-8 flex-1 flex flex-col justify-between">
-                <div>
-                  <h3 className="text-xl sm:text-2xl font-black text-slate-900 dark:text-white mb-3 group-hover:text-orange-600 dark:group-hover:text-orange-400 transition-colors">
-                    {facility.title}
-                  </h3>
-                  <p className="text-slate-600 dark:text-slate-300 text-sm sm:text-base leading-relaxed mb-6">
-                    {facility.desc}
-                  </p>
-                </div>
-
-                {/* Spec badges */}
-                <div className="border-t border-slate-100 dark:border-slate-800/80 pt-5">
-                  <p className="text-xs font-bold uppercase tracking-wider text-slate-400 mb-3">Spesifikasi Fasilitas:</p>
-                  <div className="flex flex-wrap gap-2">
-                    {facility.specs.map((spec, sIdx) => (
-                      <span 
-                        key={sIdx} 
-                        className="px-3 py-1 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 font-medium text-xs border border-slate-200/50 dark:border-slate-700/60"
-                      >
-                        ✓ {spec}
-                      </span>
-                    ))}
-                  </div>
-                </div>
-
-              </div>
-            </div>
-          ))}
-        </div>
-
-      </section>
-
-      {/* =========================================================================
-          3. FASILITAS PENUNJANG: Editorial Photo Gallery of general verified facilities
-         ========================================================================= */}
-      <section className="py-20 px-4 sm:px-6 lg:px-8 bg-slate-50/70 dark:bg-slate-900/50 border-y border-slate-100 dark:border-slate-800/60">
-        <div className="max-w-7xl mx-auto">
+        {/* Editorial Photo Composition */}
+        <div className="space-y-6">
           
-          {/* Header & Filter Controls */}
-          <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-12">
-            <div>
-              <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-orange-100/80 dark:bg-orange-950/40 border border-orange-200 dark:border-orange-500/20 mb-3">
-                <span className="w-2 h-2 rounded-full bg-orange-500"></span>
-                <span className="text-[10px] sm:text-xs font-bold uppercase tracking-[0.2em] text-orange-600 dark:text-orange-400">
-                  Sarana Pendukung & Komunal
+          {/* Featured Wide Laboratory (PPLG) */}
+          <div className="rounded-2xl border border-slate-200/80 bg-white overflow-hidden shadow-sm hover:shadow-md transition-all duration-300 group grid grid-cols-1 lg:grid-cols-12">
+            
+            <div className="lg:col-span-8 relative aspect-[16/9] lg:aspect-[16/9] overflow-hidden bg-slate-900 cursor-pointer"
+              onClick={() => setSelectedPhoto({
+                title: featuredVocational.title,
+                image: featuredVocational.image,
+                desc: featuredVocational.desc,
+                tag: featuredVocational.tag,
+              })}
+            >
+              <img
+                src={featuredVocational.image}
+                alt={featuredVocational.title}
+                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-slate-950/60 via-transparent to-transparent" />
+              
+              <div className="absolute top-4 left-4">
+                <span className="px-3 py-1 rounded-full bg-[#F97316] text-white text-[11px] font-bold tracking-wide uppercase shadow-sm">
+                  {featuredVocational.tag}
                 </span>
               </div>
-              <h2 className="text-3xl sm:text-4xl md:text-5xl font-black text-slate-900 dark:text-white tracking-tight uppercase">
-                Fasilitas Penunjang Sekolah
-              </h2>
-              <div className="w-20 h-1.5 bg-orange-500 rounded-full mt-3 mb-2"></div>
-              <p className="text-slate-600 dark:text-slate-400 text-sm sm:text-base max-w-2xl">
-                Galeri sarana prasarana penunjang yang memastikan kenyamanan belajar, kesehatan, ibadah, dan kebugaran seluruh civitas akademika.
-              </p>
             </div>
 
-            {/* Filter Buttons */}
-            <div className="flex flex-wrap items-center gap-2">
-              {categories.map((cat) => (
-                <button
-                  key={cat}
-                  type="button"
-                  onClick={() => setActiveCategory(cat)}
-                  className={`px-4 py-2 rounded-full text-xs sm:text-sm font-bold transition-all duration-300 ${
-                    activeCategory === cat
-                      ? 'bg-orange-600 text-white shadow-md shadow-orange-600/30'
-                      : 'bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700 hover:border-orange-400'
-                  }`}
-                >
-                  {cat}
-                </button>
-              ))}
+            <div className="lg:col-span-4 p-6 sm:p-8 flex flex-col justify-center">
+              <span className="text-xs font-bold text-[#F97316] uppercase tracking-wider mb-2 block">
+                Unggulan Praktik Vokasi
+              </span>
+              <h3 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight mb-3">
+                {featuredVocational.title}
+              </h3>
+              <p className="text-slate-600 text-sm leading-relaxed mb-4">
+                {featuredVocational.desc}
+              </p>
+              <button
+                type="button"
+                onClick={() => setSelectedPhoto({
+                  title: featuredVocational.title,
+                  image: featuredVocational.image,
+                  desc: featuredVocational.desc,
+                  tag: featuredVocational.tag,
+                })}
+                className="inline-flex items-center gap-1.5 text-xs font-bold text-[#F97316] hover:text-orange-700 self-start cursor-pointer"
+              >
+                Lihat Foto Penuh
+                <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M14 5l7 7m0 0l-7 7m7-7H3" />
+                </svg>
+              </button>
             </div>
+
           </div>
 
-          {/* Photo Gallery Grid */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            {filteredFacilities.map((item) => (
-              <div 
+          {/* 3 Supporting Practical Facilities (TJKT, BCF, DKV) */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {supportingVocational.map((item) => (
+              <div
                 key={item.id}
-                onClick={() => setSelectedPhoto({ title: item.title, image: item.image, desc: item.desc, tag: item.tag })}
-                className="group rounded-[1.75rem] bg-white dark:bg-slate-800 border border-slate-200/80 dark:border-slate-700/80 overflow-hidden shadow-sm hover:shadow-xl hover:-translate-y-1.5 transition-all duration-400 flex flex-col cursor-pointer"
+                className="rounded-2xl border border-slate-200/80 bg-white overflow-hidden shadow-sm hover:shadow-md transition-all duration-300 flex flex-col group cursor-pointer"
+                onClick={() => setSelectedPhoto({
+                  title: item.title,
+                  image: item.image,
+                  desc: item.desc,
+                  tag: item.tag,
+                })}
               >
-                {/* Photo Aspect Ratio */}
-                <div className="aspect-[4/3] overflow-hidden relative bg-slate-900">
-                  <img 
-                    src={item.image} 
-                    alt={item.title} 
-                    className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+                <div className="aspect-[16/10] relative overflow-hidden bg-slate-900">
+                  <img
+                    src={item.image}
+                    alt={item.title}
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                   />
-                  <div className="absolute inset-0 bg-gradient-to-t from-slate-950/70 via-transparent to-transparent opacity-80 group-hover:opacity-100 transition-opacity"></div>
+                  <div className="absolute inset-0 bg-gradient-to-t from-slate-950/50 via-transparent to-transparent" />
                   
-                  {/* Category Badge */}
                   <div className="absolute top-3 left-3">
-                    <span className="px-2.5 py-1 rounded-full bg-white/90 dark:bg-slate-900/90 backdrop-blur-md text-slate-800 dark:text-white font-bold text-[10px] uppercase tracking-wider shadow">
+                    <span className="px-2.5 py-0.5 rounded-full bg-slate-900/80 backdrop-blur-md text-white text-[10px] font-bold tracking-wide uppercase">
                       {item.tag}
                     </span>
                   </div>
-
-                  {/* Corner Capacity Badge */}
-                  <div className="absolute bottom-3 left-3 right-3 flex items-center justify-between text-white text-xs">
-                    <span className="font-semibold text-orange-300 drop-shadow">{item.badge}</span>
-                    <span className="opacity-80 drop-shadow text-[11px]">{item.capacity}</span>
-                  </div>
                 </div>
 
-                {/* Details */}
                 <div className="p-5 flex-1 flex flex-col justify-between">
                   <div>
-                    <h3 className="text-base font-bold text-slate-900 dark:text-white mb-1.5 group-hover:text-orange-600 dark:group-hover:text-orange-400 transition-colors line-clamp-1">
+                    <h3 className="text-base sm:text-lg font-black text-slate-900 mb-2 leading-snug group-hover:text-[#F97316] transition-colors">
                       {item.title}
                     </h3>
-                    <p className="text-slate-500 dark:text-slate-400 text-xs line-clamp-2 leading-relaxed">
+                    <p className="text-slate-600 text-xs sm:text-sm leading-relaxed">
                       {item.desc}
                     </p>
-                  </div>
-                  <div className="mt-4 pt-3 border-t border-slate-100 dark:border-slate-700/60 flex items-center justify-between text-xs text-orange-600 dark:text-orange-400 font-bold">
-                    <span>Lihat Rincian</span>
-                    <svg className="w-4 h-4 transform group-hover:translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7" />
-                    </svg>
                   </div>
                 </div>
               </div>
@@ -513,58 +409,322 @@ export default function FasilitasPage() {
           </div>
 
         </div>
+
       </section>
 
       {/* =========================================================================
-          4. DAFTAR BINTANG PRESTASI (MANDATORY PRESERVED SECTION)
-             Preserve the existing section, its student information, initials, cards,
-             and rendering logic without altering original names or PTN destinations.
+          SECTION C — LEBIH DARI SEKADAR RUANG KELAS (Fasilitas Penunjang)
+          Refined composition: 1 large featured image on left + clean vertical list on right
          ========================================================================= */}
-      <section className="py-20 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto w-full">
+      <section className="py-16 md:py-20 px-4 sm:px-6 lg:px-8 bg-slate-50/70 border-y border-slate-200/70">
+        <div className="max-w-7xl mx-auto">
+          
+          {/* Section Header & Tab Controls */}
+          <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-10 md:mb-12">
+            <div>
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-orange-100/70 text-[#F97316] text-xs font-bold tracking-wider uppercase mb-3">
+                <span className="w-1.5 h-1.5 rounded-full bg-[#F97316]" />
+                LINGKUNGAN SEKOLAH
+              </div>
+              <h2 className="text-2xl sm:text-3xl lg:text-4xl font-black text-slate-900 tracking-tight mb-2">
+                Lebih dari Sekadar Ruang Kelas.
+              </h2>
+              <p className="text-slate-600 text-sm sm:text-base max-w-xl">
+                Fasilitas penunjang melengkapi kegiatan belajar, interaksi, dan aktivitas siswa sehari-hari.
+              </p>
+            </div>
+
+            {/* Refined Tab Selector */}
+            <div className="inline-flex p-1 rounded-xl bg-white border border-slate-200/80 shadow-sm shrink-0 self-start md:self-auto">
+              <button
+                type="button"
+                onClick={() => setPenunjangTab('akademik')}
+                className={`px-5 py-2 rounded-lg font-bold text-xs sm:text-sm transition-all duration-200 cursor-pointer ${
+                  penunjangTab === 'akademik'
+                    ? 'bg-[#F97316] text-white shadow-sm'
+                    : 'text-slate-600 hover:text-slate-900'
+                }`}
+                aria-pressed={penunjangTab === 'akademik'}
+              >
+                Akademik
+              </button>
+              <button
+                type="button"
+                onClick={() => setPenunjangTab('umum')}
+                className={`px-5 py-2 rounded-lg font-bold text-xs sm:text-sm transition-all duration-200 cursor-pointer ${
+                  penunjangTab === 'umum'
+                    ? 'bg-[#F97316] text-white shadow-sm'
+                    : 'text-slate-600 hover:text-slate-900'
+                }`}
+                aria-pressed={penunjangTab === 'umum'}
+              >
+                Fasilitas Umum
+              </button>
+            </div>
+          </div>
+
+          {/* New Composition: Large Image on Left, Vertical List on Right */}
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+            
+            {/* Left: Featured Image + Caption Directly Below */}
+            <div className="lg:col-span-7">
+              <div 
+                className="rounded-2xl border border-slate-200/80 bg-white overflow-hidden shadow-sm group cursor-pointer"
+                onClick={() => setSelectedPhoto({
+                  title: featuredPenunjang.title,
+                  image: featuredPenunjang.image,
+                  desc: featuredPenunjang.desc,
+                  tag: featuredPenunjang.tag,
+                })}
+              >
+                <div className="aspect-[16/10] relative overflow-hidden bg-slate-900">
+                  <img
+                    src={featuredPenunjang.image}
+                    alt={featuredPenunjang.title}
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-slate-950/60 via-transparent to-transparent" />
+
+                  <div className="absolute top-4 left-4">
+                    <span className="px-3 py-1 rounded-full bg-[#F97316] text-white text-[11px] font-bold tracking-wide uppercase shadow-sm">
+                      {featuredPenunjang.tag}
+                    </span>
+                  </div>
+                </div>
+
+                {/* Short Title & Description Directly Below */}
+                <div className="p-6">
+                  <h3 className="text-xl sm:text-2xl font-black text-slate-900 mb-2 group-hover:text-[#F97316] transition-colors">
+                    {featuredPenunjang.title}
+                  </h3>
+                  <p className="text-slate-600 text-sm leading-relaxed">
+                    {featuredPenunjang.desc}
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            {/* Right: Clean Vertical List of Supporting Facilities */}
+            <div className="lg:col-span-5 flex flex-col divide-y divide-slate-200/80 bg-white rounded-2xl border border-slate-200/80 p-2 sm:p-3 shadow-sm">
+              {supportingPenunjang.map((item) => (
+                <div
+                  key={item.id}
+                  onClick={() => setSelectedPhoto({
+                    title: item.title,
+                    image: item.image,
+                    desc: item.desc,
+                    tag: item.tag,
+                  })}
+                  className="p-4 rounded-xl hover:bg-slate-50 transition-colors flex items-center gap-4 group cursor-pointer"
+                >
+                  {/* Small Thumbnail */}
+                  <div className="w-20 h-20 rounded-xl overflow-hidden shrink-0 relative bg-slate-900">
+                    <img
+                      src={item.image}
+                      alt={item.title}
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                    />
+                  </div>
+
+                  {/* Concise Title & Description */}
+                  <div className="flex-1 min-w-0">
+                    <span className="text-[10px] font-bold uppercase tracking-wider text-[#F97316] block mb-0.5">
+                      {item.tag}
+                    </span>
+                    <h4 className="text-sm sm:text-base font-bold text-slate-900 truncate group-hover:text-[#F97316] transition-colors mb-1">
+                      {item.title}
+                    </h4>
+                    <p className="text-slate-500 text-xs line-clamp-2 leading-relaxed">
+                      {item.desc}
+                    </p>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+          </div>
+
+        </div>
+      </section>
+
+      {/* =========================================================================
+          SECTION D — PRESMA TOUR
+          Promotional section: dark navy, text on left, panorama on right, single orange CTA
+         ========================================================================= */}
+      <section className="py-16 md:py-20 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto w-full">
+        <div className="rounded-2xl bg-slate-900 text-white overflow-hidden shadow-xl border border-slate-800">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center p-8 sm:p-10 lg:p-14">
+            
+            {/* Left Column: Heading, Description, CTA */}
+            <div className="lg:col-span-6 flex flex-col items-start">
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#F97316]/20 border border-[#F97316]/30 text-[#F97316] text-xs font-bold tracking-wider uppercase mb-3">
+                <span className="w-1.5 h-1.5 rounded-full bg-[#F97316]" />
+                EXPLORE THE SCHOOL
+              </div>
+
+              <h2 className="text-2xl sm:text-3xl lg:text-4xl font-black text-white tracking-tight mb-3">
+                Jelajahi Sekolah Lebih Dekat.
+              </h2>
+
+              <p className="text-slate-300 text-sm sm:text-base leading-relaxed mb-6 max-w-lg">
+                Lihat berbagai sudut SMK Prestasi Prima melalui pengalaman virtual tour interaktif 360°. Telusuri laboratorium, ruang kelas, dan aula sekolah kapan saja.
+              </p>
+
+              <Link
+                href="/virtual-tour"
+                className="inline-flex items-center gap-2 px-6 py-3.5 rounded-xl bg-[#F97316] hover:bg-orange-600 text-white font-bold text-sm tracking-wide shadow-md shadow-orange-600/25 transition-all duration-200 hover:-translate-y-0.5 cursor-pointer"
+              >
+                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <circle cx="12" cy="12" r="9" strokeWidth="2" />
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3.6 9h16.8M3.6 15h16.8M12 3a14.4 14.4 0 010 18M12 3a14.4 14.4 0 000 18" />
+                </svg>
+                Jelajahi PRESMA TOUR
+              </Link>
+            </div>
+
+            {/* Right Column: One Large Authentic Panorama */}
+            <div className="lg:col-span-6">
+              <Link
+                href="/virtual-tour"
+                className="block relative rounded-xl overflow-hidden border border-slate-700/80 bg-slate-950 aspect-[16/10] group focus:outline-none focus-visible:ring-2 focus-visible:ring-[#F97316]"
+                aria-label="Buka Virtual Tour SMK Prestasi Prima"
+              >
+                <img
+                  src="/virtual-tour/panoramas/aula-mora.jpeg"
+                  alt="Virtual Tour Aula Mora SMK Prestasi Prima"
+                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-slate-950/70 via-transparent to-transparent" />
+
+                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-14 h-14 rounded-full bg-[#F97316] text-white flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform duration-200">
+                  <svg className="w-7 h-7 fill-none stroke-current stroke-2" viewBox="0 0 24 24">
+                    <circle cx="12" cy="12" r="9" />
+                    <path d="M3.6 9h16.8M3.6 15h16.8M12 3a14.4 14.4 0 010 18M12 3a14.4 14.4 0 000 18" />
+                  </svg>
+                </div>
+
+                <div className="absolute bottom-3 left-4 right-4 text-center">
+                  <span className="text-[11px] font-bold uppercase tracking-wider text-orange-200">
+                    Klik untuk Membuka Tour 360°
+                  </span>
+                </div>
+              </Link>
+            </div>
+
+          </div>
+        </div>
+      </section>
+
+      {/* =========================================================================
+          SECTION E (ITEM 7) — PRESMA LIB (NATURAL VISUAL INTEGRATION)
+          Integrated library portal feature seamlessly placed in the page rhythm
+         ========================================================================= */}
+      <section className="py-14 md:py-16 px-4 sm:px-6 lg:px-8 bg-slate-50/70 border-y border-slate-200/70">
+        <div className="max-w-7xl mx-auto">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
+            
+            <div className="lg:col-span-7">
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-orange-100/70 text-[#F97316] text-xs font-bold tracking-wider uppercase mb-3">
+                <span className="w-1.5 h-1.5 rounded-full bg-[#F97316]" />
+                PERPUSTAKAAN DIGITAL
+              </div>
+              <h2 className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight mb-3">
+                Presma Lib — Literasi & Referensi Digital
+              </h2>
+              <p className="text-slate-600 text-sm sm:text-base leading-relaxed mb-5 max-w-xl">
+                Akses ribuan katalog buku kejuruan, referensi ilmiah, modul pembelajaran digital, dan informasi peminjaman buku kapan saja melalui portal resmi perpustakaan online SMK Prestasi Prima.
+              </p>
+              <Link
+                href="/program/presmalib"
+                className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-slate-900 hover:bg-[#F97316] text-white font-bold text-xs sm:text-sm transition-colors duration-200 cursor-pointer shadow-sm"
+              >
+                Buka Portal Presma Lib
+                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M14 5l7 7m0 0l-7 7m7-7H3" />
+                </svg>
+              </Link>
+            </div>
+
+            <div className="lg:col-span-5">
+              <div className="relative rounded-2xl overflow-hidden border border-slate-200/80 bg-slate-900 shadow-sm aspect-[16/10]">
+                <img
+                  src="/virtual-tour/panoramas/perpustakaan-2.jpg"
+                  alt="Ruang Perpustakaan Presma Lib"
+                  className="w-full h-full object-cover"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-slate-950/60 via-transparent to-transparent" />
+                <div className="absolute bottom-3 left-4">
+                  <span className="text-xs font-bold text-white drop-shadow-sm">
+                    Koleksi Lengkap & E-Library Terpadu
+                  </span>
+                </div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </section>
+
+      {/* =========================================================================
+          SECTION F — DAFTAR BINTANG PRESTASI
+          MANDATORY PRESERVED SECTION
+          Preserves all original student records, university names, and orange initials
+         ========================================================================= */}
+      <section className="py-16 md:py-20 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto w-full">
         
-        {/* Poster Showcase (Preserved) */}
-        <div className="mb-20 flex justify-center">
-          <div className="rounded-3xl overflow-hidden shadow-2xl border-[10px] border-white dark:border-slate-800 bg-white inline-block max-w-[800px] w-full group relative">
+        {/* Preserved Poster Showcase (Naturally Integrated) */}
+        <div className="mb-14 flex justify-center">
+          <div className="rounded-2xl overflow-hidden shadow-md border border-slate-200/80 bg-white inline-block max-w-[700px] w-full group relative">
             <img 
               src="/images/poster-alumni-ptn.png" 
-              alt="Poster Alumni Lolos PTN" 
+              alt="Poster Alumni Lolos PTN SMK Prestasi Prima" 
               className="w-full h-auto object-cover" 
             />
-            <div className="absolute inset-0 bg-white/0 group-hover:bg-white/10 transition-colors duration-300 pointer-events-none"></div>
           </div>
         </div>
 
-        {/* Text Roster Header (Preserved) */}
-        <div className="text-center mb-12">
-          <h2 className="text-3xl md:text-4xl font-black text-slate-900 dark:text-white uppercase tracking-wider mb-4">
+        {/* Section Heading Hierarchy */}
+        <div className="text-center mb-10 md:mb-12">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-orange-50 border border-orange-200/60 text-[#F97316] text-xs font-bold tracking-wider uppercase mb-2.5">
+            <span className="w-1.5 h-1.5 rounded-full bg-[#F97316]" />
+            PRESTASI LULUSAN
+          </div>
+          <h2 className="text-2xl sm:text-3xl lg:text-4xl font-black text-slate-900 uppercase tracking-wider mb-2.5">
             Daftar Bintang Prestasi
           </h2>
-          <div className="w-24 h-1.5 bg-orange-500 mx-auto rounded-full mb-8"></div>
+          <div className="w-16 h-1 bg-[#F97316] mx-auto rounded-full" />
         </div>
 
-        {/* Student Cards Grid (Preserved) */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8 mb-20 justify-center">
-          {alumniData.map((alumni, idx) => (
+        {/* Preserved Student Cards Grid */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8 justify-center">
+          {ALUMNI_DATA.map((alumni, idx) => (
             <div 
               key={idx} 
-              className="bg-white dark:bg-slate-800 rounded-2xl p-6 shadow-xl border border-slate-100 dark:border-slate-700/50 hover:-translate-y-2 hover:shadow-orange-500/20 transition-all duration-300 flex flex-col items-center text-center"
+              className="bg-white rounded-2xl p-6 shadow-sm border border-slate-200/80 hover:-translate-y-1 hover:shadow-md transition-all duration-200 flex flex-col items-center text-center group"
             >
-              <div className="w-24 h-24 rounded-full p-1 bg-gradient-to-br from-orange-400 to-red-500 mb-5 shadow-md">
+              {/* Preserved Orange Circular Avatar */}
+              <div className="w-20 h-20 rounded-full p-1 bg-gradient-to-br from-orange-400 to-[#F97316] mb-4 shadow-sm">
                 <img 
                   src={alumni.avatar} 
                   alt={alumni.name} 
-                  className="w-full h-full rounded-full border-4 border-white dark:border-slate-800 object-cover" 
+                  className="w-full h-full rounded-full border-2 border-white object-cover" 
                 />
               </div>
-              <h3 className="text-xl font-black text-slate-900 dark:text-white mb-2">
+
+              {/* Graduate Name */}
+              <h3 className="text-lg font-black text-slate-900 mb-1.5 group-hover:text-[#F97316] transition-colors">
                 {alumni.name}
               </h3>
-              <span className="px-3 py-1 bg-orange-100 text-orange-600 dark:bg-orange-500/20 dark:text-orange-400 font-bold text-xs rounded-full uppercase tracking-wider mb-4">
+
+              {/* Major Badge */}
+              <span className="px-3 py-1 bg-orange-50 text-[#F97316] font-bold text-xs rounded-full uppercase tracking-wider mb-3.5 border border-orange-200/50">
                 {alumni.major}
               </span>
-              <p className="text-slate-600 dark:text-slate-300 font-bold flex items-center justify-center gap-2">
-                <svg className="w-5 h-5 text-orange-500 shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                  <path d="M10.394 2.08a1 1 0 00-.788 0l-7 3a1 1 0 000 1.84L5.25 8.051a.999.999 0 01.356-.257l4-1.714a1 1 0 11.788 1.838L7.667 9.088l1.94.831a1 1 0 00.787 0l7-3a1 1 0 000-1.838l-7-3zM3.31 9.397L5 10.12v4.102a8.969 8.969 0 00-1.05-.174 1 1 0 01-.89-.89 11.115 11.115 0 01.25-3.762zM9.3 16.573A9.026 9.026 0 007 14.935v-3.957l1.818.78a3 3 0 002.364 0l5.508-2.361a11.026 11.026 0 01.221 4.626c-.114.632-.636 1.053-1.251 1.053h-.46a1 1 0 01-.781-.378l-1.06-1.302a1 1 0 00-1.228-.276l-3.803 1.943a.998.998 0 00-.222.102z"></path>
+
+              {/* PTN Destination */}
+              <p className="text-slate-600 font-semibold text-sm flex items-center justify-center gap-1.5">
+                <svg className="w-4 h-4 text-[#F97316] shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                  <path d="M10.394 2.08a1 1 0 00-.788 0l-7 3a1 1 0 000 1.84L5.25 8.051a.999.999 0 01.356-.257l4-1.714a1 1 0 11.788 1.838L7.667 9.088l1.94.831a1 1 0 00.787 0l7-3a1 1 0 000-1.838l-7-3zM3.31 9.397L5 10.12v4.102a8.969 8.969 0 00-1.05-.174 1 1 0 01-.89-.89 11.115 11.115 0 01.25-3.762zM9.3 16.573A9.026 9.026 0 007 14.935v-3.957l1.818.78a3 3 0 002.364 0l5.508-2.361a11.026 11.026 0 01.221 4.626c-.114.632-.636 1.053-1.251 1.053h-.46a1 1 0 01-.781-.378l-1.06-1.302a1 1 0 00-1.228-.276l-3.803 1.943a.998.998 0 00-.222.102z" />
                 </svg>
                 {alumni.ptn}
               </p>
@@ -572,72 +732,6 @@ export default function FasilitasPage() {
           ))}
         </div>
 
-      </section>
-
-      {/* =========================================================================
-          5. CLOSING SECTION: Motto Marquee & Concise Invitation to SMK Prestasi Prima
-         ========================================================================= */}
-      
-      {/* Running Motto Marquee (Visual style directly from reference page) */}
-      <section className="relative flex items-center justify-between bg-gradient-to-r from-orange-950 via-orange-900 to-orange-800 text-white overflow-hidden py-5 border-y border-orange-700/40">
-        <div className="flex whitespace-nowrap animate-marquee-slow">
-          <div className="flex items-center gap-8 text-sm sm:text-base md:text-lg font-black tracking-widest uppercase">
-            <span>SMK PRESTASI PRIMA — MENCETAK GENERASI BERPRESTASI!</span>
-            <span className="text-orange-400">✦</span>
-            <span>IF BETTER IS POSSIBLE, GOOD IS NOT ENOUGH!</span>
-            <span className="text-orange-400">✦</span>
-            <span>BERANI HEBAT, BERANI BERPRESTASI!</span>
-            <span className="text-orange-400">✦</span>
-            <span>SMK PRESTASI PRIMA — MENCETAK GENERASI BERPRESTASI!</span>
-            <span className="text-orange-400">✦</span>
-            <span>IF BETTER IS POSSIBLE, GOOD IS NOT ENOUGH!</span>
-            <span className="text-orange-400">✦</span>
-            <span>BERANI HEBAT, BERANI BERPRESTASI!</span>
-            <span className="text-orange-400">✦</span>
-          </div>
-        </div>
-      </section>
-
-      {/* Invitation Section */}
-      <section className="py-20 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto w-full">
-        <div className="rounded-[2.5rem] bg-gradient-to-br from-slate-900 via-slate-900 to-orange-950 p-8 sm:p-12 lg:p-16 text-white relative overflow-hidden shadow-2xl border border-slate-800">
-          
-          {/* Subtle background glow */}
-          <div className="absolute -right-20 -bottom-20 w-96 h-96 bg-orange-600/20 rounded-full blur-3xl pointer-events-none"></div>
-
-          <div className="relative z-10 max-w-3xl">
-            <span className="px-4 py-1.5 rounded-full bg-orange-500/20 border border-orange-500/30 text-orange-400 font-bold text-xs uppercase tracking-widest mb-6 inline-block">
-              Kunjungan & Penerimaan
-            </span>
-            <h2 className="text-3xl sm:text-4xl md:text-5xl font-black tracking-tight leading-tight mb-4">
-              Siap Menjadi Bagian dari <br className="hidden sm:inline" />
-              <span className="text-orange-500">SMK Prestasi Prima?</span>
-            </h2>
-            <p className="text-slate-300 text-base sm:text-lg mb-8 leading-relaxed">
-              Jelajahi setiap sudut sarana kami melalui pengalaman Virtual Tour 360° interaktif atau jadwalkan kunjungan langsung ke kampus untuk merasakan atmosfer pendidikan vokasi masa depan.
-            </p>
-            <div className="flex flex-wrap items-center gap-4">
-              <Link 
-                href="/virtual-tour" 
-                className="px-6 py-3.5 rounded-xl bg-orange-600 hover:bg-orange-500 text-white font-bold text-sm tracking-wide shadow-lg shadow-orange-600/30 transition-all duration-300 hover:-translate-y-0.5"
-              >
-                Buka Virtual Tour 360°
-              </Link>
-              <Link 
-                href="/ppdb" 
-                className="px-6 py-3.5 rounded-xl bg-white hover:bg-slate-100 text-slate-900 font-bold text-sm tracking-wide transition-all duration-300 hover:-translate-y-0.5"
-              >
-                Pendaftaran Siswa Baru (PPDB)
-              </Link>
-              <Link 
-                href="/contact" 
-                className="px-6 py-3.5 rounded-xl bg-transparent hover:bg-white/10 text-white border border-white/30 font-bold text-sm tracking-wide transition-all duration-300"
-              >
-                Hubungi Kami
-              </Link>
-            </div>
-          </div>
-        </div>
       </section>
 
       {/* =========================================================================
@@ -651,7 +745,7 @@ export default function FasilitasPage() {
           onClick={() => setSelectedPhoto(null)}
         >
           <div 
-            className="bg-white dark:bg-slate-900 rounded-3xl max-w-3xl w-full overflow-hidden shadow-2xl border border-slate-200 dark:border-slate-800"
+            className="bg-white rounded-2xl max-w-3xl w-full overflow-hidden shadow-2xl border border-slate-200"
             onClick={(e) => e.stopPropagation()}
           >
             <div className="aspect-[16/10] relative bg-black">
@@ -663,20 +757,20 @@ export default function FasilitasPage() {
               <button
                 type="button"
                 onClick={() => setSelectedPhoto(null)}
-                className="absolute top-4 right-4 w-10 h-10 rounded-full bg-black/60 hover:bg-orange-600 text-white flex items-center justify-center text-xl font-bold transition-colors"
-                aria-label="Tutup"
+                className="absolute top-4 right-4 w-9 h-9 rounded-full bg-black/60 hover:bg-[#F97316] text-white flex items-center justify-center text-lg font-bold transition-colors cursor-pointer"
+                aria-label="Tutup pratinjau"
               >
-                ×
+                ✕
               </button>
             </div>
-            <div className="p-6">
-              <span className="px-3 py-1 rounded-full bg-orange-100 dark:bg-orange-950/60 text-orange-600 dark:text-orange-400 font-bold text-xs uppercase tracking-wider mb-2 inline-block">
+            <div className="p-5 sm:p-6">
+              <span className="px-2.5 py-0.5 rounded-full bg-orange-100 text-[#F97316] font-bold text-xs uppercase tracking-wider mb-2 inline-block">
                 {selectedPhoto.tag}
               </span>
-              <h3 className="text-2xl font-black text-slate-900 dark:text-white mb-2">
+              <h3 className="text-xl sm:text-2xl font-black text-slate-900 mb-2">
                 {selectedPhoto.title}
               </h3>
-              <p className="text-slate-600 dark:text-slate-300 text-sm leading-relaxed">
+              <p className="text-slate-600 text-sm leading-relaxed">
                 {selectedPhoto.desc}
               </p>
             </div>

@@ -38,7 +38,7 @@ export const navigation: NavSection[] = [
       },
       {
         name: "Fasilitas",
-        href: "/tentang/profile#fasilitas",
+        href: "/tentang/fasilitas",
         desc: "Sarana modern penunjang pembelajaran berkualitas.",
       },
     ],
