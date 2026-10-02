@@ -7,6 +7,6 @@ export const metadata: Metadata = {
   description: 'Infrastruktur modern dan fasilitas pembelajaran berstandar industri SMK Prestasi Prima, lengkap dengan laboratorium kejuruan canggih dan ruang kreasi.',
 };
 
-export default function AlumniPTNPage() {
+export default function TentangFasilitasPage() {
   return <FasilitasPage />;
 }
