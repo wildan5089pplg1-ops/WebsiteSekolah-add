@@ -534,40 +534,94 @@ export default function FasilitasPage() {
           </div>
         </div>
 
-        {/* Text Roster Header (Preserved) */}
-        <div className="text-center mb-12">
-          <h2 className="text-3xl md:text-4xl font-black text-slate-900 dark:text-white uppercase tracking-wider mb-4">
-            Daftar Bintang Prestasi
-          </h2>
-          <div className="w-24 h-1.5 bg-orange-500 mx-auto rounded-full mb-8"></div>
+        {/* Text Roster Header */}
+        <div className="mb-10 flex flex-col lg:flex-row lg:items-center justify-between gap-8">
+          <div>
+            <span className="text-orange-500 font-bold uppercase tracking-widest text-xs mb-3 flex items-center gap-2">
+              <span className="w-8 h-[2px] bg-orange-500 inline-block"></span> PRESTASI LULUSAN
+            </span>
+            <h2 className="text-5xl md:text-6xl font-black text-slate-900 dark:text-white leading-[1.1] font-serif tracking-tight">
+              Daftar <span className="text-orange-500">Bintang</span><br/>Kelulusan
+            </h2>
+          </div>
+          <div className="max-w-md text-slate-600 dark:text-slate-400 text-sm leading-relaxed border-l-2 border-red-500 pl-5">
+            Data berikut menunjukkan daftar bintang kelulusan SMK Prestasi Prima yang berhasil menembus berbagai Perguruan Tinggi Negeri unggulan melalui seleksi nasional maupun mandiri. Kami bangga atas pencapaian ini.
+          </div>
         </div>
 
-        {/* Student Cards Grid (Preserved) */}
+        {/* Filter Section */}
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 border-b border-slate-200 dark:border-slate-800 pb-4">
+          <span className="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-4 md:mb-0">
+            TAMPILKAN BERDASARKAN JALUR KELULUSAN
+          </span>
+          <div className="flex flex-wrap gap-2">
+            <button className="px-5 py-2 bg-slate-900 dark:bg-slate-100 text-white dark:text-slate-900 text-xs font-bold rounded-full hover:opacity-90 transition-opacity">SEMUA</button>
+            <button className="px-5 py-2 bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700 text-xs font-bold rounded-full hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors shadow-sm">SNBP</button>
+            <button className="px-5 py-2 bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700 text-xs font-bold rounded-full hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors shadow-sm">SNBT</button>
+            <button className="px-5 py-2 bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700 text-xs font-bold rounded-full hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors shadow-sm">MANDIRI</button>
+          </div>
+        </div>
+
+        {/* Student Cards Grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8 mb-20 justify-center">
           {alumniData.map((alumni, idx) => (
             <div 
               key={idx} 
-              className="bg-white dark:bg-slate-800 rounded-2xl p-6 shadow-xl border border-slate-100 dark:border-slate-700/50 hover:-translate-y-2 hover:shadow-orange-500/20 transition-all duration-300 flex flex-col items-center text-center"
+              className="bg-white dark:bg-slate-900 rounded-[1.5rem] overflow-hidden shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-slate-100 dark:border-slate-800 hover:-translate-y-1 hover:shadow-xl transition-all duration-300 flex flex-col group"
             >
-              <div className="w-24 h-24 rounded-full p-1 bg-gradient-to-br from-orange-400 to-red-500 mb-5 shadow-md">
+              {/* Top Image Section */}
+              <div className="w-full h-[260px] bg-[#ff5a00] relative overflow-hidden flex items-end justify-center">
                 <img 
                   src={alumni.avatar} 
                   alt={alumni.name} 
-                  className="w-full h-full rounded-full border-4 border-white dark:border-slate-800 object-cover" 
+                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" 
                 />
+                {/* Small dark circle with icon on top right */}
+                <div className="absolute top-4 right-4 bg-slate-900/30 backdrop-blur-md rounded-full w-8 h-8 flex items-center justify-center text-white">
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2.5">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M14 5l7 7m0 0l-7 7m7-7H3"></path>
+                  </svg>
+                </div>
               </div>
-              <h3 className="text-xl font-black text-slate-900 dark:text-white mb-2">
-                {alumni.name}
-              </h3>
-              <span className="px-3 py-1 bg-orange-100 text-orange-600 dark:bg-orange-500/20 dark:text-orange-400 font-bold text-xs rounded-full uppercase tracking-wider mb-4">
-                {alumni.major}
-              </span>
-              <p className="text-slate-600 dark:text-slate-300 font-bold flex items-center justify-center gap-2">
-                <svg className="w-5 h-5 text-orange-500 shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                  <path d="M10.394 2.08a1 1 0 00-.788 0l-7 3a1 1 0 000 1.84L5.25 8.051a.999.999 0 01.356-.257l4-1.714a1 1 0 11.788 1.838L7.667 9.088l1.94.831a1 1 0 00.787 0l7-3a1 1 0 000-1.838l-7-3zM3.31 9.397L5 10.12v4.102a8.969 8.969 0 00-1.05-.174 1 1 0 01-.89-.89 11.115 11.115 0 01.25-3.762zM9.3 16.573A9.026 9.026 0 007 14.935v-3.957l1.818.78a3 3 0 002.364 0l5.508-2.361a11.026 11.026 0 01.221 4.626c-.114.632-.636 1.053-1.251 1.053h-.46a1 1 0 01-.781-.378l-1.06-1.302a1 1 0 00-1.228-.276l-3.803 1.943a.998.998 0 00-.222.102z"></path>
-                </svg>
-                {alumni.ptn}
-              </p>
+
+              {/* Bottom Info Section */}
+              <div className="p-6 flex flex-col grow">
+                {/* Major with small face icon */}
+                <div className="flex items-center gap-2 mb-2">
+                  <svg className="w-4 h-4 text-red-500 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M14.828 14.828a4 4 0 01-5.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                  </svg>
+                  <span className="text-red-500 font-bold text-[10px] uppercase tracking-wider line-clamp-1">
+                    {alumni.major}
+                  </span>
+                </div>
+                
+                {/* Name */}
+                <h3 className="text-xl md:text-2xl font-bold text-slate-900 dark:text-white mb-2 leading-tight">
+                  {alumni.name}
+                </h3>
+                
+                {/* Date with calendar icon */}
+                <div className="flex items-center gap-2 mb-4">
+                  <svg className="w-3.5 h-3.5 text-red-500 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                  </svg>
+                  <span className="text-red-500 font-bold text-[11px] uppercase tracking-widest">
+                    Lulus Tahun 2024
+                  </span>
+                </div>
+
+                <div className="w-full h-px bg-slate-100 dark:bg-slate-800 my-2"></div>
+                
+                {/* PTN with map pin icon */}
+                <p className="text-slate-800 dark:text-slate-300 font-bold flex items-center gap-2 text-sm mt-3">
+                  <svg className="w-5 h-5 text-red-500 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path>
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                  </svg>
+                  <span className="line-clamp-1">{alumni.ptn}</span>
+                </p>
+              </div>
             </div>
           ))}
         </div>
