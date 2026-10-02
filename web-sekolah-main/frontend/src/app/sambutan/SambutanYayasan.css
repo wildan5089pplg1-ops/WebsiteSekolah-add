@@ -390,12 +390,12 @@ a {
     letter-spacing: .25em;
 }
 
-.campus-section {
+.school-section {
     padding: 100px clamp(24px, 8vw, 160px);
     background: #fff;
 }
 
-.campus-image-wrap {
+.school-image-wrap {
     max-width: 1280px;
     height: 390px;
     margin: auto;
@@ -404,13 +404,13 @@ a {
     position: relative;
 }
 
-.campus-image-wrap img {
+.school-image-wrap img {
     width: 100%;
     height: 100%;
     object-fit: cover;
 }
 
-.campus-overlay {
+.school-overlay {
     position: absolute;
     inset: 0;
     padding: 36px;
@@ -421,11 +421,11 @@ a {
     color: #fff;
 }
 
-.campus-overlay span {
+.school-overlay span {
     font: 700 25px 'Manrope', sans-serif;
 }
 
-.campus-overlay a {
+.school-overlay a {
     align-self: flex-end;
     background: #fff;
     color: var(--orange);
@@ -542,7 +542,7 @@ a {
         font-size: 20px;
     }
 
-    .campus-section {
+    .school-section {
         padding-top: 50px;
     }
 }

@@ -94,7 +94,7 @@ export default function ProfileHero() {
             <div className="relative rounded-3xl overflow-hidden shadow-2xl border border-slate-700/80 bg-slate-900 aspect-[4/5] max-h-[560px]">
               <img
                 src={hero.heroImage}
-                alt="Kampus SMK Prestasi Prima"
+                alt="Gedung Sekolah SMK Prestasi Prima"
                 className="w-full h-full object-cover object-center transform hover:scale-105 transition-transform duration-700"
               />
               <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/20 to-transparent" />
