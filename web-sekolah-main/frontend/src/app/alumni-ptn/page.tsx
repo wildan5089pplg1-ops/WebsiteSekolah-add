@@ -1,12 +1,16 @@
 import React from 'react';
 import { Metadata } from 'next';
-import FasilitasPage from '@/components/Fasilitas/FasilitasPage';
+import BintangLulusanSection from '@/components/BintangLulusanSection';
 
 export const metadata: Metadata = {
-  title: 'Fasilitas Sekolah | SMK Prestasi Prima',
-  description: 'Infrastruktur modern dan fasilitas pembelajaran berstandar industri SMK Prestasi Prima, lengkap dengan laboratorium kejuruan canggih dan ruang kreasi.',
+  title: 'Bintang Lulusan PTN | SMK Prestasi Prima',
+  description: 'Daftar bintang kelulusan SMK Prestasi Prima yang berhasil masuk ke Perguruan Tinggi Negeri (PTN) ternama di Indonesia.',
 };
 
 export default function AlumniPTNPage() {
-  return <FasilitasPage />;
+  return (
+    <main className="pt-20">
+      <BintangLulusanSection />
+    </main>
+  );
 }
