@@ -1,5 +1,6 @@
 'use client';
 
+import { useState } from 'react';
 import './SambutanYayasan.css';
 
 const messages = {
@@ -30,11 +31,24 @@ const messages = {
 type GreetingCardProps = {
     side: 'left' | 'right';
     data: typeof messages.left;
+    isActive: boolean;
+    onToggle: () => void;
 };
 
-function GreetingCard({ side, data }: GreetingCardProps) {
+function GreetingCard({ side, data, isActive, onToggle }: GreetingCardProps) {
     return (
-        <article className={`greeting-card greeting-card--${side}`} tabIndex={0}>
+        <article
+            className={`greeting-card greeting-card--${side} ${isActive ? 'is-active' : ''}`}
+            tabIndex={0}
+            onClick={onToggle}
+            onKeyDown={(e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    onToggle();
+                }
+            }}
+            aria-expanded={isActive}
+        >
             <div className="portrait-wrap">
                 <img className="portrait" src={data.image} alt={data.name} />
                 <div className="portrait-overlay" />
@@ -50,7 +64,7 @@ function GreetingCard({ side, data }: GreetingCardProps) {
 
             <div className="message-panel">
                 <div className="message-topline">
-                    <span>01 / 02</span>
+                    <span>{side === 'left' ? '01 / 02' : '02 / 02'}</span>
                     <span className="orange-dot" />
                     <span>Sambutan Yayasan</span>
                 </div>
@@ -69,17 +83,14 @@ function GreetingCard({ side, data }: GreetingCardProps) {
 }
 
 export default function SambutanYayasan() {
+    const [activeCard, setActiveCard] = useState<'left' | 'right' | null>(null);
+
+    const handleToggle = (side: 'left' | 'right') => {
+        setActiveCard((prev) => (prev === side ? null : side));
+    };
+
     return (
         <main className="sambutan-page">
-            <header className="page-nav">
-                <div className="brand">
-                    <span className="brand-mark">PP</span>
-                    <span>SMK PRESTASI PRIMA</span>
-                </div>
-                <span className="page-title">SAMBUTAN YAYASAN</span>
-                <a href="#pesan" className="nav-link">Scroll untuk menjelajah ↓</a>
-            </header>
-
             <section className="hero" id="pesan">
                 <div className="network network--top-left" />
                 <div className="network network--top-right" />
@@ -95,8 +106,18 @@ export default function SambutanYayasan() {
                 </div>
 
                 <div className="greetings-stage">
-                    <GreetingCard side="left" data={messages.left} />
-                    <GreetingCard side="right" data={messages.right} />
+                    <GreetingCard
+                        side="left"
+                        data={messages.left}
+                        isActive={activeCard === 'left'}
+                        onToggle={() => handleToggle('left')}
+                    />
+                    <GreetingCard
+                        side="right"
+                        data={messages.right}
+                        isActive={activeCard === 'right'}
+                        onToggle={() => handleToggle('right')}
+                    />
                 </div>
 
                 <div className="interaction-note">
