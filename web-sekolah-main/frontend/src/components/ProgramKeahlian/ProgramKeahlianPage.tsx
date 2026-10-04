@@ -5,7 +5,6 @@ import ProgramSkills from "./ProgramSkills";
 import ProgramFeatureHighlight from "./ProgramFeatureHighlight";
 import ProgramPractice from "./ProgramPractice";
 import ProgramTools from "./ProgramTools";
-import ProgramProjects from "./ProgramProjects";
 import ProgramCareers from "./ProgramCareers";
 import ProgramCTA from "./ProgramCTA";
 
@@ -37,13 +36,10 @@ export default function ProgramKeahlianPage({ major }: ProgramKeahlianPageProps)
       {/* SECTION 5 — TOOLS & TEKNOLOGI */}
       <ProgramTools tools={major.tools} majorName={major.name} />
 
-      {/* SECTION 6 — HASIL / PROJECT SISWA */}
-      <ProgramProjects projects={major.projects} majorName={major.name} />
-
-      {/* SECTION 7 — PROSPEK KARIR */}
+      {/* SECTION 6 — PROSPEK KARIR */}
       <ProgramCareers careers={major.careers} majorName={major.name} />
 
-      {/* SECTION 8 — CTA */}
+      {/* SECTION 7 — CTA */}
       <ProgramCTA currentMajorId={major.id} />
     </div>
   );
