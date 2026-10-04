@@ -58,7 +58,7 @@ export const PROFILE_DATA = {
     headlinePart2: "Era Digital.",
     supportingHeadline: "Integrasi teknologi dan integritas karakter.",
     desc: "Kami tidak hanya mengajar teknis, kami membentuk visi untuk menghadapi masa depan teknologi.",
-    heroImage: "/images/gedung.png",
+    heroImage: "/images/allrole.jpg",
     fallbackHeroImage: "https://images.unsplash.com/photo-1523240795612-9a054b0db644?q=80&w=1200&auto=format&fit=crop",
     statsPreview: [
       { label: "Status Akreditasi", value: "Akreditasi A Unggul" },

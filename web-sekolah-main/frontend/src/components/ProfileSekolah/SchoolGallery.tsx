@@ -15,12 +15,12 @@ export interface SchoolVideoItem {
 
 export const SCHOOL_VIDEOS: SchoolVideoItem[] = [
   {
-    id: "n3Y3SPu28k8",
-    embedUrl: "https://www.youtube-nocookie.com/embed/n3Y3SPu28k8?autoplay=1&rel=0 ",
-    title: "Melakukan Perubahan dan Menjadi Pemimpin Masa Depan LDKS Sekolah Prestasi Prima 2026",
-    shortTitle: "LDKS Kepemimpinan",
+    id: "topZzBLdxK8",
+    embedUrl: "https://www.youtube-nocookie.com/embed/topZzBLdxK8?autoplay=1&rel=0",
+    title: "Teaser LDKS Sekolah Prestasi Prima 2026 Membawa Kepemimpinan",
+    shortTitle: "Teaser LDKS",
     label: "LEADERSHIP & KARAKTER",
-    thumbnail: "https://img.youtube.com/vi/n3Y3SPu28k8/hqdefault.jpg",
+    thumbnail: "https://img.youtube.com/vi/topZzBLdxK8/hqdefault.jpg",
     fallback: "/images/gedung.png",
   },
   {

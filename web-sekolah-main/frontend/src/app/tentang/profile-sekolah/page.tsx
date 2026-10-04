@@ -10,7 +10,7 @@ export const metadata: Metadata = {
     title: "Profil Sekolah | SMK Prestasi Prima",
     description:
       "Profil resmi SMK Prestasi Prima: Visi, Misi, Sejarah Perjalanan, Kepemimpinan, dan Ekosistem Pendidikan Vokasi Keunggulan.",
-    images: ["/images/gedung.png"],
+    images: ["/images/allrole.jpg"],
   },
 };
 
