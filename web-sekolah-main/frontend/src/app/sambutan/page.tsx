@@ -132,7 +132,7 @@ export default function SambutanYayasan() {
                     <img src="/images/gedung.png" alt="Gedung SMK Prestasi Prima" />
                     <div className="school-overlay">
                         <span>Bergabung &amp; Tunjukkan Bakatmu</span>
-                        <a href="#">Jelajahi Prestasi Prima →</a>
+                        <a href="/virtual-tour">Jelajahi Prestasi Prima →</a>
                     </div>
                 </div>
             </section>

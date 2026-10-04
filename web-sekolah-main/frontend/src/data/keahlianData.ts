@@ -71,7 +71,7 @@ export const MAJORS_DATA: Record<string, MajorData> = {
     fullName: "Pengembangan Perangkat Lunak dan Gim",
     heroFocus: "Fokus pada rekayasa perangkat lunak modern, pengembangan website, aplikasi mobile, cloud system, dan logika gim interaktif berstandar industri.",
     shortDesc: "Mencetak software engineer, web/mobile developer, dan creative game creator yang berintegritas dan siap bersaing di kancah industri teknologi global.",
-    heroImage: "/images/hero-pplg.jpg",
+    heroImage: "/images/pplg-hero.png",
     logoIcon: "/images/majors/pplg.png",
     accentColor: "#F96501",
     stats: [
@@ -122,7 +122,7 @@ export const MAJORS_DATA: Record<string, MajorData> = {
       badge: "Penerapan Nyata di Laboratorium",
       title: "Membangun Ekosistem Aplikasi Nyata Sejak Bangku Sekolah",
       desc: "Di SMK Prestasi Prima, pembelajaran PPLG disimulasikan seperti iklim kerja software house profesional. Siswa tidak hanya menulis baris kode teoritis, namun mengimplementasikan project riil mulai dari requirement gathering, system architecture, coding sprint, hingga deployment.",
-      image: "https://images.unsplash.com/photo-1517694712202-14dd9538aa97?q=80&w=1200&auto=format&fit=crop",
+      image: "/images/hero-pplg.jpg",
       imageAlt: "Siswa PPLG sedang coding dan merancang software di lab komputer",
       points: [
         {
@@ -247,7 +247,7 @@ export const MAJORS_DATA: Record<string, MajorData> = {
     fullName: "Desain Komunikasi Visual",
     heroFocus: "Fokus pada kekuatan komunikasi visual, desain grafis editorial, branding korporat, ilustrasi digital, UI/UX, dan fotografi komersial.",
     shortDesc: "Melahirkan desainer visual inovatif yang mampu mengubah ide abstrak menjadi pesan visual yang komunikatif, estetis, dan berdampak kuat di media modern.",
-    heroImage: "/images/hero-dkv.png",
+    heroImage: "/images/dkv-hero.png",
     logoIcon: "/images/majors/dkv.png",
     accentColor: "#F96501",
     stats: [
@@ -298,7 +298,7 @@ export const MAJORS_DATA: Record<string, MajorData> = {
       badge: "Praktik Studio Desain Nyata",
       title: "Dari Sketsa Manual Hingga Kampanye Visual Profesional",
       desc: "Siswa DKV SMK Prestasi Prima ditempa dalam studio desain modern yang mensimulasikan agensi periklanan dan branding studio. Setiap siswa dilatih berpikir kritis dalam merumuskan konsep desain, memilih tone-of-voice visual, dan mengeksekusi karya dengan software standar industri dunia.",
-      image: "https://images.unsplash.com/photo-1626785774573-4b799315345d?q=80&w=1200&auto=format&fit=crop",
+      image: "/images/hero-dkv.jpg",
       imageAlt: "Siswa DKV sedang mendesain poster dan ilustrasi di workstation komputer",
       points: [
         {
@@ -423,7 +423,7 @@ export const MAJORS_DATA: Record<string, MajorData> = {
     fullName: "Teknik Jaringan Komputer dan Telekomunikasi",
     heroFocus: "Fokus pada arsitektur jaringan komputer modern, routing & switching, administrasi server, keamanan siber (cybersecurity), fiber optic, dan cloud infrastructure.",
     shortDesc: "Mempersiapkan network engineer andal yang menguasai fondasi konektivitas data, perlindungan sistem informasi, dan pemeliharaan server tingkat korporasi.",
-    heroImage: "/images/hero-tjkt.jpg",
+    heroImage: "/images/tjkt-hero.png",
     logoIcon: "/images/majors/tjkt.png",
     accentColor: "#F96501",
     stats: [
@@ -474,7 +474,7 @@ export const MAJORS_DATA: Record<string, MajorData> = {
       badge: "Praktik Laboratorium Server Nyata",
       title: "Mengelola Jaringan Nyata dengan Perangkat Standar Data Center",
       desc: "Di lab TJKT SMK Prestasi Prima, siswa belajar langsung memprogram router, switch enterprise, dan server rack fisik. Pengalaman langsung ini membekali siswa dengan intuisi teknis yang tinggi dalam mengatasi kendala konektivitas data korporasi.",
-      image: "https://images.unsplash.com/photo-1544197150-b99a580bb7a8?q=80&w=1200&auto=format&fit=crop",
+      image: "/images/hero-tjkt.jpg",
       imageAlt: "Siswa TJKT sedang merakit server dan konfigurasi router di lab jaringan",
       points: [
         {
@@ -599,7 +599,7 @@ export const MAJORS_DATA: Record<string, MajorData> = {
     fullName: "Broadcasting dan Perfilman",
     heroFocus: "Fokus pada industri penyiaran televisi & radio, sinematografi, penyutradaraan, produksi konten live streaming, tata suara audio, dan pascaproduksi film.",
     shortDesc: "Mencetak sineas muda dan tenaga ahli penyiaran kreatif yang menguasai alur kerja produksi audio-visual dari pra-produksi hingga penyiaran publik.",
-    heroImage: "/images/hero-bcf.jpg",
+    heroImage: "/images/bcf-hero.png",
     logoIcon: "/images/majors/bcf.png",
     accentColor: "#F96501",
     stats: [
@@ -650,7 +650,7 @@ export const MAJORS_DATA: Record<string, MajorData> = {
       badge: "Praktik Studio Siaran Nyata",
       title: "Produksi Siaran Langsung dan Sinematografi Berstandar Stasiun TV",
       desc: "Siswa BCF SMK Prestasi Prima belajar langsung di Studio Siaran Televisi dan Studio Podcast berakustik khusus. Dilengkapi dengan kamera profesional multi-angle, video switcher terintegrasi, audio mixer digital, serta lampu studio DMX yang mensimulasikan lingkungan stasiun televisi nasional.",
-      image: "https://images.unsplash.com/photo-1574717024653-61fd2cf4d44d?q=80&w=1200&auto=format&fit=crop",
+      image: "/images/hero-bcf.jpg",
       imageAlt: "Siswa BCF sedang mengoperasikan kamera studio dan switcher siaran",
       points: [
         {
