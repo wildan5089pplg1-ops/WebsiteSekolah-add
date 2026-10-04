@@ -4,7 +4,7 @@ import SchoolIdentity from "./SchoolIdentity";
 import VisionMission from "./VisionMission";
 import HistoryTimeline from "./HistoryTimeline";
 import SchoolHighlights from "./SchoolHighlights";
-import CampusGallery from "./CampusGallery";
+import SchoolGallery from "./SchoolGallery";
 import PrincipalMessage from "./PrincipalMessage";
 import SchoolVideo from "./SchoolVideo";
 import ProfileCTA from "./ProfileCTA";
@@ -28,7 +28,7 @@ export default function ProfileSekolahPage() {
       <SchoolHighlights />
 
       {/* SECTION 06 — KEHIDUPAN & LINGKUNGAN SEKOLAH */}
-      <CampusGallery />
+      <SchoolGallery />
 
       {/* SECTION 07 — KEPEMIMPINAN */}
       <PrincipalMessage />

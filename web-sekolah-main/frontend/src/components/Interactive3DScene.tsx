@@ -19,7 +19,7 @@ import * as THREE from 'three';
 // CATATAN: Jika Anda sudah punya file .glb, komponen MainBuilding ini bisa diganti
 // dengan membaca node/mesh dari file 3D Anda.
 // Contoh: 
-// const { nodes } = useGLTF('/models/campus.glb')
+// const { nodes } = useGLTF('/models/school.glb')
 // lalu gunakan <mesh geometry={nodes.Gedung_Indi.geometry} ... />
 
 const navLinks3D = [
@@ -281,10 +281,10 @@ function Lightbulb() {
 
 // --- MAIN SCENE ---
 // CATATAN UNTUK PENGGUNAAN MODEL ASLI:
-// Jika nanti Anda memiliki 1 file utuh campus.glb, Anda bisa menghapus semua bentuk 
+// Jika nanti Anda memiliki 1 file utuh school.glb, Anda bisa menghapus semua bentuk 
 // dasar (mesh cylinder, box, dll) di bawah ini dan cukup memanggil:
 // <primitive object={scene} /> 
-// (dimana `scene` didapat dari const { scene } = useGLTF('/models/campus.glb'))
+// (dimana `scene` didapat dari const { scene } = useGLTF('/models/school.glb'))
 
 function Scene() {
   return (

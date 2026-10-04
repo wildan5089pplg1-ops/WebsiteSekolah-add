@@ -106,10 +106,10 @@ export default function SambutanYayasan() {
                 </div>
             </section>
 
-            <section className="campus-section">
-                <div className="campus-image-wrap">
+            <section className="school-section">
+                <div className="school-image-wrap">
                     <img src="/images/gedung.png" alt="Gedung SMK Prestasi Prima" />
-                    <div className="campus-overlay">
+                    <div className="school-overlay">
                         <span>Bergabung &amp; Tunjukkan Bakatmu</span>
                         <a href="#">Jelajahi Prestasi Prima →</a>
                     </div>

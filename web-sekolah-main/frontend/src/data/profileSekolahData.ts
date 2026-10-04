@@ -33,7 +33,7 @@ export interface HighlightCard {
 
 export interface GalleryPhoto {
   id: string;
-  label: "CAMPUS" | "LEARNING" | "STUDENT LIFE" | "CREATIVE SPACE" | "TECHNOLOGY";
+  label: "SCHOOL" | "LEARNING" | "STUDENT LIFE" | "CREATIVE SPACE" | "TECHNOLOGY";
   title: string;
   image: string;
   aspect: string;
@@ -96,7 +96,7 @@ export const PROFILE_DATA = {
       {
         value: "DIGITAL",
         label: "Integrated Education",
-        sublabel: "Ekosistem smart campus berbasis teknologi mutakhir",
+        sublabel: "Ekosistem smart school berbasis teknologi mutakhir",
         badge: "ECOSYSTEM",
       },
     ] as StatItem[],
@@ -188,14 +188,14 @@ export const PROFILE_DATA = {
         year: "2015",
         title: "Ekspansi Fasilitas",
         subtitle: "Pembangunan Studio & Lab Modern",
-        desc: "Perluasan gedung kampus, peresmian studio multimedia broadcasting, studio fotografi DKV, dan penambahan kapasitas kelas.",
+        desc: "Perluasan gedung sekolah, peresmian studio multimedia broadcasting, studio fotografi DKV, dan penambahan kapasitas kelas.",
         icon: "home",
         tag: "Infrastruktur",
       },
       {
         year: "2018",
         title: "Digitalisasi Pembelajaran",
-        subtitle: "Era Smart Campus",
+        subtitle: "Era Smart School",
         desc: "Implementasi Learning Management System (LMS) digital mandiri, pengadaan jaringan fiber optic terpadu, dan sertifikasi vendor IT.",
         icon: "wifi",
         tag: "Teknologi",
@@ -260,14 +260,14 @@ export const PROFILE_DATA = {
   },
 
   gallery: {
-    label: "CAMPUS LIFE",
+    label: "SCHOOL LIFE",
     title: "Tempat Belajar, Tempat Bertumbuh.",
-    subtitle: "Menyusuri denyut aktivitas, sarana modern, dan kehangatan komunitas akademik di kampus SMK Prestasi Prima.",
+    subtitle: "Menyusuri denyut aktivitas, sarana modern, dan kehangatan komunitas akademik di sekolah SMK Prestasi Prima.",
     photos: [
       {
         id: "gal-1",
-        label: "CAMPUS",
-        title: "Gedung Kampus & Lapangan Utama",
+        label: "SCHOOL",
+        title: "Gedung Sekolah & Lapangan Utama",
         image: "/images/gedung.png",
         aspect: "aspect-[16/10]",
       },
@@ -329,14 +329,14 @@ export const PROFILE_DATA = {
   },
 
   video: {
-    label: "EXPLORE CAMPUS",
-    title: "Tonton Eksplorasi.",
-    subtitle: "Video Profil SMK Prestasi Prima",
-    desc: "Menyaksikan secara langsung lingkungan pembelajaran, fasilitas berstandar industri, dan semangat kolaborasi civitas akademika kami.",
+    label: "EXPLORE SCHOOL",
+    badgeSecondary: "VIRTUAL SCHOOL EXPERIENCE",
+    title: "Jelajahi SMK Prestasi Prima.",
+    desc: "Lihat lebih dekat lingkungan sekolah, ruang belajar, dan berbagai sudut SMK Prestasi Prima melalui pengalaman virtual tour.",
+    ctaLabel: "Jelajahi PRESMA TOUR",
+    ctaUrl: "/virtual-tour",
     videoSrc: "/assets/hero.webm",
     poster: "/images/gedung.png",
-    youtubeUrl: "https://www.youtube.com/watch?v=EYzn0caf0_k",
-    embedUrl: "https://www.youtube-nocookie.com/embed/EYzn0caf0_k",
   },
 
   testimonials: [
