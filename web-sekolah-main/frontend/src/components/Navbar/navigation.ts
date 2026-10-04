@@ -36,11 +36,6 @@ export const navigation: NavSection[] = [
         href: "/tentang/sambutan",
         desc: "Amanat dan arah pendidikan dari Ketua Yayasan.",
       },
-      {
-        name: "Fasilitas",
-        href: "/tentang/profile#fasilitas",
-        desc: "Sarana modern penunjang pembelajaran berkualitas.",
-      },
     ],
   },
   {
@@ -106,11 +101,6 @@ export const navigation: NavSection[] = [
         name: "Bintang Lulusan PTN",
         href: "/alumni-ptn",
         desc: "Daftar alumni berprestasi yang menembus PTN ternama.",
-      },
-      {
-        name: "Prestasi Siswa",
-        href: "/#prestasi",
-        desc: "Raihan medali dan penghargaan di tingkat regional & nasional.",
       },
       {
         name: "Berita & Artikel",

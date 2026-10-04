@@ -494,27 +494,46 @@ export default function Navbar() {
                     </button>
 
                     {isExpanded && (
-                      <div className="pl-4 pr-2 pb-2 pt-1 space-y-1 bg-slate-900/90 rounded-xl my-1 border border-white/10">
-                        {item.subLinks!.map((sub) => (
-                          <Link
-                            key={sub.name}
-                            href={sub.href}
-                            onClick={() => {
-                              setMobileOpen(false);
-                              setMobileExpanded(null);
-                            }}
-                            className="block px-3 py-2 rounded-lg text-xs font-semibold text-white hover:text-[#F96501] hover:bg-white/10 transition-colors"
-                          >
-                            <span className="block text-white font-medium">
-                              {sub.name}
-                            </span>
-                            {sub.desc && (
-                              <span className="block text-[10.5px] text-slate-300 font-normal mt-0.5 line-clamp-1">
-                                {sub.desc}
+                      <div className="pl-3 pr-2 pb-2 pt-1 space-y-1 bg-slate-50/80 dark:bg-slate-900/60 rounded-xl my-1 border border-slate-200/70 dark:border-slate-800/70">
+                        {item.subLinks!.map((sub) => {
+                          const isSubActive = pathname === sub.href;
+                          return (
+                            <Link
+                              key={sub.name}
+                              href={sub.href}
+                              onClick={() => {
+                                setMobileOpen(false);
+                                setMobileExpanded(null);
+                              }}
+                              className={`block px-3 py-2 rounded-lg text-xs font-semibold transition-colors ${
+                                isSubActive
+                                  ? "bg-orange-50 dark:bg-orange-500/10 text-[#F96501]"
+                                  : "text-slate-800 dark:text-slate-100 hover:text-[#F96501] hover:bg-orange-50/80 dark:hover:bg-slate-800/60"
+                              }`}
+                            >
+                              <span
+                                className={`block font-semibold ${
+                                  isSubActive
+                                    ? "text-[#F96501]"
+                                    : "text-slate-800 dark:text-slate-100"
+                                }`}
+                              >
+                                {sub.name}
                               </span>
-                            )}
-                          </Link>
-                        ))}
+                              {sub.desc && (
+                                <span
+                                  className={`block text-[10.5px] font-normal mt-0.5 line-clamp-1 ${
+                                    isSubActive
+                                      ? "text-orange-600/80 dark:text-orange-400/80"
+                                      : "text-slate-500 dark:text-slate-400"
+                                  }`}
+                                >
+                                  {sub.desc}
+                                </span>
+                              )}
+                            </Link>
+                          );
+                        })}
                       </div>
                     )}
                   </div>
