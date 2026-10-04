@@ -335,6 +335,8 @@ export const PROFILE_DATA = {
     desc: "Menyaksikan secara langsung lingkungan pembelajaran, fasilitas berstandar industri, dan semangat kolaborasi civitas akademika kami.",
     videoSrc: "/assets/hero.webm",
     poster: "/images/gedung.png",
+    youtubeUrl: "https://www.youtube.com/watch?v=EYzn0caf0_k",
+    embedUrl: "https://www.youtube-nocookie.com/embed/EYzn0caf0_k",
   },
 
   testimonials: [

@@ -57,7 +57,7 @@ export default async function HomePage() {
       {/* Prestasi / Achievements Section */}
       <PrestasiSection />
 
-      {/* Lulusan PTN Section */}
+      {/* Lulusan PTN Section (Grid Logo-logo PTN) */}
       <AlumniPTNSection />
 
       {/* Mitra & Sponsorship Section */}

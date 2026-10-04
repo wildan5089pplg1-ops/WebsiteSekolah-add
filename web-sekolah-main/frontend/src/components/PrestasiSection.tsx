@@ -4,6 +4,14 @@ import React, { useState } from 'react';
 
 const achievements = [
   {
+    id: 0,
+    title: 'Juara 3 Film Pendek',
+    event: 'FLS3N Wilayah Jakarta Timur II',
+    student: 'Tim Film Pendek',
+    image: '/images/prestasi-filmpendek.jpg',
+    color: 'from-yellow-500 to-orange-500'
+  },
+  {
     id: 1,
     title: 'Juara 1 Lomba Voli',
     event: 'Voli Putra Satvikara',
@@ -18,22 +26,6 @@ const achievements = [
     student: 'Muhammad Nabil Syukri',
     image: '/images/prestasi-silat.jpeg',
     color: 'from-orange-500 to-red-500'
-  },
-  {
-    id: 3,
-    title: 'Juara 2 Animasi 3D',
-    event: 'Festival Film Pendek Pelajar',
-    student: 'Citra Kirana',
-    image: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=800&auto=format&fit=crop',
-    color: 'from-purple-600 to-pink-500'
-  },
-  {
-    id: 4,
-    title: 'Juara 1 Lomba Web Design',
-    event: 'Olimpiade IT Nasional 2025',
-    student: 'Ahmad & Tim',
-    image: 'https://images.unsplash.com/photo-1517245386807-bb43f82c33c4?q=80&w=800&auto=format&fit=crop',
-    color: 'from-blue-600 to-cyan-500'
   },
   {
     id: 5,
