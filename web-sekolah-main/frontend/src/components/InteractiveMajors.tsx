@@ -23,7 +23,7 @@ const majors: Major[] = [
     description: 'Membangun aplikasi, gim, dan pengalaman digital yang menjawab kebutuhan nyata di sekitar kita dengan kurikulum berstandar industri modern.',
     stats: '18 PRODUK SISWA',
     iconPath: '/images/majors/pplg.png',
-    image: 'https://images.unsplash.com/photo-1555066931-4365d14bab8c?q=80&w=1200&auto=format&fit=crop',
+    image: '/images/pplgvert.jpg',
   },
   {
     id: 'tjkt',
@@ -33,7 +33,7 @@ const majors: Major[] = [
     description: 'Merancang infrastruktur digital, cloud networking, dan cybersecurity yang membuat dunia tetap terhubung dengan andal.',
     stats: '92% SERTIFIKASI',
     iconPath: '/images/majors/tjkt.png',
-    image: 'https://images.unsplash.com/photo-1544197150-b99a580bb7a8?q=80&w=1200&auto=format&fit=crop',
+    image: '/images/tjktvert.jpg',
   },
   {
     id: 'bcf',
@@ -43,7 +43,7 @@ const majors: Major[] = [
     description: 'Mengolah ide cerita menjadi karya visual sinematik, produksi studio televisi, dan live streaming profesional berdaya pikat.',
     stats: '34 FILM PENDEK',
     iconPath: '/images/majors/bcf.png',
-    image: 'https://images.unsplash.com/photo-1601506521937-0121a7fc2a6b?q=80&w=1200&auto=format&fit=crop',
+    image: '/images/bcfvert.jpg',
   },
   {
     id: 'dkv',
@@ -53,7 +53,7 @@ const majors: Major[] = [
     description: 'Mengubah gagasan menjadi identitas visual, UI/UX desain interaktif, dan karya multimedia kreatif berbobot estetika tinggi.',
     stats: '27 KAMPANYE',
     iconPath: '/images/majors/dkv.png',
-    image: 'https://images.unsplash.com/photo-1626785774573-4b799315345d?q=80&w=1200&auto=format&fit=crop',
+    image: '/images/dkvvert.jpg',
   },
 ];
 

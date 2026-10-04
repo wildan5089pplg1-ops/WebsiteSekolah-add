@@ -1,75 +1,65 @@
 "use client";
 
 import React from 'react';
-import Link from 'next/link';
 
 export default function SponsorshipSection() {
   return (
-    <section className="relative w-full py-16 sm:py-24 overflow-hidden bg-white dark:bg-slate-950 transition-colors duration-300">
+    <section className="relative w-full py-16 sm:py-24 overflow-hidden bg-gradient-to-b from-white via-orange-50/40 to-white dark:from-slate-950 dark:via-orange-950/20 dark:to-slate-950 transition-colors duration-300">
       
-      {/* BACKGROUND CIRCULAR SCHOOL SEAL WATERMARK (MATCHING REFERENCE SCREENSHOT) */}
-      <div className="absolute inset-0 flex items-center justify-center pointer-events-none opacity-[0.06] dark:opacity-[0.04] select-none z-0">
-        <svg viewBox="0 0 600 600" className="w-[450px] sm:w-[600px] h-[450px] sm:h-[600px] text-slate-800 dark:text-white" fill="none" stroke="currentColor">
-          {/* Concentric Circles */}
-          <circle cx="300" cy="300" r="280" strokeWidth="6" />
-          <circle cx="300" cy="300" r="260" strokeWidth="2" strokeDasharray="6 6" />
-          <circle cx="300" cy="300" r="180" strokeWidth="4" />
-          
-          {/* Circular Text Path for SEKOLAH MENENGAH KEJURUAN PRESTASI PRIMA */}
-          <path id="circleTextPathTop" d="M 120 300 A 180 180 0 0 1 480 300" fill="none" stroke="none" />
-          <path id="circleTextPathBottom" d="M 480 300 A 180 180 0 0 1 120 300" fill="none" stroke="none" />
-          
-          <text className="text-[28px] font-black uppercase tracking-[0.25em]" fill="currentColor">
-            <textPath href="#circleTextPathTop" startOffset="50%" textAnchor="middle">
-              SEKOLAH MENENGAH KEJURUAN
-            </textPath>
-          </text>
-          
-          <text className="text-[28px] font-black uppercase tracking-[0.25em]" fill="currentColor">
-            <textPath href="#circleTextPathBottom" startOffset="50%" textAnchor="middle">
-              PRESTASI PRIMA
-            </textPath>
-          </text>
+      {/* TASTEFUL LOW-CONTRAST ORANGE DECORATIVE ELEMENTS BEHIND CONTENT */}
+      <div className="absolute inset-0 pointer-events-none overflow-hidden z-0">
+        {/* Soft Center-Right Orange Glow */}
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] sm:w-[650px] h-[250px] sm:h-[320px] bg-gradient-to-r from-orange-400/10 via-[#FF6B00]/10 to-amber-400/10 dark:from-orange-500/5 dark:via-orange-600/5 dark:to-transparent rounded-full blur-3xl"></div>
 
-          {/* Decorative Stars */}
-          <polygon points="100,300 105,310 115,310 108,318 110,328 100,322 90,328 92,318 85,310 95,310" fill="currentColor" />
-          <polygon points="500,300 505,310 515,310 508,318 510,328 500,322 490,328 492,318 485,310 495,310" fill="currentColor" />
+        {/* Abstract Floating Dots & Subtle Rings */}
+        <div className="absolute top-8 left-[15%] w-3 h-3 rounded-full bg-[#FF6B00]/20 dark:bg-orange-500/20 blur-[1px]"></div>
+        <div className="absolute bottom-10 right-[18%] w-4 h-4 rounded-full bg-[#FF6B00]/25 dark:bg-orange-500/20 blur-[1px]"></div>
+        <div className="absolute top-1/3 right-[12%] w-2 h-2 rounded-full bg-[#FF6B00]/30"></div>
+        <div className="absolute bottom-1/3 left-[10%] w-2.5 h-2.5 rounded-full bg-[#FF6B00]/20"></div>
+
+        {/* Subtle Geometric Circle Accents */}
+        <svg
+          className="absolute -top-12 -left-12 w-64 h-64 text-[#FF6B00]/5 dark:text-orange-500/5"
+          viewBox="0 0 200 200"
+          fill="none"
+          stroke="currentColor"
+        >
+          <circle cx="100" cy="100" r="70" strokeWidth="1.5" strokeDasharray="4 6" />
+          <circle cx="100" cy="100" r="90" strokeWidth="1" />
+        </svg>
+
+        <svg
+          className="absolute -bottom-16 -right-16 w-72 h-72 text-[#FF6B00]/5 dark:text-orange-500/5"
+          viewBox="0 0 200 200"
+          fill="none"
+          stroke="currentColor"
+        >
+          <circle cx="100" cy="100" r="80" strokeWidth="1" strokeDasharray="5 5" />
+          <circle cx="100" cy="100" r="100" strokeWidth="1.5" />
         </svg>
       </div>
 
       <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col items-center justify-center text-center">
         
-        {/* Title */}
-        <h3 className="text-xs sm:text-sm font-black text-slate-800 dark:text-slate-200 uppercase tracking-widest mb-6">
-          SPONSORSHIP BY:
-        </h3>
+        {/* Heading: SPONSORSHIP BY */}
+        <div className="inline-flex items-center gap-2 mb-6">
+          <span className="w-1.5 h-1.5 rounded-full bg-[#FF6B00]"></span>
+          <h3 className="text-xs sm:text-sm font-black text-slate-800 dark:text-slate-200 uppercase tracking-[0.25em]">
+            SPONSORSHIP BY:
+          </h3>
+          <span className="w-1.5 h-1.5 rounded-full bg-[#FF6B00]"></span>
+        </div>
 
-        {/* Sponsor Card (Prambors) */}
-        <div className="group relative w-56 sm:w-64 h-28 sm:h-32 rounded-3xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-xl hover:shadow-2xl transition-all duration-300 hover:-translate-y-1.5 flex items-center justify-center p-6 mb-8 cursor-pointer">
-          <div className="absolute inset-0 bg-gradient-to-br from-yellow-400 to-amber-500 opacity-0 group-hover:opacity-5 transition-opacity duration-300 rounded-3xl"></div>
+        {/* Centered Sponsor Card (Prambors) */}
+        <div className="group relative w-64 sm:w-72 h-28 sm:h-32 rounded-3xl bg-white dark:bg-slate-900 border border-orange-100 dark:border-slate-800 shadow-lg shadow-orange-500/5 hover:shadow-xl hover:shadow-orange-500/10 hover:border-orange-200 dark:hover:border-orange-500/40 transition-all duration-300 hover:-translate-y-1 flex items-center justify-center p-6 cursor-pointer">
+          {/* Subtle Hover Glow Inside Card */}
+          <div className="absolute inset-0 bg-gradient-to-br from-orange-400/5 via-transparent to-amber-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300 rounded-3xl pointer-events-none"></div>
+          
           <img
             src="/images/prambos.webp"
             alt="Prambors Radio Media Partner"
-            className="w-full h-full object-contain transform group-hover:scale-105 transition-transform duration-300 relative z-10 filter drop-shadow-sm"
+            className="w-full h-full object-contain transform group-hover:scale-105 transition-transform duration-300 relative z-10 filter drop-shadow-xs"
           />
-        </div>
-
-        {/* "LIHAT SEMUA MITRA" Button (Matching reference) */}
-        <div>
-          <Link
-            href="/contact"
-            className="inline-flex items-center gap-2.5 px-8 py-3.5 rounded-full bg-[#FF6B00] hover:bg-[#e05e00] text-white font-extrabold text-xs sm:text-sm tracking-wider uppercase shadow-lg shadow-orange-500/30 hover:shadow-orange-500/50 hover:-translate-y-0.5 transition-all duration-300 group"
-          >
-            LIHAT SEMUA MITRA
-            <svg
-              className="w-4 h-4 transform group-hover:translate-x-1 transition-transform"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-            >
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M14 5l7 7m0 0l-7 7m7-7H3" />
-            </svg>
-          </Link>
         </div>
 
       </div>

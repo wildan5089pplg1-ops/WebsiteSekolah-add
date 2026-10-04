@@ -5,9 +5,11 @@ import TheChampionsSection from '@/components/TheChampionsSection';
 import AlumniPTNSection from '@/components/AlumniPTNSection';
 import SponsorshipSection from '@/components/SponsorshipSection';
 import SchoolProfileNewsSection from '@/components/SchoolProfileNewsSection';
-import ClosingBanner from '@/components/ClosingBanner';
+import { getNewsList } from '@/lib/api';
 
-export default function HomePage() {
+export default async function HomePage() {
+  const newsList = await getNewsList();
+
   return (
     <div className="space-y-0 pb-0">
       
@@ -51,10 +53,7 @@ export default function HomePage() {
       <SponsorshipSection />
 
       {/* 7. School Profile / News & Activities */}
-      <SchoolProfileNewsSection />
-
-      {/* 8. Existing Footer / Closing Banner */}
-      <ClosingBanner />
+      <SchoolProfileNewsSection articles={newsList} />
 
     </div>
   );
